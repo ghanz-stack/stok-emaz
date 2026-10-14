@@ -85,7 +85,7 @@ nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255
 </head>
 <body>
 <header class="top"><div class="top-in">
-<img class="logo" src="../LOGO.png" onerror="this.src='./manifest-icon.png';this.onerror=null" alt="logo">
+<img class="logo" src="./LOGO.png" alt="logo">
 <div class="app-t"><b>Gudang Ibu NID</b><br><span>Stok Emas • Brankas - Etalase - Bazar</span></div>
 <div class="pill"><span class="dot" id="dotNet"></span><span class="sync" id="syncLbl">Lokal</span></div>
 </div></header>
@@ -424,7 +424,7 @@ const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"landscape"});d.text(`G
 d.autoTable({startY:16,head:[["Tanggal","Tipe","Deskripsi","Sumber/Lok","Qty","Berat","Harga"]],body:rows.slice(0,300).map(m=>[m.tanggal,m.tipe,m.desc,m.sumber+"/"+m.lok,m.qty,Number(m.berat).toFixed(2),m.harga])});
 d.text(`Diprint oleh ${curUser.nama} • ${new Date().toLocaleString("id-ID")}`,14,200);d.save(`Laporan_${r.label}.pdf`);addLog("EXPORT","PDF "+rows.length+" baris")}
 function cetakA4(){const{rows,r}=lapData();const j=$("rJenis").value;
-$("printArea").innerHTML=`<div class="p-head"><img src="../LOGO.png"><div><b>Gudang Ibu NID — ${j.toUpperCase()}</b><br>Periode ${r.dari} → ${r.sampai} • ${rows.length} baris</div></div>
+$("printArea").innerHTML=`<div class="p-head"><img src="./LOGO.png"><div><b>Gudang Ibu NID — ${j.toUpperCase()}</b><br>Periode ${r.dari} → ${r.sampai} • ${rows.length} baris</div></div>
 <table><tr><th>No</th><th>Tanggal</th><th>Transaksi</th><th>Sumber/Lokasi</th><th>Qty</th><th>Berat</th><th>Harga</th></tr>
 ${rows.slice(0,300).map((m,i)=>`<tr><td>${i+1}</td><td>${m.tanggal}</td><td><b>${m.tipe}</b><br>${esc(m.desc)}</td><td>${m.sumber}/${m.lok}</td><td>${m.qty}pcs</td><td>${Number(m.berat).toFixed(2)}gr</td><td>${fmtRp(m.harga)}</td></tr>`).join("")}</table>
 <p>Catatan kaki: Diprint oleh <b>${esc(curUser.nama)}</b> pada ${new Date().toLocaleString("id-ID")} • 1 Outlet • Data realtime</p>
