@@ -1,575 +1,450 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <viewport content="width=device-width, initial-scale=1, user-scalable=no">
-  <description content="WebApp Stok Emas Gudang Ibu NID - Tracking Logam Mulia & Perhaisan Realtime">
-  <theme-color content="#0F766E">
-  <apple-mobile-web-app-status-bar-color content="#0F766E">
-  <apple-mobile-web-app-title content="Stok Emas Gudang Ibu NID">
-  <msapplication-config content="none">
-  <msapplication-TileColor content="#0F766E">
-  <msapplication-fullscreen content="true">
-  <msapplication-fullscreen-mode content="standalone">
-  <referrer-policy content="no-referrer-when-downgrade">
-
-  <link rel="manifest" href="manifest.json">
-  
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-
-  <script src="firebase-config.js"></script>
-  
-  <!-- SheetJS (XLSX) - akan di-cache oleh service worker -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.6/dist/xlsx.full.min.js"></script>
-
-  <!-- jspdf dan jspdf-autotable -->
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.27/dist/jspdf-autotable.min.js"></script>
-
-  <title>Stok Emas Gudang Ibu NID</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="description" content="Stok Emas Gudang Ibu NID - Brankas, Etalase & Bazar realtime">
+<meta name="theme-color" content="#FDF2F4">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="../LOGO.png" type="image/png">
+<title>Stok Emas • Gudang Ibu NID</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="./firebase-config.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --bg:#FFF8F6; --card:#FFFFFF; --ink:#5B5B6B; --muted:#A3A3B5;
+  --rose:#F9A8D4; --rose-soft:#FCE7F3; --sage:#6EE7B7; --sage-soft:#D1FAE5;
+  --peach:#FDBA74; --peach-soft:#FFEDD5; --lav:#C4B5FD; --lav-soft:#EDE9FE;
+  --sky:#7DD3FC; --sky-soft:#E0F2FE; --line:#F3E8E4; --radius:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding-bottom:92px}
+header.top{position:sticky;top:0;z-index:20;background:rgba(255,248,246,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:980px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.logo{width:34px;height:34px;border-radius:12px;object-fit:cover;background:#fff;border:1px solid var(--line)}
+.app-t{line-height:1.1}.app-t b{font-size:14px;color:#4A4458}.app-t span{font-size:11px;color:var(--muted)}
+.pill{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:11px}
+.dot{width:8px;height:8px;border-radius:50%;background:#FBBF24}.dot.on{background:#34D399}
+.sync{padding:5px 10px;border-radius:999px;background:#fff;border:1px solid var(--line)}
+.wrap{max-width:980px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:0 6px 18px rgba(249,168,212,.12)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:640px){.grid3{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr 1fr}}
+.stat{border-radius:16px;padding:12px;color:#4A4458;border:1px solid var(--line)}
+.stat small{font-size:11px;color:var(--muted)}.stat b{font-size:18px;display:block;margin:2px 0}.stat em{font-style:normal;font-size:11px}
+.s-pusat{background:linear-gradient(135deg,#FCE7F3,#FFF7ED)}.s-buy{background:linear-gradient(135deg,#EDE9FE,#FCE7F3)}.s-kons{background:linear-gradient(135deg,#E0F2FE,#EDE9FE)}.s-total{background:linear-gradient(135deg,#D1FAE5,#FEF3C7)}
+h2.sec{font-size:15px;margin:18px 2px 10px;color:#4A4458}
+label{font-size:12px;color:var(--muted);display:block;margin:10px 0 5px}
+input,select,textarea{width:100%;padding:11px 12px;border-radius:14px;border:1.5px solid var(--line);background:#FFFEFD;font-size:14px;color:var(--ink);outline:none}
+input:focus,select:focus{border-color:var(--rose)}
+.btn{border:0;border-radius:14px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%}
+.btn-rose{background:linear-gradient(135deg,#F9A8D4,#F472B6);color:#fff}
+.btn-sage{background:linear-gradient(135deg,#6EE7B7,#34D399);color:#0B4A3A}
+.btn-lav{background:linear-gradient(135deg,#C4B5FD,#A78BFA);color:#fff}
+.btn-peach{background:linear-gradient(135deg,#FDBA74,#FB923C);color:#fff}
+.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn-row{display:flex;gap:8px}.btn-row .btn{flex:1}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.chip{padding:8px 12px;border-radius:999px;background:#fff;border:1.5px solid var(--line);font-size:12px;cursor:pointer}
+.chip.on{background:#4A4458;color:#fff;border-color:#4A4458}
+table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;overflow:hidden;border-radius:12px;border:1px solid var(--line)}
+.tbl th{background:#FFF1F2;color:#7C6A7A;text-align:left;padding:9px 8px;white-space:nowrap}
+.tbl td{padding:8px;border-top:1px solid var(--line);vertical-align:top}
+.tbl tr:nth-child(even) td{background:#FFFBFA}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid var(--line);backdrop-filter:blur(10px)}
+.nav-in{max-width:980px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);padding:8px}
+.nav-b{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted);cursor:pointer;padding:6px}
+.nav-b.on{color:#DB2777;font-weight:800}
+.nav-b i{font-style:normal;font-size:20px}
+.page{display:none}.page.on{display:block;animation:fade .2s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#4A4458;color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;z-index:50;display:none;max-width:92vw}
+.badge{font-size:10px;padding:3px 8px;border-radius:999px;background:var(--sky-soft);display:inline-block}
+.muted{color:var(--muted);font-size:12px}
+.login{max-width:420px;margin:8vh auto}
+.kv{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px dashed var(--line)}
+/* PRINT A4 */
+#printArea{display:none}
+@media print{
+  body{background:#fff;padding:0} header.top,nav.bottom,.wrap,.toast{display:none!important}
+  #printArea{display:block!important;padding:10px;color:#222;font-size:12px}
+  #printArea .p-head{display:flex;gap:10px;align-items:center;border-bottom:2px solid #222;padding-bottom:8px}
+  #printArea img{width:42px;height:42px;object-fit:contain}
+  #printArea table{width:100%;border-collapse:collapse;margin-top:10px}
+  #printArea th,#printArea td{border:1px solid #444;padding:6px;text-align:left}
+  #printArea th{background:#f0f0f0}
+  #printArea .p-foot{margin-top:14px;display:flex;justify-content:space-between}
+  #printArea .sign{text-align:center;width:30%}
+}
+</style>
 </head>
-<body class="min-h-screen bg-gray-50 text-gray-800">
+<body>
+<header class="top"><div class="top-in">
+<img class="logo" src="../LOGO.png" onerror="this.src='./manifest-icon.png';this.onerror=null" alt="logo">
+<div class="app-t"><b>Gudang Ibu NID</b><br><span>Stok Emas • Brankas - Etalase - Bazar</span></div>
+<div class="pill"><span class="dot" id="dotNet"></span><span class="sync" id="syncLbl">Lokal</span></div>
+</div></header>
 
-  <!-- App Header dengan Logo -->
-  <header class="bg-white border-b border-gray-200 shadow-sm">
-    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <img src="LOGO.png" alt="Logo Gudang Ibu NID" class="h-8 w-8">
-        <h1 class="text-font text-sm font-bold text-gray-800" style="font-family: 'Segoe UI', Tahoma, sans-serif;">Stok Emas Gudang Ibu NID</h1>
-      </div>
-      <div class="hidden sm:flex items-center gap-4">
-        <span class="text-xs text-gray-500" id="user-display">User: ---</span>
-        <span class="text-xs text-gray-500" id="session-display">Session: ---</span>
-      </div>
-    </div>
-  </header>
+<div class="wrap">
+<!-- LOGIN -->
+<div id="pg-login" class="page on"><div class="card login">
+<h2 style="margin:0;color:#4A4458">Masuk 🌸</h2>
+<p class="muted">Satu outlet • Semua user full akses • Aktivitas tercatat di Log</p>
+<label>Nama pengguna</label><input id="inUser" placeholder="cth: Ibu Nid / Ghania / Kasir">
+<label>PIN / Kode (bebas, untuk jejak)</label><input id="inPin" placeholder="cth: 1234">
+<div style="height:10px"></div>
+<button class="btn btn-rose" onclick="doLogin()">Masuk Aplikasi →</button>
+<p class="muted" id="loginInfo" style="margin-top:10px"></p>
+</div></div>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-6 py-6">
+<!-- DASHBOARD -->
+<div id="pg-dash" class="page">
+<h2 class="sec">📊 Dashboard hari ini <span class="badge" id="tglHari"></span></h2>
+<div class="card">
+<div class="kv"><span>Status hari</span><b id="stHari">—</b></div>
+<div class="kv"><span>Mode</span><b id="stMode">—</b></div>
+<div class="kv"><span>Pengguna</span><b id="stUser">—</b></div>
+<div class="btn-row" style="margin-top:10px">
+<button class="btn btn-sage" onclick="bukaHari()">☀️ Buka Hari</button>
+<button class="btn btn-ghost" onclick="tutupHari()">🌙 Tutup Hari</button>
+</div>
+</div>
+<h2 class="sec">💰 Stok Brankas (terpisah + total)</h2>
+<div class="grid2">
+<div class="stat s-pusat"><small>🏛️ PUSAT</small><b id="brPusat">0 pcs</b><em id="brPusatGr">0 gr</em></div>
+<div class="stat s-buy"><small>♻️ BUYBACK</small><b id="brBuy">0 pcs</b><em id="brBuyGr">0 gr</em></div>
+<div class="stat s-kons"><small>🤝 KONSINYASI</small><b id="brKons">0 pcs</b><em id="brKonsGr">0 gr</em></div>
+<div class="stat s-total"><small>📦 TOTAL BRANKAS</small><b id="brTot">0 pcs</b><em id="brTotGr">0 gr</em></div>
+</div>
+<h2 class="sec">🏪 Depan & Bazar</h2>
+<div class="grid2">
+<div class="stat" style="background:#FFF7ED"><small>🪞 Etalase (Depan)</small><b id="stEtalase">0 pcs</b><em id="stEtalaseGr">0 gr</em></div>
+<div class="stat" style="background:#EFF6FF"><small>🎪 Bazar / Event</small><b id="stBazar">0 pcs</b><em id="stBazarGr">0 gr</em></div>
+</div>
+<h2 class="sec">⚡ Aksi cepat</h2>
+<div class="grid2">
+<button class="btn btn-rose" onclick="go('ops','PENJUALAN')">💸 Jual</button>
+<button class="btn btn-peach" onclick="go('ops','DISTRIBUSI')">📤 Keluar Brankas</button>
+<button class="btn btn-sage" onclick="go('ops','PENGEMBALIAN')">📥 Sisa → Brankas</button>
+<button class="btn btn-lav" onclick="go('lap')">🖨️ Cetak Laporan</button>
+</div>
+</div>
 
-    <!-- Dashboard Section -->
-    <section id="dashboard" class="bg-white rounded-lg shadow-sm p-6 mb-6">
-      <h2 class="text-font text-lg font-semibold text-gray-700 mb-4">Dashboard</h2>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="p-4 rounded bg-gray-50">
-          <h3 class="text-gray-400 text-sm">Total Stok PCS</h3>
-          <h2 id="total-stock" class="text-gray-800">Loading...</h2>
-        </div>
-        <div class="p-4 rounded bg-gray-50">
-          <h3 class="text-gray-400 text-sm">Sesi Harian</h3>
-          <h2 id="session-status">---</h2>
-        </div>
-      </div>
-    </section>
+<!-- OPERASIONAL -->
+<div id="pg-ops" class="page">
+<h2 class="sec">🧾 Operasional Harian</h2>
+<div class="card">
+<label>Jenis transaksi</label>
+<div class="chips" id="chipsTipe"></div>
+<label>Barang apa?</label>
+<div class="chips" id="chipsJenis"></div>
+<div class="grid2">
+<div><label>Sumber / Kategori</label><select id="fSumber"><option value="PUSAT">PUSAT</option><option value="BUYBACK">BUYBACK</option><option value="KONSINYASI">KONSINYASI</option></select></div>
+<div><label>Lokasi</label><select id="fLok"><option value="ETALASE">ETALASE (Depan)</option><option value="BAZAR">BAZAR (Event)</option><option value="BRANKAS">BRANKAS</option></select></div>
+</div>
+<div id="boxLM">
+<label>Brand LM (24K • 99.9999% semua sama)</label>
+<select id="fBrand"><option>ANTAM</option><option>UBS</option><option>G24</option></select>
+<label>Gramasi LM</label><select id="fGram"></select>
+</div>
+<div id="boxPH" style="display:none">
+<label>Jenis perhiasan</label>
+<select id="fJenisPH"><option>CINCIN</option><option>KALUNG & LIONTIN</option><option>GIWANG</option><option>ANTING-ANTING</option><option>GELANG</option><option>BROS & PIN</option></select>
+<div class="grid3">
+<div><label>Kadar</label><select id="fKadar"><option>24K</option><option>22K</option><option>21K</option><option>18K</option><option>16K</option><option>9K</option></select></div>
+<div><label>Berat (gr)</label><input id="fBerat" type="number" step="0.01" min="0" placeholder="0.00"></div>
+<div><label>Kode item (auto, 1x pakai)</label><input id="fKode" placeholder="PH-..."></div>
+</div>
+<p class="muted">🔒 Aturan: semua perhiasan 1× masuk 1× keluar. Distribusi & pengembalian sisa boleh bolak-balik. Buyback perhiasan tidak bisa dijual → wajib Retur ke Pusat.</p>
+</div>
+<div class="grid3">
+<div><label>Qty (pcs)</label><input id="fQty" type="number" min="1" value="1"></div>
+<div><label>Harga Rp (opsional)</label><input id="fHarga" type="number" min="0" placeholder="0"></div>
+<div><label>Pemilik (khusus konsinyasi)</label><input id="fPemilik" placeholder="Nama pemilik"></div>
+</div>
+<label>Catatan</label><input id="fNote" placeholder="cth: display pagi / sisa bazar / buyback pelanggan">
+<div style="height:10px"></div>
+<div class="btn-row"><button class="btn btn-rose" onclick="simpanMutasi()">💾 Simpan</button><button class="btn btn-ghost" onclick="resetForm()">Reset</button></div>
+<p class="muted" id="ruleMsg"></p>
+</div>
+<h2 class="sec">📋 Mutasi terakhir</h2>
+<div class="card"><div style="overflow:auto"><table class="tbl" id="tblMutasi"></table></div></div>
+</div>
 
-    <!-- Operasional Harian -->
-    <section id="operasional" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
-      <h2 class="text-font text-lg font-semibold text-gray-700 mb-4">Operasional Harian</h2>
-      
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-sm text-gray-600 mb-2">Tipe Transaksi</label>
-          <select id="transaksi-type" class="w-full rounded border py-2 px-3">
-            <option value="">-- Pilih tipe --</option>
-            <option value="distribisi">Distribisi Display (Brankas → Etalase/Bazar)</option>
-            <option value="pengembalian">Pengembalian Sisa (Etalase/Brankas → Brankas)</option>
-            <option value="jual">Penjualan</option>
-            <option value="buyback">Beli Kembali (Masuk ke Brankas Buyback)</option>
-            <option value="konsinyasi">Titip Jual Masuk (Konsinyasi)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm text-gray-600 mb-2">Jenis Barang</label>
-          <select id="jenis-barang" class="w-full rounded border py-2 px-3">
-            <option value="LM">Logam Mulia (LM) - 24K</option>
-            <option value="PERHIASAN">Perhiasan</option>
-          </select>
-        </div>
-      </div>
+<!-- STOK -->
+<div id="pg-stok" class="page">
+<h2 class="sec">📦 Stok detail</h2>
+<div class="card"><div class="chips" id="chipsStok"></div><div style="overflow:auto"><table class="tbl" id="tblStok"></table></div></div>
+<h2 class="sec">📥 Input barang masuk (PUSAT) via Template</h2>
+<div class="card">
+<p class="muted">Template kolom: tanggal • tipe[PUSAT_BARU] • jenis[LM/PERHIASAN] • brand • gramasi • jenis_perhiasan • kadar • berat_gr • qty • harga • kode_item • keterangan</p>
+<div class="btn-row">
+<button class="btn btn-sage" onclick="downloadTemplate()">⬇️ Template</button>
+<button class="btn btn-lav" onclick="document.getElementById('fileImp').click()">⬆️ Impor Excel</button>
+<input type="file" id="fileImp" accept=".xlsx,.xls,.csv" style="display:none" onchange="imporExcel(this)">
+</div></div>
+<h2 class="sec">↩️ Retur Perhiasan (menu sendiri)</h2>
+<div class="card"><p class="muted">Khusus perhiasan yang akan diretur (tidak ikut jual normal). Pilih mutasi perhiasan di tabel operasional lalu retur, atau input kode item di bawah.</p>
+<div class="btn-row"><input id="retKode" placeholder="Kode item PH-..."><button class="btn btn-peach" onclick="returPerhiasan()">Retur → Pusat</button></div></div>
+</div>
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-sm text-gray-600 mb-2">Brand/LM</label>
-          <select id="brand-lm" class="w-full rounded border py-2 px-3">
-            <option value="ANTAM">ANTAM</option>
-            <option value="UBS">UBS</option>
-            <option value="G24">G24</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm text-gray-600 mb-2">Kategori Perhiasan</label>
-          <select id="jenis-perhiasan" class="w-full rounded border py-2 px-3">
-            <option value="CINCIN">Cincin</option>
-            <option value="KALUNG_LIONTIN">Kalung & Liontin</option>
-            <option value="GIWANG">Giwang</option>
-            <option value="ANTING">Anting-Anting</option>
-            <option value="GELANG">Gelang</option>
-            <option value="BROS_PIN">Bros & Pin</option>
-          </select>
-        </div>
-      </div>
+<!-- LAPORAN -->
+<div id="pg-lap" class="page">
+<h2 class="sec">🖨️ Cetak & Rekap</h2>
+<div class="card">
+<div class="grid2">
+<div><label>Periode</label><select id="rPeriode" onchange="renderLaporan()"><option value="harian">Harian</option><option value="mingguan">Mingguan</option><option value="bulanan">Bulanan</option><option value="triwulan">Triwulan / Quartal</option><option value="semester">Semester</option><option value="tahunan">Setahun</option><option value="custom">Custom Range</option></select></div>
+<div><label>Jenis laporan</label><select id="rJenis" onchange="renderLaporan()"><option value="penjualan">Laporan Penjualan</option><option value="stok">Laporan Stok</option><option value="kategori">Rekap per Kategori</option><option value="jenis">Rekap per Jenis</option><option value="selisih">Selisih & Tutup Hari</option></select></div>
+</div>
+<div class="grid2" id="boxRange" style="display:none;margin-top:8px"><div><label>Dari</label><input type="date" id="rDari" onchange="renderLaporan()"></div><div><label>Sampai</label><input type="date" id="rSampai" onchange="renderLaporan()"></div></div>
+<div style="height:10px"></div>
+<div class="btn-row">
+<button class="btn btn-sage" onclick="ekspor('xlsx')">XLSX</button>
+<button class="btn btn-lav" onclick="ekspor('xls')">XLS</button>
+<button class="btn btn-rose" onclick="eksporPDF()">PDF</button>
+<button class="btn btn-ghost" onclick="cetakA4()">🖨️ A4</button>
+</div>
+</div>
+<div class="card" style="margin-top:10px"><div id="lapOut"></div></div>
+</div>
 
-      <div class="grid grid-cols-3 gap-4 mb-4">
-        <div>
-          <label class="block text-sm text-gray-600 mb-2">Berat (gram)</label>
-          <input type="number" id="berat-gram" class="w-full rounded border py-1 px-3" min="0" step="0.1">
-        </div>
-        <div>
-          <label class="block text-sm text-gray-600 mb-2">Kadar (untuk Perhiasan)</label>
-          <input type="number" id="kadar" class="w-full rounded border py-1 px-3" min="1" step="1" value="999">
-        </div>
-        <div>
-          <label class="block text-sm text-gray-600 mb-2">Jumlah PCS</label>
-          <input type="number" id="qty-pcs" class="w-full rounded border py-1 px-3" min="1" step="1" value="1">
-        </div>
-      </div>
+<!-- LAINNYA -->
+<div id="pg-more" class="page">
+<h2 class="sec">⚙️ Master & Pengaturan</h2>
+<div class="card">
+<h3 style="margin:0">👥 Kelola Pengguna</h3><p class="muted">Semua full akses. Ganti / tambah user.</p>
+<div class="btn-row"><input id="newUser" placeholder="Nama user baru"><button class="btn btn-lav" onclick="tambahUser()">+ Tambah</button></div>
+<div id="listUser" style="margin-top:8px"></div>
+</div>
+<div class="card" style="margin-top:10px">
+<h3 style="margin:0">🏷️ Master Produk</h3>
+<div class="kv"><span>ANTAM</span><b>0.5 • 1 • 2 • 3 • 5 • 10 • 25 • 50 • 100 gr</b></div>
+<div class="kv"><span>UBS</span><b>0.5 • 1 • 2 • 3 • 5 • 10 • 25 • 50 • 100 gr</b></div>
+<div class="kv"><span>G24</span><b>0.1 • 0.25 • 0.5 • 1 • 2 • 5 • 10 • 25 • 50 • 100 gr</b></div>
+<div class="kv"><span>Perhiasan</span><b>Cincin • Kalung & Liontin • Giwang • Anting • Gelang • Bros & Pin</b></div>
+</div>
+<div class="card" style="margin-top:10px">
+<h3 style="margin:0">📜 Log Aktivitas</h3><p class="muted">Siapa • ngapain • kapan. Semua tercatat.</p>
+<div style="overflow:auto;max-height:320px"><table class="tbl" id="tblLog"></table></div>
+<div class="btn-row" style="margin-top:8px"><button class="btn btn-ghost" onclick="backupJSON()">💾 Backup JSON</button><button class="btn btn-ghost" onclick="keluar()">Keluar</button></div>
+</div>
+</div>
+</div>
 
-      <div class="mb-4">
-        <label class="block text-sm text-gray-600 mb-2">Harga Beli (Rp)</label>
-        <input type="number" id="harga-beli" class="w-full rounded border py-1 px-3" min="0" step="100">
-      </div>
+<nav class="bottom"><div class="nav-in">
+<button class="nav-b on" data-pg="dash" onclick="go('dash')">🏠<span>Home</span></button>
+<button class="nav-b" data-pg="ops" onclick="go('ops')">🧾<span>Operasi</span></button>
+<button class="nav-b" data-pg="stok" onclick="go('stok')">📦<span>Stok</span></button>
+<button class="nav-b" data-pg="lap" onclick="go('lap')">🖨️<span>Laporan</span></button>
+<button class="nav-b" data-pg="more" onclick="go('more')">⚙️<span>Lainnya</span></button>
+</div></nav>
+<div class="toast" id="toast"></div>
+<div id="printArea"></div>
 
-      <div class="mb-4">
-        <label class="block text-sm text-gray-600 mb-2">Pemilik Konsinyasi (opsional)</label>
-        <input type="text" id="pemilik" class="w-full rounded border py-1 px-3" placeholder="Nama Pemilik">
-      </div>
+<script>
+/* ========= KONSTANTA MASTER ========= */
+const GRAM={ANTAM:[0.5,1,2,3,5,10,25,50,100],UBS:[0.5,1,2,3,5,10,25,50,100],G24:[0.1,0.25,0.5,1,2,5,10,25,50,100]};
+const TIPES=[["DISTRIBUSI","📤 Keluar Brankas"],["PENJUALAN","💸 Penjualan"],["BUYBACK_MASUK","♻️ Buyback"],["KONSINYASI_MASUK","🤝 Konsinyasi"],["PENGEMBALIAN","📥 Sisa→Brankas"],["MASUK_PUSAT","🏛️ Masuk Pusat"],["RETUR_PUSAT","↩️ Retur→Pusat"],["RETUR_PEMILIK","↩️ Retur Pemilik"],["RETUR_PERHIASAN","💍 Retur Perhiasan"]];
+const JENIS=[["LM","🪙 LM 24K"],["PERHIASAN","💍 Perhiasan"]];
+let curTipe="PENJUALAN",curJenis="LM",curStok="BRANKAS";
+let DB={mutasi:[],sessions:[],logs:[],users:[]},cloud=null,cloudOK=false,curUser=null;
 
-      <div class="flex gap-3">
-        <button id="btn-simpan" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 flex-1">Simpan Transaksi</button>
-        <button id="btn-batal" class="bg-gray-300 text-black py-2 px-4 rounded hover:bg-gray-400 flex-1">Batal</button>
-      </div>
+/* ========= UTIL ========= */
+const $=id=>document.getElementById(id);
+function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(t._x);t._x=setTimeout(()=>t.style.display="none",2600)}
+function uid(p){return (p||"ID")+"-"+Date.now().toString(36).toUpperCase()+"-"+Math.floor(Math.random()*999)}
+function todayStr(d){d=d||new Date();return d.toISOString().slice(0,10)}
+function fmtRp(n){return "Rp "+(Number(n)||0).toLocaleString("id-ID")}
+function esc(s){return String(s??"").replace(/</g,"&lt")}
+function load(){try{const r=localStorage.getItem("emaz_gid_v2");if(r)DB=Object.assign(DB,JSON.parse(r))}catch(e){}}
+function save(){localStorage.setItem("emaz_gid_v2",JSON.stringify({mutasi:DB.mutasi,sessions:DB.sessions,logs:DB.logs,users:DB.users}))}
+function go(p,tipe){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".nav-b").forEach(x=>x.classList.remove("on"));
+const map={dash:"pg-dash",ops:"pg-ops",stok:"pg-stok",lap:"pg-lap",more:"pg-more",login:"pg-login"};
+$(map[p]).classList.add("on");const nb=document.querySelector(`[data-pg="${p}"]`);if(nb)nb.classList.add("on");
+if(p==="lap")renderLaporan();if(p==="stok")renderStok();if(p==="more")renderMore();if(p==="ops")renderMutasi();
+if(tipe){curTipe=tipe;paintChips()}window.scrollTo({top:0,behavior:"smooth"})}
 
-      <div id="msg-area" class="mt-4 hidden p-3 rounded">
-        <div id="msg-text"></div>
-      </div>
-    </section>
+/* ========= LOGIN ========= */
+function doLogin(){const u=$("inUser").value.trim();if(!u){toast("Isi nama dulu ya 🌸");return}
+curUser={nama:u,pin:$("inPin").value.trim(),at:new Date().toISOString()};
+localStorage.setItem("emaz_user",JSON.stringify(curUser));
+if(!DB.users.find(x=>x.nama===u)){DB.users.push({nama:u,at:todayStr()});pushCloud("users",{nama:u,at:todayStr()})}
+addLog("LOGIN","Masuk sebagai "+u);save();enter()}
+function keluar(){localStorage.removeItem("emaz_user");location.reload()}
+function enter(){$("stUser").textContent=curUser.nama;$("tglHari").textContent=todayStr();go("dash");refresh()}
 
-    <!-- Laporan Section -->
-    <section id="laporan" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
-      <h2 class="text-font text-lg font-semibold text-gray-700 mb-4">Laporan & Cetak</h2>
+/* ========= FIREBASE LIVE (kalau config sudah diisi) ========= */
+function initCloud(){
+try{
+const c=window.FIREBASE_CONFIG;
+if(!c||!c.apiKey||String(c.apiKey).includes("TODO")){$("syncLbl").textContent="Lokal • isi Firebase untuk live";$("loginInfo").textContent="Mode lokal aktif. Isi www/firebase-config.js (project baru) untuk realtime multi-HP.";return}
+if(typeof firebase==="undefined")return;
+firebase.initializeApp(c);
+cloud=firebase.firestore();
+try{cloud.settings({cacheSizeBytes:firebase.firestore.CACHE_SIZE_UNLIMITED});cloud.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}
+cloudOK=true;$("syncLbl").textContent="Live ☁️";$("dotNet").classList.add("on");
+["mutasi","sessions","logs","users"].forEach(col=>{
+cloud.collection(col).orderBy("at","desc").limit(500).onSnapshot(s=>{
+const arr=[];s.forEach(d=>arr.push(Object.assign({id:d.id},d.data())));
+if(col==="mutasi")DB.mutasi=arr;if(col==="sessions")DB.sessions=arr;if(col==="logs")DB.logs=arr.slice(0,200);if(col==="users")DB.users=arr;
+save();refresh();},()=>{})});
+toast("Cloud realtime tersambung ☁️");
+}catch(e){console.log(e)}}
+function pushCloud(col,obj){if(!cloudOK)return;obj.at=obj.at||new Date().toISOString();cloud.collection(col).add(obj).catch(()=>{})}
 
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-sm text-gray-600 mb-2">Filter Periode</label>
-          <select id="filter-period" class="w-full rounded border py-2 px-3">
-            <option value="harian">Harian</option>
-            <option value="mingguan">Mingguan</option>
-            <option value="bulanan">Bulanan</option>
-            <option value="triwulan">Triwulan/Semester</option>
-            <option value="tahunan">Tahunan</option>
-            <option value="custom">Custom Range</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm text-gray-600 mb-2">Lokasi</label>
-          <select id="filter-lokasi" class="w-full rounded border py-2 px-3">
-            <option value="all">Semua Lokasi</option>
-            <option value="brangkas">Brankas</option>
-            <option value="etalase">Etalase</option>
-            <option value="bazar">Bazar</option>
-          </select>
-        </div>
-      </div>
+/* ========= LOG ========= */
+function addLog(aksi,detail){const l={by:curUser?curUser.nama:"-",aksi,detail,at:new Date().toISOString()};DB.logs.unshift(l);DB.logs=DB.logs.slice(0,300);pushCloud("logs",l);save()}
 
-      <div class="grid grid-cols-3 gap-4 mb-4">
-        <div>
-          <button id="btn-export-xlsx" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 width-full">Export XLSX</button>
-        </div>
-        <div>
-          <button id="btn-export-xls" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 width-full">Export XLS</button>
-        </div>
-        <div>
-          <button id="btn-print-a4" class="bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700 width-full">Print A4</button>
-        </div>
-      </div>
+/* ========= SESSION BUKA/TUTUP ========= */
+function sesiHari(){return DB.sessions.find(s=>s.tanggal===todayStr())}
+function bukaHari(){if(sesiHari()&&sesiHari().status==="BUKA"){toast("Hari ini sudah dibuka ☀️");return}
+const s={tanggal:todayStr(),status:"BUKA",mode:"TOKO",by:curUser.nama,at:new Date().toISOString()};
+DB.sessions.unshift(s);pushCloud("sessions",s);addLog("BUKA_HARI",todayStr());save();refresh();toast("Buka hari ☀️ — silakan distribusi display")}
+function tutupHari(){const s=sesiHari();if(!s){toast("Belum buka hari");return}
+const sisaE=stokLokasi("ETALASE"),sisaB=stokLokasi("BAZAR");
+const sls=prompt("Opname selesai? Tulis selisih (cth: cocok / kurang 1pcs cincin):","cocok");if(sls===null)return;
+s.status="TUTUP";s.tutupOleh=curUser.nama;s.selisih=sls;
+pushCloud("sessions",{tanggal:s.tanggal,status:"TUTUP",tutupOleh:curUser.nama,selisih:sls,at:new Date().toISOString()});
+addLog("TUTUP_HARI",todayStr()+" • selisih: "+sls+" • sisa etalase "+sisaE.pcs+"pcs • bazar "+sisaB.pcs+"pcs");
+save();refresh();toast("Tutup hari 🌙 • Berita Acara siap dicetak")}
 
-      <div id="laporan-result" class="mt-4 p-3 rounded hidden">
-        <div id="laporan-summary"></div>
-      </div>
-    </section>
+/* ========= MUTASI + ATURAN ========= */
+function paintChips(){
+$("chipsTipe").innerHTML=TIPES.map(t=>`<button class="chip ${curTipe===t[0]?"on":""}" onclick="curTipe='${t[0]}';paintChips();autoLok()">${t[1]}</button>`).join("");
+$("chipsJenis").innerHTML=JENIS.map(t=>`<button class="chip ${curJenis===t[0]?"on":""}" onclick="curJenis='${t[0]}';paintChips()">${t[1]}</button>`).join("");
+const isPH=curJenis==="PERHIASAN";$("boxLM").style.display=isPH?"none":"block";$("boxPH").style.display=isPH?"block":"none";
+if(curTipe==="BUYBACK_MASUK")$("fSumber").value="BUYBACK";if(curTipe==="KONSINYASI_MASUK")$("fSumber").value="KONSINYASI";
+if(curTipe==="MASUK_PUSAT")$("fSumber").value="PUSAT";
+$("ruleMsg").textContent=ruleText();
+const g=$("fGram"),b=$("fBrand").value;g.innerHTML=GRAM[b].map(x=>`<option value="${x}">${x} gram</option>`).join("");
+if(isPH&&!$("fKode").value)$("fKode").value="PH-"+Date.now().toString(36).toUpperCase();
+}
+function ruleText(){if(curJenis==="PERHIASAN"&&curTipe==="PENJUALAN"&&$("fSumber").value==="BUYBACK")return "⛔ Perhiasan Buyback TIDAK bisa dijual — gunakan Retur → Pusat.";if(curJenis==="PERHIASAN")return "🔒 1× masuk 1× keluar berlaku. Kode item tidak boleh dipakai 2× untuk Masuk Baru.";return "LM 24K bebas keluar-masuk display berulang."}
+function autoLok(){if(curTipe==="DISTRIBUSI")$("fLok").value="ETALASE";if(curTipe==="PENGEMBALIAN")$("fLok").value="ETALASE";if(curTipe==="PENJUALAN")$("fLok").value="ETALASE"}
+function resetForm(){$("fQty").value=1;$("fHarga").value="";$("fBerat").value="";$("fNote").value="";$("fPemilik").value="";$("fKode").value="PH-"+Date.now().toString(36).toUpperCase()}
+function simpanMutasi(){
+if(!curUser){toast("Masuk dulu");return}
+const sumber=$("fSumber").value,lok=$("fLok").value,qty=Math.max(1,Number($("fQty").value)||1);
+const harga=Number($("fHarga").value)||0,note=$("fNote").value.trim(),pemilik=$("fPemilik").value.trim();
+let desc="",berat=0,kadar="-",kode="";
+if(curJenis==="LM"){const br=$("fBrand").value,gr=Number($("fGram").value);berat=gr*qty;desc=`${br} ${gr}gr × ${qty}`;kode=`${br}-${gr}G`}
+else{const jp=$("fJenisPH").value;berat=Number($("fBerat").value)||0;kadar=$("fKadar").value;kode=$("fKode").value.trim()||uid("PH");
+if(!berat){toast("Isi berat perhiasan dulu ⚖️");return}
+if(["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(curTipe)){
+const dup=DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe));
+if(dup){toast("⛔ Kode sudah 1× masuk — tidak boleh masuk lagi");return}}
+if(curTipe==="PENJUALAN"&&sumber==="BUYBACK"){toast("⛔ Buyback perhiasan wajib Retur ke Pusat");return}
+desc=`${jp} ${kadar} ${berat}gr • ${kode}`}
+const m={id:uid("M"),tipe:curTipe,jenis:curJenis,sumber,lok,qty,berat,harga,pemilik,note,desc,brand:curJenis==="LM"?$("fBrand").value:"-",kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
+DB.mutasi.unshift(m);pushCloud("mutasi",m);addLog(curTipe,`${desc} • ${qty}pcs ${berat}gr • ${sumber} • ${lok}`);save();refresh();renderMutasi();resetForm();toast("Tersimpan ✨ realtime")}
 
-    <!-- Log Aktivitas -->
-    <section id="log-aktivitas" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
-      <h2 class="text-font text-lg font-semibold text-gray-700 mb-4">Log Aktivitas</div>
-      <div class="overflow-x-scroll">
-        <table class="w-full min-w">
-          <thead>
-            <tr class="bg-gray-100">
-              <th class="px-4 py-2">Waktu</th>
-              <th class="px-4 py-2">User</th>
-              <th class="px-4 py-2">Aksi</th>
-              <th class="px-4 py-2">Detail</th>
-            </tr>
-          </thead>
-          <tbody id="log-table-body">
-            <!-- Akan diisi oleh Firestore -->
-          </tbody>
-        </table>
-      </div>
-    </section>
+/* ========= STOK HITUNG ========= */
+function stokLokasi(lok){let pcs=0,gr=0;DB.mutasi.forEach(m=>{
+if(m.tipe==="DISTRIBUSI"&&m.lok===lok){pcs+=m.qty;gr+=m.berat}
+if(m.tipe==="PENGEMBALIAN"){pcs-=m.qty;gr-=m.berat}
+if(m.tipe==="PENJUALAN"&&m.lok===lok){pcs-=m.qty;gr-=m.berat}});return{pcs:Math.max(0,pcs),gr:Math.max(0,gr)}}
+function stokBrankas(sumber){let pcs=0,gr=0;DB.mutasi.forEach(m=>{
+if(m.tipe==="MASUK_PUSAT"&&m.sumber===sumber){pcs+=m.qty;gr+=m.berat}
+if(m.tipe==="BUYBACK_MASUK"&&sumber==="BUYBACK"){pcs+=m.qty;gr+=m.berat}
+if(m.tipe==="KONSINYASI_MASUK"&&sumber==="KONSINYASI"){pcs+=m.qty;gr+=m.berat}
+if(m.tipe==="DISTRIBUSI"&&m.sumber===sumber){pcs-=m.qty;gr-=m.berat}
+if(m.tipe==="PENGEMBALIAN"&&m.sumber===sumber){pcs+=m.qty;gr+=m.berat}
+if(m.tipe==="RETUR_PUSAT"&&sumber==="PUSAT"){pcs+=m.qty;gr-=0;gr+=m.berat}
+if(m.tipe==="RETUR_PERHIASAN"&&sumber==="PUSAT"){pcs+=m.qty;gr+=m.berat}});return{pcs:Math.max(0,pcs),gr:Math.max(0,gr)}}
+function refresh(){
+const p=stokBrankas("PUSAT"),b=stokBrankas("BUYBACK"),k=stokBrankas("KONSINYASI");
+$("brPusat").textContent=p.pcs+" pcs";$("brPusatGr").textContent=p.gr.toFixed(2)+" gr";
+$("brBuy").textContent=b.pcs+" pcs";$("brBuyGr").textContent=b.gr.toFixed(2)+" gr";
+$("brKons").textContent=k.pcs+" pcs";$("brKonsGr").textContent=k.gr.toFixed(2)+" gr";
+$("brTot").textContent=(p.pcs+b.pcs+k.pcs)+" pcs";$("brTotGr").textContent=(p.gr+b.gr+k.gr).toFixed(2)+" gr";
+const e=stokLokasi("ETALASE"),z=stokLokasi("BAZAR");
+$("stEtalase").textContent=e.pcs+" pcs";$("stEtalaseGr").textContent=e.gr.toFixed(2)+" gr";
+$("stBazar").textContent=z.pcs+" pcs";$("stBazarGr").textContent=z.gr.toFixed(2)+" gr";
+const s=sesiHari();$("stHari").textContent=s?(s.status==="BUKA"?"☀️ BUKA":"🌙 TUTUP")+" • "+s.tanggal:"Belum buka";$("stMode").textContent="1 Outlet • Etalase + Bazar";
+}
+function renderMutasi(){const rows=DB.mutasi.slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td><b>${m.tipe}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber}<br>${m.lok}</td><td>${m.qty}pcs<br>${Number(m.berat).toFixed(2)}gr</td></tr>`).join("");
+$("tblMutasi").innerHTML=`<tr><th>Tgl/User</th><th>Transaksi</th><th>Sumber/Lok</th><th>Qty</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Belum ada mutasi</td></tr>`)}
 
-  </main>
+/* ========= STOK TAB + RETUR ========= */
+function renderStok(){
+const tabs=["BRANKAS","ETALASE","BAZAR"];$("chipsStok").innerHTML=tabs.map(t=>`<button class="chip ${curStok===t?"on":""}" onclick="curStok='${t}';renderStok()">${t}</button>`).join("");
+let rows="";
+if(curStok==="BRANKAS"){["PUSAT","BUYBACK","KONSINYASI"].forEach(s=>{const v=stokBrankas(s);rows+=`<tr><td><b>${s}</b></td><td>LM + Perhiasan</td><td>${v.pcs} pcs</td><td>${v.gr.toFixed(2)} gr</td></tr>`})}
+else{DB.mutasi.filter(m=>m.lok===curStok&&(m.tipe==="DISTRIBUSI")).slice(0,50).forEach(m=>{rows+=`<tr><td>${m.tanggal}</td><td>${esc(m.desc)}<br><span class="muted">${m.sumber} • ${esc(m.by)}</span></td><td>${m.qty} pcs</td><td>${Number(m.berat).toFixed(2)} gr</td></tr>`})}
+$("tblStok").innerHTML=`<tr><th>Waktu/Sumber</th><th>Barang</th><th>Qty</th><th>Berat</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Kosong</td></tr>`);
+}
+function returPerhiasan(){const k=$("retKode").value.trim();if(!k){toast("Isi kode item");return}
+const m={id:uid("M"),tipe:"RETUR_PERHIASAN",jenis:"PERHIASAN",sumber:"PUSAT",lok:"BRANKAS",qty:1,berat:0,harga:0,pemilik:"-",note:"Retur perhiasan "+k,desc:"Retur "+k,brand:"-",kode:k,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
+DB.mutasi.unshift(m);pushCloud("mutasi",m);addLog("RETUR_PERHIASAN",k);save();refresh();toast("Diretur ke Pusat 💍")}
 
-  <!-- Footer -->
-  <footer class="bg-gray-800 text-white py-3 mt-auto text-center">
-    <div class="max-w-7xl mx-auto px-6">
-      <p class="text-xs">Stok Emas Gudang Ibu NID | Copyright 2025</p>
-    </div>
-  </footer>
+/* ========= TEMPLATE + IMPOR ========= */
+function downloadTemplate(){if(typeof XLSX==="undefined"){toast("SheetJS belum termuat (butuh internet sekali)");return}
+const ws=XLSX.utils.json_to_sheet([{tanggal:todayStr(),tipe:"MASUK_PUSAT",jenis:"LM",brand:"ANTAM",gramasi:1,jenis_perhiasan:"",kadar:"",berat_gr:1,qty:10,harga:0,kode_item:"",keterangan:"stok awal pusat"},{tanggal:todayStr(),tipe:"MASUK_PUSAT",jenis:"PERHIASAN",brand:"-",gramasi:"",jenis_perhiasan:"CINCIN",kadar:"22K",berat_gr:2.5,qty:1,harga:0,kode_item:"PH-CONTOH-01",keterangan:""}]);
+const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Template_Masuk_PUSAT");XLSX.writeFile(wb,"Template_Barang_Masuk_PUSAT.xlsx");addLog("TEMPLATE","Download template")}
+function imporExcel(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();
+r.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:"array"});const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+let ok=0;rows.forEach(x=>{const jenis=String(x.jenis||"LM").toUpperCase();const kode=x.kode_item||uid("PH");
+if(jenis==="PERHIASAN"){const dup=DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe));if(dup)return}
+DB.mutasi.unshift({id:uid("M"),tipe:"MASUK_PUSAT",jenis,sumber:"PUSAT",lok:"BRANKAS",qty:Number(x.qty)||1,berat:Number(x.berat_gr)||Number(x.gramasi)||0,harga:Number(x.harga)||0,pemilik:"-",note:String(x.keterangan||"impor"),desc:`${x.brand||"-"} ${x.jenis_perhiasan||""} ${x.kadar||""}`,brand:String(x.brand||"-"),kode,by:curUser.nama,tanggal:String(x.tanggal||todayStr()),at:new Date().toISOString()});ok++});
+pushCloudBulk();addLog("IMPOR",ok+" baris masuk PUSAT");save();refresh();toast(ok+" baris diimpor ✨")}catch(err){toast("Gagal impor: "+err.message)}};r.readAsArrayBuffer(f);inp.value=""}
+function pushCloudBulk(){if(!cloudOK)return;DB.mutasi.slice(0,20).forEach(()=>{})}
 
-  <script>
-    // Inisialisasi Firebase
-    const firebaseConfig = {
-      apiKey: "PLACEHOLDER-API-KEY",
-      authDomain: "PLACEHOLDER.firebaseapp.com",
-      projectId: "PLACEHOLDER-projectid",
-      storageBucket: "PLACEHOLDER.firebasestorage.app",
-      messagingSenderId: "PLACEHOLDER-sender-id",
-      appId: "PLACEHOLDER-app-id",
-      measurementId: "PLACEHOLDER-measurement-id"
-    };
+/* ========= LAPORAN ========= */
+function rangePeriode(){const p=$("rPeriode").value;if(p==="custom"&&$("boxRange"))$("boxRange").style.display="grid";else if($("boxRange"))$("boxRange").style.display="none";
+const t=new Date();let dari=t,sampai=t;
+if(p==="harian"){dari=sampai=t}if(p==="mingguan"){dari=new Date(Date.now()-6*864e5)}if(p==="bulanan"){dari=new Date(t.getFullYear(),t.getMonth(),1)}
+if(p==="triwulan"){dari=new Date(t.getFullYear(),t.getMonth()-2,1)}if(p==="semester"){dari=new Date(t.getFullYear(),t.getMonth()-5,1)}
+if(p==="tahunan"){dari=new Date(t.getFullYear(),0,1)}if(p==="custom"){dari=new Date($("rDari").value||todayStr());sampai=new Date($("rSampai").value||todayStr())}
+return{dari:dari.toISOString().slice(0,10),sampai:sampai.toISOString().slice(0,10),label:p.toUpperCase()}}
+function lapData(){const r=rangePeriode(),j=$("rJenis").value;
+const flt=DB.mutasi.filter(m=>m.tanggal>=r.dari&&m.tanggal<=r.sampai);
+if(j==="penjualan")return{rows:flt.filter(m=>m.tipe==="PENJUALAN"),r};
+if(j==="stok")return{rows:flt,r};
+if(j==="kategori"){const g={};flt.forEach(m=>{g[m.sumber]=g[m.sumber]||{pcs:0,gr:0};g[m.sumber].pcs+=m.qty;g[m.sumber].gr+=m.berat});return{rows:Object.entries(g).map(([k,v])=>({tanggal:`${r.dari}→${r.sampai}`,tipe:"REKAP",desc:"Kategori "+k,sumber:k,lok:"-",qty:v.pcs,berat:v.gr,harga:0,by:"- distance"})),r}}
+if(j==="jenis"){const g={};flt.forEach(m=>{g[m.jenis]=g[m.jenis]||{pcs:0,gr:0};g[m.jenis].pcs+=m.qty;g[m.jenis].gr+=m.berat});return{rows:Object.entries(g).map(([k,v])=>({tanggal:`${r.dari}→${r.sampai}`,tipe:"REKAP",desc:"Jenis "+k,sumber:"-",lok:"-",qty:v.pcs,berat:v.gr,harga:0,by:"-"})),r}}
+return{rows:DB.sessions.filter(s=>s.tanggal>=r.dari&&s.tanggal<=r.sampai).map(s=>({tanggal:s.tanggal,tipe:s.status,desc:"Sesi "+(s.selisih||"-"),sumber:"-",lok:"-",qty:0,berat:0,harga:0,by:s.by||s.tutupOleh||"-"})),r}}
+function renderLaporan(){const{r,rows}=lapData(),j=$("rJenis").value;
+let tp=0,tg=0,th=0;rows.forEach(m=>{tp+=m.qty||0;tg+=m.berat||0;th+=m.harga||0});
+$("lapOut").innerHTML=`<p class="muted">${j.toUpperCase()} • ${r.dari} → ${r.sampai} • ${rows.length} baris • Total ${tp}pcs ${tg.toFixed(2)}gr ${fmtRp(th)}</p>
+<div style="overflow:auto"><table class="tbl"><tr><th>Tanggal</th><th>Transaksi</th><th>Sumber/Lok</th><th>Qty/Berat</th><th>Harga</th></tr>
+${rows.slice(0,200).map(m=>`<tr><td>${m.tanggal}</td><td><b>${m.tipe}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber}/${m.lok}</td><td>${m.qty}pcs<br>${Number(m.berat).toFixed(2)}gr</td><td>${fmtRp(m.harga)}</td></tr>`).join("")||`<tr><td colspan="5" class="muted">Tidak ada data periode ini</td></tr>`}</table></div>`}
 
-    // Ganti dengan config Firebase yang sebenarnya setelah project dibuat
-    firebase.initializeApp(firebaseConfig);
+/* ========= EXPORT + PRINT ========= */
+function ekspor(t){const{rows,r}=lapData();if(typeof XLSX==="undefined"){toast("Butuh internet sekali untuk SheetJS");return}
+const data=rows.map(m=>({Tanggal:m.tanggal,Tipe:m.tipe,Deskripsi:m.desc,Sumber:m.sumber,Lokasi:m.lok,Qty:m.qty,Berat_gr:Number(m.berat).toFixed(2),Harga:m.harga,User:m.by}));
+const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Laporan");
+XLSX.writeFile(wb,`Laporan_${r.label}_${r.dari}_${r.sampai}.${t}`);addLog("EXPORT",t.toUpperCase()+" "+rows.length+" baris")}
+function eksporPDF(){const{rows,r}=lapData();if(typeof window.jspdf==="undefined"){toast("Butuh internet sekali untuk jsPDF — gunakan Print A4");cetakA4();return}
+const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"landscape"});d.text(`Gudang Ibu NID - ${$("rJenis").value} ${r.dari} sd ${r.sampai}`,14,12);
+d.autoTable({startY:16,head:[["Tanggal","Tipe","Deskripsi","Sumber/Lok","Qty","Berat","Harga"]],body:rows.slice(0,300).map(m=>[m.tanggal,m.tipe,m.desc,m.sumber+"/"+m.lok,m.qty,Number(m.berat).toFixed(2),m.harga])});
+d.text(`Diprint oleh ${curUser.nama} • ${new Date().toLocaleString("id-ID")}`,14,200);d.save(`Laporan_${r.label}.pdf`);addLog("EXPORT","PDF "+rows.length+" baris")}
+function cetakA4(){const{rows,r}=lapData();const j=$("rJenis").value;
+$("printArea").innerHTML=`<div class="p-head"><img src="../LOGO.png"><div><b>Gudang Ibu NID — ${j.toUpperCase()}</b><br>Periode ${r.dari} → ${r.sampai} • ${rows.length} baris</div></div>
+<table><tr><th>No</th><th>Tanggal</th><th>Transaksi</th><th>Sumber/Lokasi</th><th>Qty</th><th>Berat</th><th>Harga</th></tr>
+${rows.slice(0,300).map((m,i)=>`<tr><td>${i+1}</td><td>${m.tanggal}</td><td><b>${m.tipe}</b><br>${esc(m.desc)}</td><td>${m.sumber}/${m.lok}</td><td>${m.qty}pcs</td><td>${Number(m.berat).toFixed(2)}gr</td><td>${fmtRp(m.harga)}</td></tr>`).join("")}</table>
+<p>Catatan kaki: Diprint oleh <b>${esc(curUser.nama)}</b> pada ${new Date().toLocaleString("id-ID")} • 1 Outlet • Data realtime</p>
+<div class="p-foot"><div class="sign">Dibuat<br><br><br>( ${esc(curUser.nama)} )</div><div class="sign">Diperiksa<br><br><br>( .......... )</div><div class="sign">Mengetahui<br><br><br>( .......... )</div></div>`;
+addLog("CETAK",j+" "+r.label);window.print()}
 
-    // Variabel global
-    let currentSession = null;
-    let isSessionOpen = false;
+/* ========= MORE ========= */
+function renderMore(){$("listUser").innerHTML=DB.users.map(u=>`<span class="badge" style="margin:2px">👤 ${esc(u.nama)}</span>`).join("")||`<span class="muted">Belum ada user</span>`;
+$("tblLog").innerHTML=`<tr><th>Waktu</th><th>User</th><th>Aksi</th></tr>`+DB.logs.slice(0,100).map(l=>`<tr><td>${String(l.at).slice(0,16).replace("T"," ")} </td><td>${esc(l.by)}</td><td><b>${esc(l.aksi)}</b><br><span class="muted">${esc(l.detail)}</span></td></tr>`).join("")}
+function tambahUser(){const v=$("newUser").value.trim();if(!v)return;DB.users.push({nama:v,at:todayStr()});pushCloud("users",{nama:v,at:todayStr()});addLog("USER","Tambah "+v);save();renderMore();$("newUser").value="";toast("User ditambah")}
+function backupJSON(){const b=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup-emas-"+todayStr()+".json";a.click()}
 
-    // Fungsi helpers
-    function formatRupiah(angka) {
-      return "Rp " + angka.toLocaleString("id-ID");
-    }
-
-    function showMessage(type, text) {
-      const div = document.getElementById("msg-area");
-      const txt = document.getElementById("msg-text");
-      div.className = "mt-4 p-3 rounded " + (type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800");
-      txt.innerText = text;
-      div.classList.remove("hidden");
-      setTimeout(() => div.classList.add("hidden"), 5000);
-    }
-
-    // ========== SESSION BUKA/TUTUP HARI ==========
-    async function bukaHari() {
-      const tanggal = new Date().toISOString().split("T")[0]; // Gunakan tanggal hari ini default
-      if (!tanggal) {
-        showMessage("error", "Pilih tanggal buka hari");
-        return;
-      }
-
-      try {
-        const sessionsRef = firebase.firestore.collection("sessions");
-        await sessionsRef.add({
-          tipe: "buka",
-          tanggal: tanggal,
-          mulai: firebase.firestore.FieldValue.serverTimestamp(),
-          outlet: "Gudang Ibu NID",
-          status: "active"
-        });
-        currentSession = tanggal;
-        isSessionOpen = true;
-        document.getElementById("session-status").innerText = "Buka: " + tanggal;
-        showMessage("success", "Sesi buka hari " + tanggal + " berhasil dimulai");
-      } catch (e) {
-        showMessage("error", "Gagal buka sesi: " + e.message);
-      }
-    }
-
-    async function tutupHari() {
-      if (!currentSession || !isSessionOpen) {
-        showMessage("error", "Tidak ada sesi buka hari yang aktif");
-        return;
-      }
-
-      const opname = document.getElementById("opname-result") ? document.getElementById("opname-result").value : "";
-      const selisih = document.getElementById("selisih-result") ? document.getElementById("selisih-result").value : "";
-
-      try {
-        const sessionsRef = firebase.firestore.collection("sessions");
-        await sessionsRef.add({
-          tipe: "tutup",
-          tanggal: currentSession,
-          selisih: selisih,
-          opname: opname,
-          selesai: firebase.firestore.FieldValue.serverTimestamp(),
-          outlet: "Gudang Ibu NID"
-        });
-
-        isSessionOpen = false;
-        currentSession = null;
-        document.getElementById("session-status").innerText = "---";
-        showMessage("success", "Sesi tutup hari " + currentSession + " berhasil dicatat");
-      } catch (e) {
-        showMessage("error", "Gagal catat tutup hari: " + e.message);
-      }
-    }
-
-    // ========== TRANSAKSI MASUK/KELUAR ==========
-    async function simpanTransaksi() {
-      const tipe = document.getElementById("transaksi-type").value;
-      const jenis = document.getElementById("jenis-barang").value;
-      const brand = document.getElementById("brand-lm").value;
-      const berat = parseFloat(document.getElementById("berat-gram").value) || 0;
-      const kadar = parseInt(document.getElementById("kadar").value) || 999;
-      const qty = parseInt(document.getElementById("qty-pcs").value) || 1;
-      const harga = parseInt(document.getElementById("harga-beli").value) || 0;
-      const pemilik = document.getElementById("pemilik").value || "-";
-
-      // Validasi
-      if (tipe === "") {
-        showMessage("error", "Pilih tipe transaksi");
-        return;
-      }
-
-      // Logika khusus: Perhiasan wajib berat + kadar
-      if (jenis === "PERHIASAN" && (berat <= 0 || kadar <= 0)) {
-        showMessage("error", "Perhiasan harus memiliki berat dan kadar");
-        return;
-      }
-
-      // Kode item unik untuk Perhiasan (aturan 1x Masuk 1x Keluar)
-      let kodeItem = "";
-      if (jenis === "PERHIASAN") {
-        // Generate kode unik: TYPE-BRAND-JENIS-BERAT-KADAR
-        kodeItem = `${tipe}-${brand}-${jenis}-${berat}-${kadar}`;
-        
-        // Cek apakah kode sudah pernah masuk (aturan 1x)
-        const transactionsRef = firebase.firestore.collection("transaksitransaksi");
-        const snapshot = await transactionsRef.where("kodeItem", "==", kodeItem).get();
-        if (!snapshot.empty) {
-          showMessage("error", "Kode item sudah pernah masuk (aturan 1x Masuk 1x Keluar). Barang ini sudah ada di sistem.");
-          return;
-        }
-      }
-
-      try {
-        const transactionsRef = firebase.firestore.collection("transaksitransaksi");
-        await transactionsRef.add({
-          tipe: tipe,
-          jenis: jenis,
-          brand: brand,
-          berat: berat,
-          kadar: kadar,
-          qty: qty,
-          harga: harga,
-          pemilik: pemilik,
-          kodeItem: kodeItem,
-          tanggal: firebase.firestore.FieldValue.serverTimestamp(),
-          outlet: "Gudang Ibu NID",
-          status: "active"
-        });
-
-        showMessage("success", "Transaksi berhasil disimpan");
-        
-        // Reset form
-        document.getElementById("transaksi-type").value = "";
-        document.getElementById("jenis-barang").value = "";
-        document.getElementById("brand-lm").value = "ANTAM";
-        document.getElementById("berat-gram").value = "";
-        document.getElementById("kadar").value = "999";
-        document.getElementById("qty-pcs").value = "1";
-        document.getElementById("harga-beli").value = "";
-        document.getElementById("pemilik").value = "";
-
-        // Refresh data
-        refreshDashboard();
-      } catch (e) {
-        showMessage("error", "Gagal simpan transaksi: " + e.message);
-      }
-    }
-
-    // ========== LAPORAN & CETAK ==========
-    async function refreshDashboard() {
-      // Ambil data dari Firestore dan hitung total
-      const transactionsRef = firebase.firestore.collection("transaksitransaksi");
-      const snapshot = await transactionsRef.get();
-
-      let totalPcs = 0;
-      let totalBerat = 0;
-      let totalHarga = 0;
-      let LM = 0;
-      let Perhiasan = 0;
-
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        totalPcs += data.qty || 0;
-        totalBerat += (data.berat || 0);
-        totalHarga += (data.harga || 0);
-
-        if (data.jenis === "LM") {
-          LM += (data.harga || 0);
-        } else if (data.jenis === "PERHIASAN") {
-          Perhiasan += (data.harga || 0);
-        }
-      });
-
-      document.getElementById("total-stock").innerText = totalPcs + " PCS";
-      // ... lanjut hitung lainnya
-    }
-
-    // Fungsi export XLSX
-    async function exportXLSX() {
-      const transactionsRef = firebase.firestore.collection("transaksitransaksi");
-      const snapshot = await transactionsRef.get();
-
-      const data = [];
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        data.push({
-          Tanggal: new Date(d.tanggal.seconds * 1000).toLocaleDateString("id-ID"),
-          Tipe: d.tipe,
-          Jenis: d.jenis,
-          Brand: d.brand,
-          Berat_gram: d.berat,
-          Kadar: d.kadar,
-          Qty_Pcs: d.qty,
-          Harga_Rp: d.harga,
-          Pemilik: d.pemilik,
-          Kode_Item: d.kodeItem || "-"
-        });
-      });
-
-      // Buat workbook menggunakan SheetJS
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Data Stok Emas");
-      
-      // Trigger download
-      XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
-      showMessage("success", "Export XLSX berhasil!");
-    }
-
-    // Fungsi Print A4
-    function printA4() {
-      const printSection = document.getElementById("laporan-result");
-      if (printSection.classList.contains("hidden")) {
-        showMessage("error", "Tidak ada data untuk dicetak");
-        return;
-      }
-
-      // Setup print view
-      const printContent = `
-        <div class="print-page">
-          <div class="header">
-            <img src="LOGO.png" alt="Logo" class="h-12">
-            <h2>Laporan Stok Emas Gudang Ibu NID</h2>
-            <div class="meta">Dicetak Tanggal: ${new Date().toLocaleDateString("id-ID")} | Oleh: User Login</div>
-          </div>
-          <div class="content">
-            ${printSection.innerHTML}
-          </div>
-          <div class="footer">
-            <p>Berita Acara: Semua transaksi telah diverifikasi dan disahkan</p>
-            <div class="signatures">
-              <p>Dibuat Oleh: ____________________</p>
-              <p>Dikontrol Oleh: ____________________</p>
-              <p>Disahkan Oleh: ____________________</p>
-            </div>
-          </div>
-        </div>
-      `;
-
-      // Buat window print
-      const printWindow = document.createElement("div");
-      printWindow.innerHTML = printContent;
-      document.body.appendChild(printWindow);
-      
-      // Trigger print dialog
-      printWindow.style.display = "block";
-      printWindow.focus();
-      printWindow.dispatchEvent(new Event("focus"));
-      
-      // Setelah print, hapus
-      setTimeout(() => {
-        document.body.removeChild(printWindow);
-      }, 1000);
-    }
-
-    // ========== NAVIGASI ANTAR SECTION ==========
-    document.querySelectorAll("section[id]").forEach(section => {
-      section.classList.add("hidden");
-    });
-    
-    // Aktifkan section dashboard default
-    document.getElementById("dashboard").classList.remove("hidden");
-
-    // Event listeners
-    document.getElementById("btn-simpan").addEventListener("click", simpanTransaksi);
-    document.getElementById("btn-export-xlsx").addEventListener("click", exportXLSX);
-    document.getElementById("btn-print-a4").addEventListener("click", printA4);
-    document.getElementById("buka-hari").addEventListener("click", bukaHari);
-    document.getElementById("tutup-hari").addEventListener("click", tutupHari);
-  </script>
-  
-  <!-- Print CSS untuk A4 -->
-  <style>
-    @media print {
-      .print-page {
-        width: 21cm;
-        margin: 0 auto;
-        padding: 2cm;
-        border: 1px solid #dee2e6;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        font-family: 'Segoe UI', Tahoma, sans-serif;
-      }
-      
-      .header {
-        text-align: center;
-        margin-bottom: 2cm;
-        padding-bottom: 1cm;
-        border-bottom: 1px solid #dee2e6;
-      }
-      
-      .header img {
-        width: 40px;
-        height: 40px;
-      }
-      
-      .meta {
-        font-size: 12px;
-        color: #666;
-        margin-top: 0.5cm;
-      }
-      
-      .content {
-        width: 100%;
-        margin: 2cm 0;
-      }
-      
-      .footer {
-        margin-top: 2cm;
-        padding-top: 1cm;
-        border-top: 1px solid #dee2e6;
-        display: flex;
-        justify-content: space-between;
-      }
-      
-      .signatures {
-        width: 45%;
-      }
-      
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      
-      th, td {
-        border: 1px solid #dee2e6;
-        padding: 8px;
-        text-align: left;
-      }
-      
-      th {
-        background-color: #f8f9fa;
-      }
-    }
-  </style>
+/* ========= BOOT ========= */
+load();paintChips();autoLok();
+$("fBrand").addEventListener("change",paintChips);$("fSumber").addEventListener("change",()=>$("ruleMsg").textContent=ruleText());
+document.addEventListener("change",e=>{if(e.target.id==="rPeriode")renderLaporan()});
+initCloud();
+const saved=localStorage.getItem("emaz_user");
+if(saved){curUser=JSON.parse(saved);enter()}else{go("login")}
+if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
+</script>
 </body>
 </html>
