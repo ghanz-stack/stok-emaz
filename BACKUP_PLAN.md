@@ -1,7 +1,13 @@
-# RENCANA BACKUP — Gudang Stok G24 Kedaton
+# RENCANA BACKUP — Gudang Stok G24 Kedaton (via Firebase, project budget-b8b49 gabung BudgetRumah)
 
 ## Prinsip
 3-2-1: 3 salinan data, 2 media (cloud + file), 1 off-site (HP/laptop berbeda).
+
+## 0. Syarat sekali setting (wajib)
+1. console.firebase.google.com → project **budget-b8b49** → Firestore → Rules.
+2. Paste isi `firestore.rules` dari repo ini → **Publish**.
+   (Koleksi stok: mutasi/sessions/logs/users/master/backups — tidak tabrakan dengan `budgets` milik BudgetRumah.)
+3. Di app: indikator harus **Live ☁️**. Kalau "Cloud ditolak ⚠️" berarti langkah 2 belum dilakukan.
 
 ## L1 — Berjalan sekarang (gratis)
 | # | Apa | Kapan | Di mana |

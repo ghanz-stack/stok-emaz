@@ -292,7 +292,7 @@ cloudOK=true;$("syncLbl").textContent="Live ☁️";$("dotNet").classList.add("o
 ["mutasi","sessions","logs","users","master"].forEach(col=>{cloud.collection(col).orderBy("at","desc").limit(500).onSnapshot(s=>{const a=[];s.forEach(d=>a.push(Object.assign({id:d.id},d.data())));a.forEach(o=>o._c=1);
 if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);
 if(col==="users")DB.users=dedup(a,o=>o.nama);if(col==="master")DB.master=dedup(a,o=>JSON.stringify({t:o.t,brand:o.brand,gram:o.gram,jenis:o.jenis,kadar:o.kadar}));seedAdmin();
-save();paintAll();refresh()},()=>{})});toast("Cloud realtime tersambung ☁️")}catch(e){console.log(e)}}
+save();if(curUser){paintAll();refresh()}},(e)=>{cloudOK=false;const s=$("syncLbl");if(s)s.textContent="Cloud ditolak ⚠️";const d=$("dotNet");if(d)d.classList.remove("on");console.log("Firestore ditolak:",e&&e.code);toast("⚠️ Cloud ditolak — paste firestore.rules ke console & Publish")})});toast("Cloud realtime tersambung ☁️")}catch(e){console.log(e)}}
 function pushCloud(col,obj){if(!cloudOK)return;obj.at=obj.at||new Date().toISOString();cloud.collection(col).add(obj).catch(()=>{})}
 function addLog(aksi,detail){const l={by:curUser?curUser.nama:"-",aksi,detail,at:new Date().toISOString()};DB.logs.unshift(l);DB.logs=DB.logs.slice(0,300);pushCloud("logs",l);save()}
 /* session */
@@ -567,23 +567,26 @@ if(DB.users.find(x=>String(x.nama).toUpperCase()===v.toUpperCase())){toast("Suda
 DB.users.push({nama:v,pin:pw,at:todayStr()});pushCloud("users",{nama:v,pin:pw,at:todayStr()});addLog("USER","Daftarkan "+v+" oleh ADMIN");save();renderMore();$("newUser").value="";$("newPin").value="";toast("User ditambah")}
 function backupJSON(){const b=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup-g24kedaton-"+todayStr()+".json";a.click();addLog("BACKUP_JSON","Unduh backup JSON")}
 /* PUSH / PULL manual — hanya data yang belum ada di cloud (bertanda _c) yang dikirim */
-function pushManual(){if(!cloudOK){toast("Cloud belum tersambung — isi Firebase dulu");return}
-let n=0;["mutasi","sessions","logs","users","master"].forEach(col=>{DB[col].forEach(o=>{if(!o._c){const c=Object.assign({},o);delete c._c;delete c.id;pushCloud(col,c);o._c=1;n++}})});
-save();addLog("PUSH",n+" data dikirim ke cloud");toast("⬆️ "+n+" data di-push")}
+async function pushManual(){if(!cloudOK){toast("Cloud belum tersambung");return}
+let n=0,f=0;for(const col of["mutasi","sessions","logs","users","master"]){for(const o of DB[col]){if(!o._c){const c=Object.assign({},o);delete c._c;delete c.id;c.at=c.at||new Date().toISOString();try{await cloud.collection(col).add(c);o._c=1;n++}catch(e){f++}}}}
+save();addLog("PUSH",n+" OK"+(f?", "+f+" gagal (cek Rules)":""));toast(f?`⬆️ ${n} ok, ${f} gagal ⚠️ — paste firestore.rules & Publish`:`⬆️ ${n} data di-push`)}
 async function pullManual(){if(!cloudOK){toast("Cloud belum tersambung");return}
+try{
 for(const col of["mutasi","sessions","logs","users","master"]){const s=await cloud.collection(col).orderBy("at","desc").limit(1000).get();const a=[];s.forEach(d=>{const o=Object.assign({id:d.id},d.data());o._c=1;a.push(o)});
 if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);
 if(col==="users")DB.users=dedup(a,o=>o.nama);if(col==="master")DB.master=dedup(a,o=>JSON.stringify({t:o.t,brand:o.brand,gram:o.gram,jenis:o.jenis,kadar:o.kadar}))}
+}catch(e){toast("⬇️ Pull gagal — cek koneksi & Rules");return}
 seedAdmin();save();paintAll();refresh();addLog("PULL","Tarik data cloud");toast("⬇️ Pull selesai")}
 async function hardRefresh(){toast("Membersihkan cache…");if("serviceWorker"in navigator){const r=await navigator.serviceWorker.getRegistrations();for(const x of r)await x.unregister()}
 const ks=await caches.keys();for(const k of ks)await caches.delete(k);location.reload(true)}
 /* BACKUP CLOUD — snapshot ber-timestamp di koleksi backups + auto tiap Tutup Hari. Restore khusus ADMIN. */
 async function backupCloud(silent){if(!cloudOK){if(!silent)toast("Cloud belum tersambung");return}
 const snap={by:curUser?curUser.nama:"-",at:new Date().toISOString(),tanggal:todayStr(),data:{mutasi:DB.mutasi,sessions:DB.sessions,logs:DB.logs.slice(0,100),users:DB.users,master:DB.master,hidden:DB.hidden||[]}};
-await cloud.collection("backups").add(snap);if(!silent){addLog("BACKUP_CLOUD","Snapshot "+todayStr());renderBackups();toast("☁️ Backup cloud tersimpan")}}
+try{await cloud.collection("backups").add(snap)}catch(e){if(!silent)toast("☁️ Backup gagal — paste firestore.rules ke console & Publish");return}
+if(!silent){addLog("BACKUP_CLOUD","Snapshot "+todayStr());renderBackups();toast("☁️ Backup cloud tersimpan")}}
 async function renderBackups(){if(!cloudOK){$("listBackup").innerHTML=`<span class="muted">Sambungkan Firebase dulu untuk backup cloud.</span>`;return}
-const s=await cloud.collection("backups").orderBy("at","desc").limit(10).get();let h="";s.forEach(d=>{const b=d.data();h+=`<div class="kv"><span>${String(b.at).slice(0,16).replace("T"," ")} • ${esc(b.by)} • ${(b.data.mutasi||[]).length} mutasi</span><button class="chip" onclick="restoreBackup('${d.id}')">Restore</button></div>`});
-$("listBackup").innerHTML=h||`<span class="muted">Belum ada backup cloud</span>`}
+try{const s=await cloud.collection("backups").orderBy("at","desc").limit(10).get();let h="";s.forEach(d=>{const b=d.data();h+=`<div class="kv"><span>${String(b.at).slice(0,16).replace("T"," ")} • ${esc(b.by)} • ${(b.data.mutasi||[]).length} mutasi</span><button class="chip" onclick="restoreBackup('${d.id}')">Restore</button></div>`});
+$("listBackup").innerHTML=h||`<span class="muted">Belum ada backup cloud</span>`}catch(e){$("listBackup").innerHTML=`<span class="muted">⚠️ Tak bisa baca backup — paste firestore.rules ke console & Publish</span>`}}
 async function restoreBackup(id){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
 if(!confirm("Restore backup ini? Data lokal diganti."))return;
 const d=await cloud.collection("backups").doc(id).get();const b=d.data().data;
@@ -591,7 +594,7 @@ DB.mutasi=b.mutasi||[];DB.sessions=b.sessions||[];DB.logs=b.logs||[];DB.users=b.
 ["mutasi","sessions","logs","users","master"].forEach(c=>DB[c].forEach(o=>delete o._c));
 seedAdmin();save();paintAll();refresh();addLog("RESTORE","Restore backup "+id.slice(0,6)+" — tekan Push untuk kirim ke cloud");toast("Restore OK — tekan Push ⬆️")}
 async function unduhBackupCloud(){if(!cloudOK){toast("Cloud belum tersambung");return}
-const s=await cloud.collection("backups").orderBy("at","desc").limit(30).get();const a=[];s.forEach(d=>a.push(Object.assign({id:d.id},d.data())));
+let s;try{s=await cloud.collection("backups").orderBy("at","desc").limit(30).get()}catch(e){toast("Gagal — paste firestore.rules ke console & Publish");return}const a=[];s.forEach(d=>a.push(Object.assign({id:d.id},d.data())));
 const b=new Blob([JSON.stringify(a,null,2)],{type:"application/json"});const x=document.createElement("a");x.href=URL.createObjectURL(b);x.download="backup-cloud-g24kedaton.json";x.click();addLog("BACKUP_UNDUH",a.length+" snapshot");toast("☁️ Backup cloud diunduh")}
 /* paint */
 function buildRail(){$("rail").innerHTML=NAV.map(n=>`<button data-pg="${n[0]}" onclick="go('${n[0]}')"><i>${n[1]}</i><span>${n[2]}</span></button>`).join("")}
