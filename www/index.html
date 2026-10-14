@@ -1,35 +1,41 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <charset="UTF-8">
+  <meta charset="UTF-8">
   <viewport content="width=device-width, initial-scale=1, user-scalable=no">
-  <description "WebApp Stok Emas Gudang Ibu NID">
-  <theme-color "#0F766E">
-  <apple-mobile-web-app-status-bar-color "#0F766E">
-  <apple-mobile-web-app-title "Stok Emas Gudang Ibu NID">
-  <msapplication-config "none">
-  <msapplication-TileColor "#0F766E">
-  <msapplication-fullscreen "true">
-  <msapplication-fullscreen-mode "standalone">
-  <referrer-policy "no-referrer-when-downgrade">
+  <description content="WebApp Stok Emas Gudang Ibu NID - Tracking Logam Mulia & Perhaisan Realtime">
+  <theme-color content="#0F766E">
+  <apple-mobile-web-app-status-bar-color content="#0F766E">
+  <apple-mobile-web-app-title content="Stok Emas Gudang Ibu NID">
+  <msapplication-config content="none">
+  <msapplication-TileColor content="#0F766E">
+  <msapplication-fullscreen content="true">
+  <msapplication-fullscreen-mode content="standalone">
+  <referrer-policy content="no-referrer-when-downgrade">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com.cloudflare.com/npm/tailwindcss@3.4.1/dist/tailwind.min.css">
   
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
 
   <script src="firebase-config.js"></script>
-  <script src="vendor/xlsx.full.min.js"></script>
-  <script src="vendor/jspdf.umd.min.js"></script>
-  <script src="vendor/jspdf-autotable.min.js"></script>
   
+  <!-- SheetJS (XLSX) - akan di-cache oleh service worker -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.6/dist/xlsx.full.min.js"></script>
+
+  <!-- jspdf dan jspdf-autotable -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.27/dist/jspdf-autotable.min.js"></script>
+
   <title>Stok Emas Gudang Ibu NID</title>
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-800">
-  
+
   <!-- App Header dengan Logo -->
   <header class="bg-white border-b border-gray-200 shadow-sm">
     <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
@@ -51,14 +57,14 @@
     <section id="dashboard" class="bg-white rounded-lg shadow-sm p-6 mb-6">
       <h2 class="text-font text-lg font-semibold text-gray-700 mb-4">Dashboard</h2>
       <div class="grid grid-cols-2 gap-4">
-        <card>
-          <h3 class="text-gray-400 text-sm">Total Stok</h3>
+        <div class="p-4 rounded bg-gray-50">
+          <h3 class="text-gray-400 text-sm">Total Stok PCS</h3>
           <h2 id="total-stock" class="text-gray-800">Loading...</h2>
-        </card>
-        <card>
+        </div>
+        <div class="p-4 rounded bg-gray-50">
           <h3 class="text-gray-400 text-sm">Sesi Harian</h3>
           <h2 id="session-status">---</h2>
-        </card>
+        </div>
       </div>
     </section>
 
@@ -70,16 +76,17 @@
         <div>
           <label class="block text-sm text-gray-600 mb-2">Tipe Transaksi</label>
           <select id="transaksi-type" class="w-full rounded border py-2 px-3">
-            <option value="distribusi">Distribisi Display (Brankas → Etalase/Bazar)</option>
-            <option value="pengembalian">Pengembalian Sisa (Etalase/Brankas →)</option>
+            <option value="">-- Pilih tipe --</option>
+            <option value="distribisi">Distribisi Display (Brankas → Etalase/Bazar)</option>
+            <option value="pengembalian">Pengembalian Sisa (Etalase/Brankas → Brankas)</option>
             <option value="jual">Penjualan</option>
-            <option value="buyback">Beli Kembali (Masuk)</option>
-            <option value="konsinyasi">Titip Jual Masuk</option>
+            <option value="buyback">Beli Kembali (Masuk ke Brankas Buyback)</option>
+            <option value="konsinyasi">Titip Jual Masuk (Konsinyasi)</option>
           </select>
         </div>
         <div>
           <label class="block text-sm text-gray-600 mb-2">Jenis Barang</label>
-          <select id-jenis-barang" class="w-full rounded border py-2 px-3">
+          <select id="jenis-barang" class="w-full rounded border py-2 px-3">
             <option value="LM">Logam Mulia (LM) - 24K</option>
             <option value="PERHIASAN">Perhiasan</option>
           </select>
@@ -134,8 +141,8 @@
       </div>
 
       <div class="flex gap-3">
-        <button id="btn-simpan" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">Simpan Transaksi</button>
-        <button id="btn-batal" class="bg-gray-300 text-black py-2 px-4 rounded hover:bg-gray-400">Batal</button>
+        <button id="btn-simpan" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 flex-1">Simpan Transaksi</button>
+        <button id="btn-batal" class="bg-gray-300 text-black py-2 px-4 rounded hover:bg-gray-400 flex-1">Batal</button>
       </div>
 
       <div id="msg-area" class="mt-4 hidden p-3 rounded">
@@ -182,8 +189,8 @@
         </div>
       </div>
 
-      <div id "laporan-result" class="mt-4 p-3 rounded hidden">
-        <div id "laporan-summary"></div>
+      <div id="laporan-result" class="mt-4 p-3 rounded hidden">
+        <div id="laporan-summary"></div>
       </div>
     </section>
 
@@ -229,7 +236,7 @@
     };
 
     // Ganti dengan config Firebase yang sebenarnya setelah project dibuat
-    // firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
 
     // Variabel global
     let currentSession = null;
@@ -251,7 +258,7 @@
 
     // ========== SESSION BUKA/TUTUP HARI ==========
     async function bukaHari() {
-      const tanggal = document.getElementById("tanggal-buka").value || new Date().toISOString().split("T")[0];
+      const tanggal = new Date().toISOString().split("T")[0]; // Gunakan tanggal hari ini default
       if (!tanggal) {
         showMessage("error", "Pilih tanggal buka hari");
         return;
@@ -281,8 +288,8 @@
         return;
       }
 
-      const opname = document.getElementById("opname-result").value;
-      const selisih = document.getElementById("selisih-result").value;
+      const opname = document.getElementById("opname-result") ? document.getElementById("opname-result").value : "";
+      const selisih = document.getElementById("selisih-result") ? document.getElementById("selisih-result").value : "";
 
       try {
         const sessionsRef = firebase.firestore.collection("sessions");
@@ -403,7 +410,7 @@
         }
       });
 
-      document.getElementById("total-stock").innerText = totalPcs + " PCS (" + totalBerat.toFixed(2) + " gram)");
+      document.getElementById("total-stock").innerText = totalPcs + " PCS";
       // ... lanjut hitung lainnya
     }
 
@@ -429,14 +436,13 @@
         });
       });
 
-      // Buat worksheet menggunakan SheetJS
+      // Buat workbook menggunakan SheetJS
       const workbook = XLSX.utils.book_new();
       const worksheet = XLSX.utils.json_to_sheet(data);
       XLSX.utils.book_append_sheet(workbook, worksheet, "Data Stok Emas");
       
-      // Download
+      // Trigger download
       XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
-      // ... trigger download
       showMessage("success", "Export XLSX berhasil!");
     }
 
@@ -448,9 +454,8 @@
         return;
       }
 
-      // Setup print view - tambahkan @media print styles
-      const printWindow = document.createElement("div");
-      printWindow.innerHTML = `
+      // Setup print view
+      const printContent = `
         <div class="print-page">
           <div class="header">
             <img src="LOGO.png" alt="Logo" class="h-12">
@@ -471,9 +476,12 @@
         </div>
       `;
 
+      // Buat window print
+      const printWindow = document.createElement("div");
+      printWindow.innerHTML = printContent;
       document.body.appendChild(printWindow);
       
-      // Print dialog
+      // Trigger print dialog
       printWindow.style.display = "block";
       printWindow.focus();
       printWindow.dispatchEvent(new Event("focus"));
@@ -483,10 +491,6 @@
         document.body.removeChild(printWindow);
       }, 1000);
     }
-
-    // ========== KONEKSI FIRESTORE REALTIME ==========
-    // Setup listeners untuk data real-time
-    // ... (akan di-expand saat koneksi Firebase valid)
 
     // ========== NAVIGASI ANTAR SECTION ==========
     document.querySelectorAll("section[id]").forEach(section => {
@@ -499,11 +503,9 @@
     // Event listeners
     document.getElementById("btn-simpan").addEventListener("click", simpanTransaksi);
     document.getElementById("btn-export-xlsx").addEventListener("click", exportXLSX);
-    document.getElementById("btn-export-xls").addEventListener("click", () => exportXLS()); // Belum diimplementasikan lengkap
     document.getElementById("btn-print-a4").addEventListener("click", printA4);
     document.getElementById("buka-hari").addEventListener("click", bukaHari);
     document.getElementById("tutup-hari").addEventListener("click", tutupHari);
-
   </script>
   
   <!-- Print CSS untuk A4 -->
