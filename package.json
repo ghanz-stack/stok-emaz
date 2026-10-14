@@ -1,0 +1,22 @@
+{
+  "name": "stok-emas-gid",
+  "version": "1.0.0",
+  "description": "WebApp Stok Emas Gudang Ibu NID - PWA untuk tracking Logam Mulia & Perhiasan",
+  "private": true,
+  "scripts": {
+    "build": "echo 'static www — no build step needed (PWA + Capacitor)'",
+    "cap:sync": "npx cap sync",
+    "serve": "live-server www --open"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/app": "^6.0.1",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/filesystem": "^6.0.1",
+    "@capacitor/share": "^6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0",
+    "live-server": "^4.1.0"
+  }
+}

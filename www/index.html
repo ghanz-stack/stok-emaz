@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <charset="UTF-8">
+  <viewport content="width=device-width, initial-scale=1, user-scalable=no">
+  <description "WebApp Stok Emas Gudang Ibu NID">
+  <theme-color "#0F766E">
+  <apple-mobile-web-app-status-bar-color "#0F766E">
+  <apple-mobile-web-app-title "Stok Emas Gudang Ibu NID">
+  <msapplication-config "none">
+  <msapplication-TileColor "#0F766E">
+  <msapplication-fullscreen "true">
+  <msapplication-fullscreen-mode "standalone">
+  <referrer-policy "no-referrer-when-downgrade">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com.cloudflare.com/npm/tailwindcss@3.4.1/dist/tailwind.min.css">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
+  <script src="firebase-config.js"></script>
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="vendor/jspdf-autotable.min.js"></script>
+  
+  <title>Stok Emas Gudang Ibu NID</title>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-800">
+  
+  <!-- App Header dengan Logo -->
+  <header class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="LOGO.png" alt="Logo Gudang Ibu NID" class="h-8 w-8">
+        <h1 class="text-font text-sm font-bold text-gray-800" style="font-family: 'Segoe UI', Tahoma, sans-serif;">Stok Emas Gudang Ibu NID</h1>
+      </div>
+      <div class="hidden sm:flex items-center gap-4">
+        <span class="text-xs text-gray-500" id="user-display">User: ---</span>
+        <span class="text-xs text-gray-500" id="session-display">Session: ---</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-6 py-6">
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <h2 class="text-font text-lg font-semibold text-gray-700 mb-4">Dashboard</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <card>
+          <h3 class="text-gray-400 text-sm">Total Stok</h3>
+          <h2 id="total-stock" class="text-gray-800">Loading...</h2>
+        </card>
+        <card>
+          <h3 class="text-gray-400 text-sm">Sesi Harian</h3>
+          <h2 id="session-status">---</h2>
+        </card>
+      </div>
+    </section>
+
+    <!-- Operasional Harian -->
+    <section id="operasional" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
+      <h2 class="text-font text-lg font-semibold text-gray-700 mb-4">Operasional Harian</h2>
+      
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-2">Tipe Transaksi</label>
+          <select id="transaksi-type" class="w-full rounded border py-2 px-3">
+            <option value="distribusi">Distribisi Display (Brankas → Etalase/Bazar)</option>
+            <option value="pengembalian">Pengembalian Sisa (Etalase/Brankas →)</option>
+            <option value="jual">Penjualan</option>
+            <option value="buyback">Beli Kembali (Masuk)</option>
+            <option value="konsinyasi">Titip Jual Masuk</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-2">Jenis Barang</label>
+          <select id-jenis-barang" class="w-full rounded border py-2 px-3">
+            <option value="LM">Logam Mulia (LM) - 24K</option>
+            <option value="PERHIASAN">Perhiasan</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-2">Brand/LM</label>
+          <select id="brand-lm" class="w-full rounded border py-2 px-3">
+            <option value="ANTAM">ANTAM</option>
+            <option value="UBS">UBS</option>
+            <option value="G24">G24</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-2">Kategori Perhiasan</label>
+          <select id="jenis-perhiasan" class="w-full rounded border py-2 px-3">
+            <option value="CINCIN">Cincin</option>
+            <option value="KALUNG_LIONTIN">Kalung & Liontin</option>
+            <option value="GIWANG">Giwang</option>
+            <option value="ANTING">Anting-Anting</option>
+            <option value="GELANG">Gelang</option>
+            <option value="BROS_PIN">Bros & Pin</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-2">Berat (gram)</label>
+          <input type="number" id="berat-gram" class="w-full rounded border py-1 px-3" min="0" step="0.1">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-2">Kadar (untuk Perhiasan)</label>
+          <input type="number" id="kadar" class="w-full rounded border py-1 px-3" min="1" step="1" value="999">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-2">Jumlah PCS</label>
+          <input type="number" id="qty-pcs" class="w-full rounded border py-1 px-3" min="1" step="1" value="1">
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm text-gray-600 mb-2">Harga Beli (Rp)</label>
+        <input type="number" id="harga-beli" class="w-full rounded border py-1 px-3" min="0" step="100">
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm text-gray-600 mb-2">Pemilik Konsinyasi (opsional)</label>
+        <input type="text" id="pemilik" class="w-full rounded border py-1 px-3" placeholder="Nama Pemilik">
+      </div>
+
+      <div class="flex gap-3">
+        <button id="btn-simpan" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">Simpan Transaksi</button>
+        <button id="btn-batal" class="bg-gray-300 text-black py-2 px-4 rounded hover:bg-gray-400">Batal</button>
+      </div>
+
+      <div id="msg-area" class="mt-4 hidden p-3 rounded">
+        <div id="msg-text"></div>
+      </div>
+    </section>
+
+    <!-- Laporan Section -->
+    <section id="laporan" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
+      <h2 class="text-font text-lg font-semibold text-gray-700 mb-4">Laporan & Cetak</h2>
+
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm text-gray-600 mb-2">Filter Periode</label>
+          <select id="filter-period" class="w-full rounded border py-2 px-3">
+            <option value="harian">Harian</option>
+            <option value="mingguan">Mingguan</option>
+            <option value="bulanan">Bulanan</option>
+            <option value="triwulan">Triwulan/Semester</option>
+            <option value="tahunan">Tahunan</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-2">Lokasi</label>
+          <select id="filter-lokasi" class="w-full rounded border py-2 px-3">
+            <option value="all">Semua Lokasi</option>
+            <option value="brangkas">Brankas</option>
+            <option value="etalase">Etalase</option>
+            <option value="bazar">Bazar</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <div>
+          <button id="btn-export-xlsx" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 width-full">Export XLSX</button>
+        </div>
+        <div>
+          <button id="btn-export-xls" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 width-full">Export XLS</button>
+        </div>
+        <div>
+          <button id="btn-print-a4" class="bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700 width-full">Print A4</button>
+        </div>
+      </div>
+
+      <div id "laporan-result" class="mt-4 p-3 rounded hidden">
+        <div id "laporan-summary"></div>
+      </div>
+    </section>
+
+    <!-- Log Aktivitas -->
+    <section id="log-aktivitas" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
+      <h2 class="text-font text-lg font-semibold text-gray-700 mb-4">Log Aktivitas</div>
+      <div class="overflow-x-scroll">
+        <table class="w-full min-w">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="px-4 py-2">Waktu</th>
+              <th class="px-4 py-2">User</th>
+              <th class="px-4 py-2">Aksi</th>
+              <th class="px-4 py-2">Detail</th>
+            </tr>
+          </thead>
+          <tbody id="log-table-body">
+            <!-- Akan diisi oleh Firestore -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-3 mt-auto text-center">
+    <div class="max-w-7xl mx-auto px-6">
+      <p class="text-xs">Stok Emas Gudang Ibu NID | Copyright 2025</p>
+    </div>
+  </footer>
+
+  <script>
+    // Inisialisasi Firebase
+    const firebaseConfig = {
+      apiKey: "PLACEHOLDER-API-KEY",
+      authDomain: "PLACEHOLDER.firebaseapp.com",
+      projectId: "PLACEHOLDER-projectid",
+      storageBucket: "PLACEHOLDER.firebasestorage.app",
+      messagingSenderId: "PLACEHOLDER-sender-id",
+      appId: "PLACEHOLDER-app-id",
+      measurementId: "PLACEHOLDER-measurement-id"
+    };
+
+    // Ganti dengan config Firebase yang sebenarnya setelah project dibuat
+    // firebase.initializeApp(firebaseConfig);
+
+    // Variabel global
+    let currentSession = null;
+    let isSessionOpen = false;
+
+    // Fungsi helpers
+    function formatRupiah(angka) {
+      return "Rp " + angka.toLocaleString("id-ID");
+    }
+
+    function showMessage(type, text) {
+      const div = document.getElementById("msg-area");
+      const txt = document.getElementById("msg-text");
+      div.className = "mt-4 p-3 rounded " + (type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800");
+      txt.innerText = text;
+      div.classList.remove("hidden");
+      setTimeout(() => div.classList.add("hidden"), 5000);
+    }
+
+    // ========== SESSION BUKA/TUTUP HARI ==========
+    async function bukaHari() {
+      const tanggal = document.getElementById("tanggal-buka").value || new Date().toISOString().split("T")[0];
+      if (!tanggal) {
+        showMessage("error", "Pilih tanggal buka hari");
+        return;
+      }
+
+      try {
+        const sessionsRef = firebase.firestore.collection("sessions");
+        await sessionsRef.add({
+          tipe: "buka",
+          tanggal: tanggal,
+          mulai: firebase.firestore.FieldValue.serverTimestamp(),
+          outlet: "Gudang Ibu NID",
+          status: "active"
+        });
+        currentSession = tanggal;
+        isSessionOpen = true;
+        document.getElementById("session-status").innerText = "Buka: " + tanggal;
+        showMessage("success", "Sesi buka hari " + tanggal + " berhasil dimulai");
+      } catch (e) {
+        showMessage("error", "Gagal buka sesi: " + e.message);
+      }
+    }
+
+    async function tutupHari() {
+      if (!currentSession || !isSessionOpen) {
+        showMessage("error", "Tidak ada sesi buka hari yang aktif");
+        return;
+      }
+
+      const opname = document.getElementById("opname-result").value;
+      const selisih = document.getElementById("selisih-result").value;
+
+      try {
+        const sessionsRef = firebase.firestore.collection("sessions");
+        await sessionsRef.add({
+          tipe: "tutup",
+          tanggal: currentSession,
+          selisih: selisih,
+          opname: opname,
+          selesai: firebase.firestore.FieldValue.serverTimestamp(),
+          outlet: "Gudang Ibu NID"
+        });
+
+        isSessionOpen = false;
+        currentSession = null;
+        document.getElementById("session-status").innerText = "---";
+        showMessage("success", "Sesi tutup hari " + currentSession + " berhasil dicatat");
+      } catch (e) {
+        showMessage("error", "Gagal catat tutup hari: " + e.message);
+      }
+    }
+
+    // ========== TRANSAKSI MASUK/KELUAR ==========
+    async function simpanTransaksi() {
+      const tipe = document.getElementById("transaksi-type").value;
+      const jenis = document.getElementById("jenis-barang").value;
+      const brand = document.getElementById("brand-lm").value;
+      const berat = parseFloat(document.getElementById("berat-gram").value) || 0;
+      const kadar = parseInt(document.getElementById("kadar").value) || 999;
+      const qty = parseInt(document.getElementById("qty-pcs").value) || 1;
+      const harga = parseInt(document.getElementById("harga-beli").value) || 0;
+      const pemilik = document.getElementById("pemilik").value || "-";
+
+      // Validasi
+      if (tipe === "") {
+        showMessage("error", "Pilih tipe transaksi");
+        return;
+      }
+
+      // Logika khusus: Perhiasan wajib berat + kadar
+      if (jenis === "PERHIASAN" && (berat <= 0 || kadar <= 0)) {
+        showMessage("error", "Perhiasan harus memiliki berat dan kadar");
+        return;
+      }
+
+      // Kode item unik untuk Perhiasan (aturan 1x Masuk 1x Keluar)
+      let kodeItem = "";
+      if (jenis === "PERHIASAN") {
+        // Generate kode unik: TYPE-BRAND-JENIS-BERAT-KADAR
+        kodeItem = `${tipe}-${brand}-${jenis}-${berat}-${kadar}`;
+        
+        // Cek apakah kode sudah pernah masuk (aturan 1x)
+        const transactionsRef = firebase.firestore.collection("transaksitransaksi");
+        const snapshot = await transactionsRef.where("kodeItem", "==", kodeItem).get();
+        if (!snapshot.empty) {
+          showMessage("error", "Kode item sudah pernah masuk (aturan 1x Masuk 1x Keluar). Barang ini sudah ada di sistem.");
+          return;
+        }
+      }
+
+      try {
+        const transactionsRef = firebase.firestore.collection("transaksitransaksi");
+        await transactionsRef.add({
+          tipe: tipe,
+          jenis: jenis,
+          brand: brand,
+          berat: berat,
+          kadar: kadar,
+          qty: qty,
+          harga: harga,
+          pemilik: pemilik,
+          kodeItem: kodeItem,
+          tanggal: firebase.firestore.FieldValue.serverTimestamp(),
+          outlet: "Gudang Ibu NID",
+          status: "active"
+        });
+
+        showMessage("success", "Transaksi berhasil disimpan");
+        
+        // Reset form
+        document.getElementById("transaksi-type").value = "";
+        document.getElementById("jenis-barang").value = "";
+        document.getElementById("brand-lm").value = "ANTAM";
+        document.getElementById("berat-gram").value = "";
+        document.getElementById("kadar").value = "999";
+        document.getElementById("qty-pcs").value = "1";
+        document.getElementById("harga-beli").value = "";
+        document.getElementById("pemilik").value = "";
+
+        // Refresh data
+        refreshDashboard();
+      } catch (e) {
+        showMessage("error", "Gagal simpan transaksi: " + e.message);
+      }
+    }
+
+    // ========== LAPORAN & CETAK ==========
+    async function refreshDashboard() {
+      // Ambil data dari Firestore dan hitung total
+      const transactionsRef = firebase.firestore.collection("transaksitransaksi");
+      const snapshot = await transactionsRef.get();
+
+      let totalPcs = 0;
+      let totalBerat = 0;
+      let totalHarga = 0;
+      let LM = 0;
+      let Perhiasan = 0;
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        totalPcs += data.qty || 0;
+        totalBerat += (data.berat || 0);
+        totalHarga += (data.harga || 0);
+
+        if (data.jenis === "LM") {
+          LM += (data.harga || 0);
+        } else if (data.jenis === "PERHIASAN") {
+          Perhiasan += (data.harga || 0);
+        }
+      });
+
+      document.getElementById("total-stock").innerText = totalPcs + " PCS (" + totalBerat.toFixed(2) + " gram)");
+      // ... lanjut hitung lainnya
+    }
+
+    // Fungsi export XLSX
+    async function exportXLSX() {
+      const transactionsRef = firebase.firestore.collection("transaksitransaksi");
+      const snapshot = await transactionsRef.get();
+
+      const data = [];
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        data.push({
+          Tanggal: new Date(d.tanggal.seconds * 1000).toLocaleDateString("id-ID"),
+          Tipe: d.tipe,
+          Jenis: d.jenis,
+          Brand: d.brand,
+          Berat_gram: d.berat,
+          Kadar: d.kadar,
+          Qty_Pcs: d.qty,
+          Harga_Rp: d.harga,
+          Pemilik: d.pemilik,
+          Kode_Item: d.kodeItem || "-"
+        });
+      });
+
+      // Buat worksheet menggunakan SheetJS
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Data Stok Emas");
+      
+      // Download
+      XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+      // ... trigger download
+      showMessage("success", "Export XLSX berhasil!");
+    }
+
+    // Fungsi Print A4
+    function printA4() {
+      const printSection = document.getElementById("laporan-result");
+      if (printSection.classList.contains("hidden")) {
+        showMessage("error", "Tidak ada data untuk dicetak");
+        return;
+      }
+
+      // Setup print view - tambahkan @media print styles
+      const printWindow = document.createElement("div");
+      printWindow.innerHTML = `
+        <div class="print-page">
+          <div class="header">
+            <img src="LOGO.png" alt="Logo" class="h-12">
+            <h2>Laporan Stok Emas Gudang Ibu NID</h2>
+            <div class="meta">Dicetak Tanggal: ${new Date().toLocaleDateString("id-ID")} | Oleh: User Login</div>
+          </div>
+          <div class="content">
+            ${printSection.innerHTML}
+          </div>
+          <div class="footer">
+            <p>Berita Acara: Semua transaksi telah diverifikasi dan disahkan</p>
+            <div class="signatures">
+              <p>Dibuat Oleh: ____________________</p>
+              <p>Dikontrol Oleh: ____________________</p>
+              <p>Disahkan Oleh: ____________________</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(printWindow);
+      
+      // Print dialog
+      printWindow.style.display = "block";
+      printWindow.focus();
+      printWindow.dispatchEvent(new Event("focus"));
+      
+      // Setelah print, hapus
+      setTimeout(() => {
+        document.body.removeChild(printWindow);
+      }, 1000);
+    }
+
+    // ========== KONEKSI FIRESTORE REALTIME ==========
+    // Setup listeners untuk data real-time
+    // ... (akan di-expand saat koneksi Firebase valid)
+
+    // ========== NAVIGASI ANTAR SECTION ==========
+    document.querySelectorAll("section[id]").forEach(section => {
+      section.classList.add("hidden");
+    });
+    
+    // Aktifkan section dashboard default
+    document.getElementById("dashboard").classList.remove("hidden");
+
+    // Event listeners
+    document.getElementById("btn-simpan").addEventListener("click", simpanTransaksi);
+    document.getElementById("btn-export-xlsx").addEventListener("click", exportXLSX);
+    document.getElementById("btn-export-xls").addEventListener("click", () => exportXLS()); // Belum diimplementasikan lengkap
+    document.getElementById("btn-print-a4").addEventListener("click", printA4);
+    document.getElementById("buka-hari").addEventListener("click", bukaHari);
+    document.getElementById("tutup-hari").addEventListener("click", tutupHari);
+
+  </script>
+  
+  <!-- Print CSS untuk A4 -->
+  <style>
+    @media print {
+      .print-page {
+        width: 21cm;
+        margin: 0 auto;
+        padding: 2cm;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+      }
+      
+      .header {
+        text-align: center;
+        margin-bottom: 2cm;
+        padding-bottom: 1cm;
+        border-bottom: 1px solid #dee2e6;
+      }
+      
+      .header img {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .meta {
+        font-size: 12px;
+        color: #666;
+        margin-top: 0.5cm;
+      }
+      
+      .content {
+        width: 100%;
+        margin: 2cm 0;
+      }
+      
+      .footer {
+        margin-top: 2cm;
+        padding-top: 1cm;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+      }
+      
+      .signatures {
+        width: 45%;
+      }
+      
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      
+      th, td {
+        border: 1px solid #dee2e6;
+        padding: 8px;
+        text-align: left;
+      }
+      
+      th {
+        background-color: #f8f9fa;
+      }
+    }
+  </style>
+</body>
+</html>
