@@ -1,18 +1,16 @@
-// RULES GABUNGAN — paste ke console.firebase.google.com → project budget-b8b49
+// RULES — paste ke console.firebase.google.com → project BARU G24 Kedaton
 // → Firestore Database → Rules → Publish.
 //
-// BudgetRumah (dokumen budgets/{kode}) + App Stok G24 Kedaton
-// (mutasi/sessions/logs/users/master/backups) hidup berdampingan,
-// keduanya tanpa Firebase Auth (PIN lokal di app).
+// App tidak pakai Firebase Auth (login PIN lokal), jadi koleksi dibuka
+// tanpa auth. Hapus fisik dari client ditolak — pakai Void/status + Log.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{db}/documents {
-    match /budgets/{d}   { allow read, write: if true; }
-    match /mutasi/{d}    { allow read, write: if true; }
-    match /sessions/{d}  { allow read, write: if true; }
-    match /logs/{d}      { allow read, write: if true; }
-    match /users/{d}     { allow read, write: if true; }
-    match /master/{d}    { allow read, write: if true; }
-    match /backups/{d}   { allow read, write: if true; }
+    match /mutasi/{d}    { allow read: if true; allow create, update: if true; allow delete: if false; }
+    match /sessions/{d}  { allow read: if true; allow create, update: if true; allow delete: if false; }
+    match /logs/{d}      { allow read: if true; allow create: if true; allow update, delete: if false; }
+    match /users/{d}     { allow read: if true; allow create, update: if true; allow delete: if false; }
+    match /master/{d}    { allow read: if true; allow create, update: if true; allow delete: if false; }
+    match /backups/{d}   { allow read: if true; allow create: if true; allow update, delete: if false; }
   }
 }
