@@ -18,7 +18,7 @@
 <style>
 :root{--bg:#FEF3E2;--card:#FFFDF8;--ink:#2A1A0E;--muted:#A08A76;--amber:#F4AE52;--burnt:#D4621A;--line:#F0DFC8;--radius:18px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0 0 30px 84px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0 0 30px 104px}
 header.top{position:sticky;top:0;z-index:20;background:rgba(254,243,226,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .top-in{max-width:980px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:10px}
 .logo{width:38px;height:38px;border-radius:12px;object-fit:cover;background:#fff;border:1px solid var(--line)}
@@ -27,22 +27,22 @@ header.top{position:sticky;top:0;z-index:20;background:rgba(254,243,226,.93);bac
 .dot{width:8px;height:8px;border-radius:50%;background:#E5B25F}.dot.on{background:#3FA34D}
 .sync{padding:5px 10px;border-radius:999px;background:#fff;border:1px solid var(--line)}
 /* FLOATING LEFT MENU */
-nav.rail{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:30;background:var(--ink);border-radius:22px;padding:10px 7px;display:flex;flex-direction:column;gap:4px;box-shadow:0 10px 26px rgba(42,26,14,.35)}
-.rail button{border:0;background:none;color:#EAD9C2;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:9px;padding:8px 6px;border-radius:14px;cursor:pointer;min-width:54px}
-.rail button i{font-style:normal;font-size:19px}
+nav.rail{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:30;background:var(--ink);border-radius:24px;padding:12px 9px;display:flex;flex-direction:column;gap:6px;box-shadow:0 10px 26px rgba(42,26,14,.35);max-height:94vh;overflow-y:auto}
+.rail button{border:0;background:none;color:#EAD9C2;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;padding:11px 8px;border-radius:16px;cursor:pointer;min-width:68px}
+.rail button i{font-style:normal;font-size:27px}
 .rail button.on{background:var(--amber);color:var(--ink);font-weight:800}
 .wrap{max-width:980px;margin:0 auto;padding:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:0 6px 18px rgba(212,98,26,.10)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 @media(max-width:640px){.grid3{grid-template-columns:1fr 1fr}}
-.stat{border-radius:16px;padding:12px;border:1px solid var(--line);background:#fff}
-.stat small{font-size:11px;color:var(--muted)}.stat b{font-size:18px;display:block;margin:2px 0}.stat em{font-style:normal;font-size:11px;color:var(--muted)}
-h2.sec{font-size:15px;margin:18px 2px 10px}
+.stat{border-radius:18px;padding:18px;border:1px solid var(--line);background:#fff}
+.stat small{font-size:12px;color:var(--muted)}.stat b{font-size:24px;display:block;margin:3px 0}.stat em{font-style:normal;font-size:12px;color:var(--muted)}
+h2.sec{font-size:17px;margin:20px 2px 10px}
 label{font-size:12px;color:var(--muted);display:block;margin:10px 0 5px}
 input,select{width:100%;padding:11px 12px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font-size:14px;color:var(--ink);outline:none}
 input:focus,select:focus{border-color:var(--burnt)}
-.btn{border:0;border-radius:14px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;width:100%}
+.btn{border:0;border-radius:14px;padding:14px;font-weight:700;font-size:15px;cursor:pointer;width:100%}
 .btn-burnt{background:linear-gradient(135deg,#F4AE52,#D4621A);color:#fff}
 .btn-dark{background:var(--ink);color:#FEF3E2}
 .btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
@@ -68,8 +68,8 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 @media print{
   body{background:#fff;padding:0}header.top,nav.rail,.wrap,.toast{display:none!important}
   #printArea{display:block!important;color:#111;font-size:11.5px}
-  #printArea .p-head{display:flex;gap:12px;align-items:center;border-bottom:2.5px solid #111;padding-bottom:8px}
-  #printArea img{width:52px;height:52px;object-fit:contain}
+  #printArea .p-head{display:flex;gap:12px;align-items:center;justify-content:flex-start;text-align:left;border-bottom:2.5px solid #111;padding-bottom:8px}
+  #printArea img{width:auto;height:auto;max-height:62px;max-width:230px;object-fit:contain}
   #printArea table{width:100%;border-collapse:collapse;margin-top:10px}
   #printArea th,#printArea td{border:1.5px solid #222;padding:5px 6px;text-align:left}
   #printArea th{background:#E8E8E8}
@@ -123,6 +123,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <input id="mKode" list="dlKode" placeholder="cth: ANTAM-1G / PH-..." oninput="autoMut()">
 <datalist id="dlKode"></datalist>
 <div class="autostat" id="mAuto">Status: —</div>
+<label>Keterangan barang</label><select id="mKet"><option value="SALDO PAGI">SALDO PAGI</option><option value="SALDO SUSULAN">SALDO SUSULAN (tambahan dari brankas)</option></select>
 <div class="grid2"><div><label>Lokasi display</label><select id="mLok"><option value="ETALASE">ETALASE (Depan)</option><option value="BAZAR">BAZAR (Event)</option></select></div>
 <div><label>Qty (pcs)</label><input id="mQty" type="number" min="1" value="1"></div></div>
 <label>Catatan</label><input id="mNote" placeholder="cth: display pagi / sisa sore kembali">
@@ -133,10 +134,10 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div id="pg-jual" class="page">
 <h2 class="sec">💸 Penjualan — Jual / Buyback / Konsinyasi</h2>
 <div class="card"><div class="chips" id="chipsJual"></div>
-<div class="chips" id="chipsJenisJ"></div>
+<div id="boxJenisJ"><div class="chips" id="chipsJenisJ"></div></div>
 <div class="grid2"><div><label>Sumber</label><select id="jSumber"><option value="PUSAT">PUSAT</option><option value="BUYBACK">BUYBACK</option><option value="KONSINYASI">KONSINYASI</option></select></div>
 <div><label>Lokasi (hanya display)</label><select id="jLok"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div></div>
-<div id="boxJL"><label>Brand LM (24K • 99.9999%)</label><select id="jBrand"></select><label>Gramasi</label><select id="jGram"></select></div>
+<div id="boxJL"><label>Brand LOGAM MULIA (24K • 99.9999%)</label><select id="jBrand"></select><label>Gramasi</label><select id="jGram"></select></div>
 <div id="boxJP" style="display:none"><label>Jenis perhiasan</label><select id="jJenisPH"></select>
 <div class="grid3"><div><label>Kadar</label><select id="jKadar"></select></div><div><label>Berat (gr)</label><input id="jBerat" type="number" step="0.01" min="0"></div><div><label>Kode item</label><input id="jKode" placeholder="PH-..."></div></div>
 </div>
@@ -151,7 +152,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div id="pg-masuk" class="page">
 <h2 class="sec">📥 Barang Masuk — dari Pusat</h2>
 <div class="card"><div class="chips" id="chipsJenisM"></div>
-<div id="boxML"><label>Brand LM</label><select id="mBrand"></select><label>Gramasi</label><select id="mGram"></select></div>
+<div id="boxML"><label>Brand LOGAM MULIA</label><select id="mBrand"></select><label>Gramasi</label><select id="mGram"></select></div>
 <div id="boxMP" style="display:none"><label>Jenis perhiasan</label><select id="mJenisPH"></select>
 <div class="grid3"><div><label>Kadar</label><select id="mKadar"></select></div><div><label>Berat (gr)</label><input id="mBerat" type="number" step="0.01" min="0"></div><div><label>Kode item (auto)</label><input id="mKodeIn"></div></div></div>
 <div class="grid2"><div><label>Qty (pcs)</label><input id="mQtyIn" type="number" min="1" value="1"></div><div><label>Harga Rp (opsional)</label><input id="mHarga" type="number" min="0"></div></div>
@@ -185,7 +186,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <h2 class="sec">🖨️ Cetak & Rekap (A4 Portrait)</h2>
 <div class="card"><div class="grid2">
 <div><label>Periode</label><select id="rPeriode" onchange="renderLaporan()"><option value="harian">Harian</option><option value="custom">Custom Range</option></select></div>
-<div><label>Jenis laporan</label><select id="rJenis" onchange="renderLaporan()"><option value="penjualan">Laporan Penjualan</option><option value="stok">Laporan Stok</option><option value="kategori">Rekap per Kategori</option><option value="jenis">Rekap per Jenis</option><option value="sisa_lm">Sisa Stok LM Hari Ini</option><option value="selisih">Selisih & Tutup Hari</option></select></div></div>
+<div><label>Jenis laporan</label><select id="rJenis" onchange="renderLaporan()"><option value="penjualan">Laporan Penjualan</option><option value="stok">Laporan Stok</option><option value="kategori">Rekap per Kategori</option><option value="jenis">Rekap per Jenis</option><option value="sisa_lm">Sisa Stok LM Hari Ini</option><option value="arus">Arus Gudang</option><option value="selisih">Selisih & Tutup Hari</option></select></div></div>
 <div class="grid2" id="boxRange" style="display:none;margin-top:8px"><div><label>Dari</label><input type="date" id="rDari" onchange="renderLaporan()"></div><div><label>Sampai</label><input type="date" id="rSampai" onchange="renderLaporan()"></div></div>
 <div style="height:10px"></div>
 <div class="btn-row"><button class="btn btn-dark" onclick="ekspor('xlsx')">XLSX</button><button class="btn btn-dark" onclick="ekspor('xls')">XLS</button><button class="btn btn-burnt" onclick="eksporPDF()">PDF</button><button class="btn btn-ghost" onclick="cetakA4()">🖨️ A4</button></div></div>
@@ -199,18 +200,24 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div id="boxMasterPH" style="display:none"><div class="grid2"><div><label>Jenis perhiasan</label><select id="msJenis"><option>CINCIN</option><option>KALUNG & LIONTIN</option><option>GIWANG</option><option>ANTING-ANTING</option><option>GELANG</option><option>BROS & PIN</option></select></div><div><label>Kadar</label><select id="msKadar"><option>24K</option><option>22K</option><option>21K</option><option>18K</option><option>16K</option><option>9K</option></select></div></div></div>
 <div style="height:10px"></div><button class="btn btn-burnt" onclick="tambahMaster()">+ Tambah Master</button>
 <p class="muted">Jalur bulk: pakai Template Excel di menu Barang Masuk — master baru otomatis terdaftar saat impor.</p></div>
-<h2 class="sec">📋 Daftar master</h2><div class="card"><div style="overflow:auto"><table class="tbl" id="tblMaster"></table></div></div>
+<h2 class="sec">📋 Daftar master</h2><div class="card"><label>Lihat kelompok</label>
+<select id="msGroup" onchange="curMstGroup=this.value;renderMaster()"><option value="ALL">Semua</option><option value="ANTAM">ANTAM</option><option value="UBS">UBS</option><option value="G24">G24</option><option value="PHJ">Jenis Perhiasan</option><option value="PHK">Kadar</option><option value="ADD">Tambahan manual</option></select>
+<div style="overflow:auto;margin-top:8px"><table class="tbl" id="tblMaster"></table></div></div>
+</div>
+
+<div id="pg-user" class="page">
+<h2 class="sec">👥 Kelola Pengguna</h2>
+<div class="card"><p class="muted">🔐 Hanya ADMIN. Login awal: <b>ADMIN / ADMIN</b>. Edit PIN atau hapus user di tabel.</p>
+<div class="grid2" style="margin-top:8px"><input id="newUser" placeholder="Nama user baru"><input id="newPin" placeholder="PIN baru"></div>
+<div style="height:8px"></div><button class="btn btn-dark" onclick="tambahUser()">+ Daftarkan User</button>
+<div id="listUser" style="margin-top:8px"></div>
+<div style="overflow:auto;margin-top:8px"><table class="tbl" id="tblUser"></table></div></div>
 </div>
 
 <div id="pg-more" class="page">
-<h2 class="sec">⚙️ Pengguna & Log</h2>
-<div class="card"><h3 style="margin:0">👥 Kelola Pengguna</h3>
-<p class="muted">🔐 Hanya ADMIN yang bisa menambah user. Login awal: <b>ADMIN / ADMIN</b> (segera daftarkan user lain & catat PIN-nya).</p>
-<div class="grid2" style="margin-top:8px"><input id="newUser" placeholder="Nama user baru" tabindex="1"><input id="newPin" placeholder="PIN baru" tabindex="2"></div>
-<div style="height:8px"></div><button class="btn btn-dark" onclick="tambahUser()">+ Daftarkan User</button>
-<div id="listUser" style="margin-top:8px"></div></div>
+<h2 class="sec">📜 Log & Backup</h2>
 <div class="card" style="margin-top:10px"><h3 style="margin:0">☁️ Backup Cloud</h3><p class="muted">Saran: snapshot manual + otomatis tiap Tutup Hari. Restore khusus ADMIN.</p>
-<div class="btn-row" style="margin-top:8px"><button class="btn btn-dark" onclick="backupCloud()">☁️ Backup Sekarang</button></div>
+<div class="btn-row" style="margin-top:8px"><button class="btn btn-dark" onclick="backupCloud()">☁️ Backup Sekarang</button><button class="btn btn-ghost" onclick="unduhBackupCloud()">⬇️ Unduh Semua</button></div>
 <div id="listBackup" style="margin-top:8px"></div></div>
 <div class="card" style="margin-top:10px"><h3 style="margin:0">📜 Log Aktivitas</h3>
 <div style="overflow:auto;max-height:320px;margin-top:8px"><table class="tbl" id="tblLog"></table></div>
@@ -225,11 +232,11 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 const DEF_LM={ANTAM:[0.5,1,2,3,5,10,25,50,100],UBS:[0.5,1,2,3,5,10,25,50,100],G24:[0.1,0.25,0.5,1,2,5,10,25,50,100]};
 const DEF_PH=["CINCIN","KALUNG & LIONTIN","GIWANG","ANTING-ANTING","GELANG","BROS & PIN"];
 const DEF_KADAR=["24K","22K","21K","18K","16K","9K"];
-const NAV=[["dash","🏠","Home"],["mutasi","🔄","Mutasi"],["jual","💸","Jual"],["masuk","📥","Masuk"],["retur","↩️","Retur"],["stok","📦","Stok"],["lap","🖨️","Lapor"],["master","🏷️","Master"],["more","📜","Log"]];
+const NAV=[["dash","🏠","Home"],["mutasi","🔄","Mutasi"],["jual","💸","Jual"],["masuk","📥","Masuk"],["retur","↩️","Retur"],["stok","📦","Stok"],["lap","🖨️","Lapor"],["master","🏷️","Master"],["user","👥","User"],["more","📜","Log"]];
 const MUT_T=[["DISTRIBUSI","📤 Keluar Brankas"],["PENGEMBALIAN","📥 Masuk Brankas"]];
 const JUAL_T=[["PENJUALAN","💸 Penjualan"],["BUYBACK_MASUK","♻️ Buyback"],["KONSINYASI_MASUK","🤝 Konsinyasi"]];
 const RET_T=[["RETUR_PUSAT","🏛️ ke Pusat"],["RETUR_PEMILIK","👤 ke Pemilik"],["RETUR_PERHIASAN","💍 Perhiasan"]];
-let curMut="DISTRIBUSI",curJual="PENJUALAN",curJJenis="LM",curMJenis="LM",curRet="RETUR_PUSAT",curStok="BRANKAS",curMst="LM";
+let curMut="DISTRIBUSI",curJual="PENJUALAN",curJJenis="LM",curMJenis="LM",curRet="RETUR_PUSAT",curStok="BRANKAS",curMst="LM",curMstGroup="ALL";
 let DB={mutasi:[],sessions:[],logs:[],users:[],master:[]},cloud=null,cloudOK=false,curUser=null;
 const $=id=>document.getElementById(id);
 function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(t._x);t._x=setTimeout(()=>t.style.display="none",2600)}
@@ -240,12 +247,12 @@ function esc(s){return String(s??"").replace(/</g,"&lt")}
 function load(){try{const r=localStorage.getItem("g24kedaton_v1");if(r)DB=Object.assign(DB,JSON.parse(r))}catch(e){}DB.hidden=DB.hidden||[];seedAdminSafe()}
 function seedAdminSafe(){if(!DB.users.find(x=>x.nama==="ADMIN"))DB.users.push({nama:"ADMIN",pin:"ADMIN",at:todayStr()})}
 function save(){localStorage.setItem("g24kedaton_v1",JSON.stringify(DB))}
-function pgMap(p){return{dash:"pg-dash",mutasi:"pg-mutasi",jual:"pg-jual",masuk:"pg-masuk",retur:"pg-retur",stok:"pg-stok",lap:"pg-lap",master:"pg-master",more:"pg-more",login:"pg-login"}[p]}
+function pgMap(p){return{dash:"pg-dash",mutasi:"pg-mutasi",jual:"pg-jual",masuk:"pg-masuk",retur:"pg-retur",stok:"pg-stok",lap:"pg-lap",master:"pg-master",user:"pg-user",more:"pg-more",login:"pg-login"}[p]}
 function go(p){if(!curUser&&p!=="login")p="login";
 document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".rail button").forEach(x=>x.classList.remove("on"));
 $(pgMap(p)).classList.add("on");const b=document.querySelector(`[data-pg="${p}"]`);if(b)b.classList.add("on");
 if(p==="lap")renderLaporan();if(p==="stok")renderStok();if(p==="more")renderMore();if(p==="master")renderMaster();
-if(p==="mutasi")renderMutasi();if(p==="jual")renderJual();if(p==="masuk")renderMasuk();if(p==="retur")renderRetur();
+if(p==="mutasi")renderMutasi();if(p==="jual")renderJual();if(p==="masuk")renderMasuk();if(p==="retur")renderRetur();if(p==="user")renderUsers();
 window.scrollTo({top:0,behavior:"smooth"});
 const f=$(pgMap(p)).querySelector("input,select");if(f)setTimeout(()=>{try{f.focus()}catch(e){}},200)}
 /* master gabungan default + custom */
@@ -260,7 +267,7 @@ function fillSel(id,arr){$(id).innerHTML=arr.map(v=>`<option>${v}</option>`).joi
 /* login */
 function seedAdmin(){if(!DB.users.find(x=>x.nama==="ADMIN")){DB.users.push({nama:"ADMIN",pin:"ADMIN",at:todayStr()});pushCloud("users",{nama:"ADMIN",pin:"ADMIN",at:todayStr()});save()}}
 function doLogin(){const u=$("inUser").value.trim(),pw=$("inPin").value.trim();if(!u||!pw){toast("Isi nama + PIN");return}
-const f=DB.users.find(x=>x.nama===u&&x.pin===pw);if(!f){toast("⛔ User belum terdaftar — hubungi ADMIN");return}
+const f=DB.users.find(x=>x.nama===u&&x.pin===pw&&!x.deleted);if(!f){toast("⛔ User belum terdaftar — hubungi ADMIN");return}
 curUser={nama:u,at:new Date().toISOString()};localStorage.setItem("g24_user",JSON.stringify(curUser));
 addLog("LOGIN","Masuk sebagai "+u);save();enter()}
 function keluar(){localStorage.removeItem("g24_user");location.reload()}
@@ -272,7 +279,8 @@ if(typeof firebase==="undefined")return;firebase.initializeApp(c);cloud=firebase
 try{cloud.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}
 cloudOK=true;$("syncLbl").textContent="Live ☁️";$("dotNet").classList.add("on");
 ["mutasi","sessions","logs","users","master"].forEach(col=>{cloud.collection(col).orderBy("at","desc").limit(500).onSnapshot(s=>{const a=[];s.forEach(d=>a.push(Object.assign({id:d.id},d.data())));a.forEach(o=>o._c=1);
-if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);if(col==="users")DB.users=a;if(col==="master")DB.master=a;seedAdmin();
+if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);
+if(col==="users")DB.users=dedup(a,o=>o.nama);if(col==="master")DB.master=dedup(a,o=>JSON.stringify({t:o.t,brand:o.brand,gram:o.gram,jenis:o.jenis,kadar:o.kadar}));seedAdmin();
 save();paintAll();refresh()},()=>{})});toast("Cloud realtime tersambung ☁️")}catch(e){console.log(e)}}
 function pushCloud(col,obj){if(!cloudOK)return;obj.at=obj.at||new Date().toISOString();cloud.collection(col).add(obj).catch(()=>{})}
 function addLog(aksi,detail){const l={by:curUser?curUser.nama:"-",aksi,detail,at:new Date().toISOString()};DB.logs.unshift(l);DB.logs=DB.logs.slice(0,300);pushCloud("logs",l);save()}
@@ -292,11 +300,11 @@ $("mAuto").innerHTML=f?`Status: <b>${f.jenis}</b> • ${esc(f.desc)} • sumber 
 function simpanMutasi(){if(!curUser){toast("Masuk dulu");return}
 const kode=$("mKode").value.trim(),f=findMasuk(kode);
 if(!f){toast("Pilih kode yang sudah terdata di Barang Masuk");$("mKode").focus();return}
-const lok=$("mLok").value,qty=Math.max(1,Number($("mQty").value)||1),note=$("mNote").value.trim();
+const lok=$("mLok").value,qty=Math.max(1,Number($("mQty").value)||1),note=$("mNote").value.trim(),ket=$("mKet").value;
 const perUnit=f.berat/Math.max(1,f.qty);
-const m={id:uid("M"),tipe:curMut,jenis:f.jenis,sumber:f.sumber,lok,qty,berat:perUnit*qty,harga:0,pemilik:"-",note,desc:f.desc,brand:f.brand,kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
+const m={id:uid("M"),tipe:curMut,jenis:f.jenis,sumber:f.sumber,lok,qty,berat:perUnit*qty,harga:0,pemilik:"-",note,ket,desc:f.desc,brand:f.brand,kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
 DB.mutasi.unshift(m);pushCloud("mutasi",m);addLog(curMut,`${f.desc} • ${qty}pcs → ${lok}`);save();refresh();renderMutasi();$("mKode").value="";$("mNote").value="";autoMut();toast("Mutasi tersimpan ✨")}
-function renderMutasi(){const rows=DB.mutasi.filter(m=>["DISTRIBUSI","PENGEMBALIAN"].includes(m.tipe)).slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td><b>${m.tipe==="DISTRIBUSI"?"📤 Keluar":"📥 Masuk"}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber} • ${m.lok}</td><td>${m.qty}pcs<br>${Number(m.berat).toFixed(2)}gr</td></tr>`).join("");
+function renderMutasi(){const rows=DB.mutasi.filter(m=>["DISTRIBUSI","PENGEMBALIAN"].includes(m.tipe)).slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td><b>${m.tipe==="DISTRIBUSI"?"📤 Keluar":"📥 Masuk"}</b> <span class="badge">${m.ket||""}</span><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber} • ${m.lok}</td><td>${m.qty}pcs<br>${Number(m.berat).toFixed(2)}gr</td></tr>`).join("");
 $("tblMutasi").innerHTML=`<tr><th>Tgl/User</th><th>Transaksi</th><th>Status Barang</th><th>Qty</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Belum ada mutasi</td></tr>`);
 $("dlKode").innerHTML=DB.mutasi.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)).slice(0,200).map(m=>`<option value="${esc(m.kode)}">${esc(m.desc)}</option>`).join("")}
 /* PENJUALAN */
@@ -359,15 +367,15 @@ m.kadar=v.trim().toUpperCase();addLog("MASTER_EDIT",`PH ${m.jenis} → ${m.kadar
 function hideJenis(j){DB.hidden=DB.hidden||[];DB.hidden.push({t:"PHJ",jenis:j});addLog("MASTER_HAPUS","Jenis "+j);save();paintAll();renderMaster()}
 function hideKadar(k){DB.hidden=DB.hidden||[];DB.hidden.push({t:"PHK",kadar:k});addLog("MASTER_HAPUS","Kadar "+k);save();paintAll();renderMaster()}
 function resetMaster(){if(!confirm("Kembalikan master default? Tambahan manual tetap ada."))return;DB.hidden=[];addLog("MASTER_RESET","Default dikembalikan");save();paintAll();renderMaster();toast("Master default kembali ↺")}
+function showG(g){return curMstGroup==="ALL"||curMstGroup===g}
 function renderMaster(){let h=`<tr><th>Master Produk</th><th>Aksi</th></tr>`;
-["ANTAM","UBS","G24"].forEach(b=>{h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>${bb(b)} ${b}</b></td></tr>`;
-gramsEff(b).forEach(g=>{const custom=DB.master.findIndex(x=>x.t==="LM"&&x.brand===b&&x.gram===g);
-h+=`<tr><td>${g} gram</td><td><button class="chip" onclick="editLM('${b}',${g})">✏️</button> <button class="chip" onclick="delLM('${b}',${g})">🗑️</button></td></tr>`})});
-h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>💍 Perhiasan (jenis)</b></td></tr>`;
-phJenis().forEach(j=>{h+=`<tr><td>${j}</td><td><button class="chip" onclick="hideJenis('${j}')">🗑️</button></td></tr>`});
-h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>✨ Kadar</b></td></tr>`;
-kadars().forEach(k=>{h+=`<tr><td>${k}</td><td><button class="chip" onclick="hideKadar('${k}')">🗑️</button></td></tr>`});
-const ci=[];DB.master.forEach((m,i)=>{if(m.t==="PH")ci.push(`<tr><td>💍 ${m.jenis} ${m.kadar} (manual)</td><td><button class="chip" onclick="editPH(${i})">✏️</button> <button class="chip" onclick="delPH(${i})">🗑️</button></td></tr>`)});
+["ANTAM","UBS","G24"].forEach(b=>{if(!showG(b))return;h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>${bb(b)} ${b}</b></td></tr>`;
+gramsEff(b).forEach(g=>{h+=`<tr><td>${g} gram</td><td><button class="chip" onclick="editLM('${b}',${g})">✏️</button> <button class="chip" onclick="delLM('${b}',${g})">🗑️</button></td></tr>`})});
+if(showG("PHJ")){h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>💍 Perhiasan (jenis)</b></td></tr>`;
+phJenis().forEach(j=>{h+=`<tr><td>${j}</td><td><button class="chip" onclick="hideJenis('${j}')">🗑️</button></td></tr>`})}
+if(showG("PHK")){h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>✨ Kadar</b></td></tr>`;
+kadars().forEach(k=>{h+=`<tr><td>${k}</td><td><button class="chip" onclick="hideKadar('${k}')">🗑️</button></td></tr>`})}
+const ci=[];DB.master.forEach((m,i)=>{if(m.t==="PH"&&showG("ADD"))ci.push(`<tr><td>💍 ${m.jenis} ${m.kadar} (manual)</td><td><button class="chip" onclick="editPH(${i})">✏️</button> <button class="chip" onclick="delPH(${i})">🗑️</button></td></tr>`)});
 if(ci.length)h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>➕ Tambahan manual</b></td></tr>`+ci.join("");
 h+=`<tr><td colspan="2" style="text-align:center"><button class="chip" onclick="resetMaster()">↺ Kembalikan default</button></td></tr>`;
 $("tblMaster").innerHTML=h}
@@ -417,6 +425,31 @@ function rangePeriode(){const p=$("rPeriode").value;$("boxRange").style.display=
 const t=new Date();let dari=t,sampai=t;
 if(p==="custom"){dari=new Date($("rDari").value||todayStr());sampai=new Date($("rSampai").value||todayStr())}
 return{dari:dari.toISOString().slice(0,10),sampai:sampai.toISOString().slice(0,10),label:p.toUpperCase()}}
+/* ARUS GUDANG — matriks Uraian × Denominasi (LOGAM MULIA, pcs). Tambahan = SALDO SUSULAN. */
+const ARUS_COLS=[0.5,1,2,3,5,10,25,50,100];
+function gramOf(m){return Number((m.desc.match(/([\d.]+)\s*gr/)||[])[1])||null}
+function arusData(r){const flt=DB.mutasi.filter(m=>m.jenis==="LM"&&m.tanggal>=r.dari&&m.tanggal<=r.sampai);
+const z=()=>Object.fromEntries(ARUS_COLS.map(c=>[c,0]));
+const awal=z(),tamb=z(),jual=z(),buy=z(),setor=z();
+flt.forEach(m=>{const g=gramOf(m);if(g===null||!(g in awal))return;
+if(m.tipe==="DISTRIBUSI"&&m.ket==="SALDO PAGI")awal[g]+=m.qty;
+else if(m.tipe==="DISTRIBUSI")tamb[g]+=m.qty;
+else if(m.tipe==="PENJUALAN")jual[g]+=m.qty;
+else if(m.tipe==="BUYBACK_MASUK")buy[g]+=m.qty;
+else if(m.tipe==="PENGEMBALIAN")setor[g]+=m.qty});
+const akhir={};ARUS_COLS.forEach(c=>akhir[c]=awal[c]+tamb[c]-jual[c]+buy[c]);
+return{cols:ARUS_COLS,rows:[
+{label:"Saldo Awal (Buka Pelayanan)",vals:awal,color:"#FEF3C2"},
+{label:"Barang Tambahan Dari Brankas (= Saldo Susulan)",vals:tamb,color:"#fff"},
+{label:"Barang Terjual",vals:jual,color:"#fff"},
+{label:"Barang Buyback",vals:buy,color:"#fff"},
+{label:"Saldo akhir penjualan",vals:akhir,color:"#D9F2D0"},
+{label:"Barang setor ke Brankas",vals:setor,color:"#CFE0F5"}]}}
+function renderArusTbl(r){const{cols,rows}=arusData(r);
+$("lapOut").innerHTML=`<p class="muted">ARUS GUDANG • ${r.dari} → ${r.sampai} (LOGAM MULIA, pcs — denominasi di luar daftar tidak tampil)</p>
+<div style="overflow:auto"><table class="tbl"><tr><th>Uraian</th>${cols.map(c=>`<th>${c} GR</th>`).join("")}</tr>
+${rows.map(x=>`<tr style="background:${x.color}"><td><b>${x.label}</b></td>${cols.map(c=>`<td>${x.vals[c]||""}</td>`).join("")}</tr>`).join("")}</table></div>
+<p class="muted">Rumus: Saldo Akhir = Saldo Awal + Tambahan − Terjual + Buyback</p>`}
 function lapData(){const r=rangePeriode(),j=$("rJenis").value;const flt=DB.mutasi.filter(m=>m.tanggal>=r.dari&&m.tanggal<=r.sampai);
 if(j==="penjualan")return{rows:flt.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)),r};
 if(j==="stok")return{rows:flt,r};
@@ -427,29 +460,59 @@ if(["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK","PENGEMBALIAN"].includes(m.
 if(m.tipe==="PENJUALAN"||m.tipe==="RETUR_PEMILIK"){g[k].pcs-=m.qty;g[k].gr-=m.berat}});
 return{rows:Object.entries(g).filter(([k,v])=>v.pcs!==0).map(([k,v])=>({tanggal:"HARI INI",tipe:"SISA",desc:k+" • asal: "+(Object.keys(v.asal).join(", ")||"-"),sumber:Object.keys(v.asal).join("+")||"-",lok:"BRANKAS+ETALASE+BAZAR",qty:v.pcs,berat:v.gr,harga:0,by:"-"})),r}}
 return{rows:DB.sessions.filter(s=>s.tanggal>=r.dari&&s.tanggal<=r.sampai).map(s=>({tanggal:s.tanggal,tipe:s.status,desc:"Sesi "+(s.selisih||"-"),sumber:"-",lok:"-",qty:0,berat:0,harga:0,by:s.by||s.tutupOleh||"-"})),r}}
-function renderLaporan(){const{r,rows}=lapData(),j=$("rJenis").value;let tp=0,tg=0,th=0;rows.forEach(m=>{tp+=m.qty||0;tg+=m.berat||0;th+=m.harga||0});
+function renderLaporan(){if($("rJenis").value==="arus"){renderArusTbl(rangePeriode());return}
+const{r,rows}=lapData(),j=$("rJenis").value;let tp=0,tg=0,th=0;rows.forEach(m=>{tp+=m.qty||0;tg+=m.berat||0;th+=m.harga||0});
 $("lapOut").innerHTML=`<p class="muted">${j.toUpperCase()} • ${r.dari} → ${r.sampai} • ${rows.length} baris • Total ${tp}pcs ${tg.toFixed(2)}gr ${fmtRp(th)}</p>
 <div style="overflow:auto"><table class="tbl"><tr><th>Tanggal</th><th>Transaksi</th><th>Sumber/Lok</th><th>Qty/Berat</th><th>Harga</th></tr>
 ${rows.slice(0,200).map(m=>`<tr><td>${m.tanggal}</td><td><b>${m.tipe}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber}/${m.lok}</td><td>${m.qty}pcs<br>${Number(m.berat).toFixed(2)}gr</td><td>${fmtRp(m.harga)}</td></tr>`).join("")||`<tr><td colspan="5" class="muted">Tidak ada data periode ini</td></tr>`}</table></div>`}
-function ekspor(t){const{rows,r}=lapData();if(typeof XLSX==="undefined"){toast("Butuh internet sekali untuk SheetJS");return}
+function ekspor(t){if($("rJenis").value==="arus"){if(typeof XLSX==="undefined"){toast("Butuh internet sekali untuk SheetJS");return}
+const r=rangePeriode(),{cols,rows}=arusData(r);const data=rows.map(x=>Object.assign({Uraian:x.label},Object.fromEntries(cols.map(c=>[c+" GR",x.vals[c]]))));
+const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Arus Gudang");
+XLSX.writeFile(wb,`G24Kedaton_ARUS_${r.dari}_${r.sampai}.${t}`);addLog("EXPORT","ARUS "+t.toUpperCase());return}
+const{rows,r}=lapData();if(typeof XLSX==="undefined"){toast("Butuh internet sekali untuk SheetJS");return}
 const data=rows.map(m=>({Tanggal:m.tanggal,Tipe:m.tipe,Deskripsi:m.desc,Sumber:m.sumber,Lokasi:m.lok,Qty:m.qty,Berat_gr:Number(m.berat).toFixed(2),Harga:m.harga,User:m.by}));
 const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Laporan");
 XLSX.writeFile(wb,`G24Kedaton_${r.label}_${r.dari}_${r.sampai}.${t}`);addLog("EXPORT",t.toUpperCase()+" "+rows.length+" baris")}
-function eksporPDF(){const{rows,r}=lapData();if(typeof window.jspdf==="undefined"){toast("Gunakan Print A4");cetakA4();return}
+function eksporPDF(){if($("rJenis").value==="arus"){if(typeof window.jspdf==="undefined"){toast("Gunakan Print A4");cetakA4();return}
+const r=rangePeriode(),{cols,rows}=arusData(r);const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"portrait",format:"a4"});
+try{d.addImage("./koplogo.png","PNG",12,8,40,13)}catch(e){}
+d.setFontSize(12);d.text("GUDANG STOK G24 KEDATON",56,14);d.setFontSize(9);d.text(`ARUS GUDANG • ${r.dari} s/d ${r.sampai}`,56,19);
+d.autoTable({startY:28,head:[["Uraian",...cols.map(c=>c+" GR")]],body:rows.map(x=>[x.label,...cols.map(c=>x.vals[c])]),styles:{fontSize:6.5,lineWidth:.4,lineColor:[40,26,14]},headStyles:{fillColor:[212,98,26],lineWidth:.4,lineColor:[40,26,14]}});
+d.setFontSize(8);d.text(`Diprint oleh ${curUser.nama} • ${new Date().toLocaleString("id-ID")}`,14,292);d.save(`G24Kedaton_ARUS.pdf`);addLog("EXPORT","ARUS PDF");return}
+const{rows,r}=lapData();if(typeof window.jspdf==="undefined"){toast("Gunakan Print A4");cetakA4();return}
 const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"portrait",format:"a4"});
-try{d.addImage("./LOGO.png","PNG",12,8,15,15)}catch(e){}
-d.setFontSize(13);d.text("GUDANG STOK G24 KEDATON",31,14);d.setFontSize(9);d.text(`${$("rJenis").value} • ${r.dari} s/d ${r.sampai}`,31,19);
+try{d.addImage("./koplogo.png","PNG",12,8,40,13)}catch(e){}
+d.setFontSize(13);d.text("GUDANG STOK G24 KEDATON",56,14);d.setFontSize(9);d.text(`${$("rJenis").value} • ${r.dari} s/d ${r.sampai}`,56,19);
 d.autoTable({startY:28,head:[["No","Tgl","Transaksi","Sumber/Lokasi","Qty","Berat","Harga"]],body:rows.slice(0,400).map((m,i)=>[i+1,m.tanggal,m.tipe+" "+m.desc,m.sumber+"/"+m.lok,m.qty+"pcs",Number(m.berat).toFixed(2)+"gr",m.harga]),styles:{fontSize:7,lineWidth:.4,lineColor:[40,26,14]},headStyles:{fillColor:[212,98,26],lineWidth:.4,lineColor:[40,26,14]}});
 d.setFontSize(8);d.text(`Diprint oleh ${curUser.nama} • ${new Date().toLocaleString("id-ID")}`,14,292);d.save(`G24Kedaton_${r.label}.pdf`);addLog("EXPORT","PDF portrait "+rows.length+" baris")}
-function cetakA4(){const{rows,r}=lapData(),j=$("rJenis").value;
-$("printArea").innerHTML=`<div class="p-head"><img src="./LOGO.png"><div><b>GUDANG STOK G24 KEDATON</b><br>${j.toUpperCase()} • Periode ${r.dari} → ${r.sampai} • ${rows.length} baris</div></div>
+function cetakA4(){if($("rJenis").value==="arus"){const r=rangePeriode(),{cols,rows}=arusData(r);
+$("printArea").innerHTML=`<div class="p-head"><img src="./koplogo.png"><div><b>GUDANG STOK G24 KEDATON</b><br>ARUS GUDANG • Periode ${r.dari} → ${r.sampai}</div></div>
+<table><tr><th>Uraian</th>${cols.map(c=>`<th>${c} GR</th>`).join("")}</tr>
+${rows.map(x=>`<tr><td><b>${x.label}</b></td>${cols.map(c=>`<td>${x.vals[c]||""}</td>`).join("")}</tr>`).join("")}</table>
+<p>Rumus: Saldo Akhir = Saldo Awal + Tambahan − Terjual + Buyback</p>
+<p>Catatan kaki: Diprint oleh <b>${esc(curUser.nama)}</b> pada ${new Date().toLocaleString("id-ID")}</p>
+<div class="p-foot"><div class="sign">Dibuat<br><br><br>( ${esc(curUser.nama)} )</div><div class="sign">Diperiksa<br><br><br>( .......... )</div><div class="sign">Mengetahui<br><br><br>( .......... )</div></div>`;
+addLog("CETAK","arus "+r.label);window.print();return}
+const{rows,r}=lapData(),j=$("rJenis").value;
+$("printArea").innerHTML=`<div class="p-head"><img src="./koplogo.png"><div><b>GUDANG STOK G24 KEDATON</b><br>${j.toUpperCase()} • Periode ${r.dari} → ${r.sampai} • ${rows.length} baris</div></div>
 <table><tr><th>No</th><th>Tanggal</th><th>Transaksi</th><th>Sumber/Lokasi</th><th>Qty</th><th>Berat</th><th>Harga</th></tr>
 ${rows.slice(0,400).map((m,i)=>`<tr><td>${i+1}</td><td>${m.tanggal}</td><td><b>${m.tipe}</b><br>${esc(m.desc)}</td><td>${m.sumber}/${m.lok}</td><td>${m.qty}pcs</td><td>${Number(m.berat).toFixed(2)}gr</td><td>${fmtRp(m.harga)}</td></tr>`).join("")}</table>
 <p>Catatan kaki: Diprint oleh <b>${esc(curUser.nama)}</b> pada ${new Date().toLocaleString("id-ID")}</p>
 <div class="p-foot"><div class="sign">Dibuat<br><br><br>( ${esc(curUser.nama)} )</div><div class="sign">Diperiksa<br><br><br>( .......... )</div><div class="sign">Mengetahui<br><br><br>( .......... )</div></div>`;
 addLog("CETAK",j+" "+r.label);window.print()}
 /* MORE */
-function renderMore(){$("listUser").innerHTML=DB.users.map(u=>`<span class="badge" style="margin:2px">👤 ${esc(u.nama)}${u.nama==="ADMIN"?" ⭐":""}</span>`).join("")||`<span class="muted">Belum ada user</span>`;renderBackups();
+function renderUsers(){const us=DB.users.filter(u=>!u.deleted);
+$("listUser").innerHTML=us.map(u=>`<span class="badge" style="margin:2px">👤 ${esc(u.nama)}${u.nama==="ADMIN"?" ⭐":""}</span>`).join("");
+$("tblUser").innerHTML=`<tr><th>Nama</th><th>PIN</th><th>Aksi</th></tr>`+us.map(u=>`<tr><td><b>${esc(u.nama)}</b>${u.nama==="ADMIN"?" ⭐":""}</td><td>••••</td><td>${u.nama==="ADMIN"?"<span class='muted'>terkunci</span>":`<button class="chip" onclick="editUser('${esc(u.nama)}')">✏️ PIN</button> <button class="chip" onclick="delUser('${esc(u.nama)}')">🗑️</button>`}</td></tr>`).join("")}
+function editUser(nm){if(!curUser||curUser.nama!=="ADMIN"){toast("⛔ Hanya ADMIN");return}
+const v=prompt("PIN baru untuk "+nm+":");if(v===null)return;if(!v.trim()){toast("PIN tidak valid");return}
+const u=DB.users.find(x=>x.nama===nm);u.pin=v.trim();u.at=new Date().toISOString();pushCloud("users",{nama:nm,pin:u.pin,at:u.at});addLog("USER_EDIT","PIN "+nm+" diubah ADMIN");save();renderUsers();toast("PIN diubah")}
+function delUser(nm){if(!curUser||curUser.nama!=="ADMIN"){toast("⛔ Hanya ADMIN");return}
+if(nm==="ADMIN"){toast("ADMIN tidak bisa dihapus");return}
+if(!confirm("Hapus user "+nm+"?"))return;
+const u=DB.users.find(x=>x.nama===nm);u.deleted=1;u.at=new Date().toISOString();pushCloud("users",{nama:nm,pin:"",deleted:1,at:u.at});addLog("USER_HAPUS",nm+" dihapus ADMIN");save();renderUsers();toast("User dihapus")}
+function dedup(arr,kf){const seen=new Set(),out=[];arr.slice().sort((a,b)=>String(b.at||"").localeCompare(String(a.at||""))).forEach(o=>{const k=kf(o);if(!seen.has(k)){seen.add(k);out.push(o)}});return out}
+function renderMore(){renderBackups();
 $("tblLog").innerHTML=`<tr><th>Waktu</th><th>User</th><th>Aksi</th></tr>`+DB.logs.slice(0,100).map(l=>`<tr><td>${String(l.at).slice(0,16).replace("T"," ")}</td><td>${esc(l.by)}</td><td><b>${esc(l.aksi)}</b><br><span class="muted">${esc(l.detail)}</span></td></tr>`).join("")}
 function tambahUser(){if(!curUser||curUser.nama!=="ADMIN"){toast("⛔ Hanya ADMIN yang bisa daftarkan user");return}
 const v=$("newUser").value.trim(),pw=$("newPin").value.trim();if(!v||!pw){toast("Isi nama + PIN");return}
@@ -462,7 +525,8 @@ let n=0;["mutasi","sessions","logs","users","master"].forEach(col=>{DB[col].forE
 save();addLog("PUSH",n+" data dikirim ke cloud");toast("⬆️ "+n+" data di-push")}
 async function pullManual(){if(!cloudOK){toast("Cloud belum tersambung");return}
 for(const col of["mutasi","sessions","logs","users","master"]){const s=await cloud.collection(col).orderBy("at","desc").limit(1000).get();const a=[];s.forEach(d=>{const o=Object.assign({id:d.id},d.data());o._c=1;a.push(o)});
-if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);if(col==="users")DB.users=a;if(col==="master")DB.master=a}
+if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);
+if(col==="users")DB.users=dedup(a,o=>o.nama);if(col==="master")DB.master=dedup(a,o=>JSON.stringify({t:o.t,brand:o.brand,gram:o.gram,jenis:o.jenis,kadar:o.kadar}))}
 seedAdmin();save();paintAll();refresh();addLog("PULL","Tarik data cloud");toast("⬇️ Pull selesai")}
 async function hardRefresh(){toast("Membersihkan cache…");if("serviceWorker"in navigator){const r=await navigator.serviceWorker.getRegistrations();for(const x of r)await x.unregister()}
 const ks=await caches.keys();for(const k of ks)await caches.delete(k);location.reload(true)}
@@ -479,17 +543,20 @@ const d=await cloud.collection("backups").doc(id).get();const b=d.data().data;
 DB.mutasi=b.mutasi||[];DB.sessions=b.sessions||[];DB.logs=b.logs||[];DB.users=b.users||[];DB.master=b.master||[];DB.hidden=b.hidden||[];
 ["mutasi","sessions","logs","users","master"].forEach(c=>DB[c].forEach(o=>delete o._c));
 seedAdmin();save();paintAll();refresh();addLog("RESTORE","Restore backup "+id.slice(0,6)+" — tekan Push untuk kirim ke cloud");toast("Restore OK — tekan Push ⬆️")}
+async function unduhBackupCloud(){if(!cloudOK){toast("Cloud belum tersambung");return}
+const s=await cloud.collection("backups").orderBy("at","desc").limit(30).get();const a=[];s.forEach(d=>a.push(Object.assign({id:d.id},d.data())));
+const b=new Blob([JSON.stringify(a,null,2)],{type:"application/json"});const x=document.createElement("a");x.href=URL.createObjectURL(b);x.download="backup-cloud-g24kedaton.json";x.click();addLog("BACKUP_UNDUH",a.length+" snapshot");toast("☁️ Backup cloud diunduh")}
 /* paint */
 function buildRail(){$("rail").innerHTML=NAV.map(n=>`<button data-pg="${n[0]}" onclick="go('${n[0]}')"><i>${n[1]}</i><span>${n[2]}</span></button>`).join("")}
 function paintAll(){
 $("chipsMut").innerHTML=MUT_T.map(t=>`<button class="chip ${curMut===t[0]?"on":""}" onclick="curMut='${t[0]}';paintAll()">${t[1]}</button>`).join("");
 $("chipsJual").innerHTML=JUAL_T.map(t=>`<button class="chip ${curJual===t[0]?"on":""}" onclick="curJual='${t[0]}';paintAll()">${t[1]}</button>`).join("");
 $("chipsRet").innerHTML=RET_T.map(t=>`<button class="chip ${curRet===t[0]?"on":""}" onclick="curRet='${t[0]}';paintAll();renderRetur()">${t[1]}</button>`).join("");
-const JJ=[["LM","🪙 LM 24K"],["PERHIASAN","💍 Perhiasan"]];
+const JJ=[["LM","LOGAM MULIA"],["PERHIASAN","💍 Perhiasan"]];
 $("chipsJenisJ").innerHTML=JJ.map(t=>`<button class="chip ${curJJenis===t[0]?"on":""}" onclick="curJJenis='${t[0]}';paintAll()">${t[1]}</button>`).join("");
 $("chipsJenisM").innerHTML=JJ.map(t=>`<button class="chip ${curMJenis===t[0]?"on":""}" onclick="curMJenis='${t[0]}';paintAll()">${t[1]}</button>`).join("");
 $("chipsJenisMaster").innerHTML=JJ.map(t=>`<button class="chip ${curMst===t[0]?"on":""}" onclick="curMst='${t[0]}';paintAll()">${t[1]}</button>`).join("");
-if(curJual==="KONSINYASI_MASUK"&&curJJenis==="PERHIASAN")curJJenis="LM";
+if(curJual==="KONSINYASI_MASUK"){curJJenis="LM";$("boxJenisJ").style.display="none"}else{$("boxJenisJ").style.display="block"}
 if(curJual==="PENJUALAN"&&curJJenis==="PERHIASAN"){$("jSumber").value="PUSAT";$("jSumber").disabled=true}
 else if(curJual==="BUYBACK_MASUK"){$("jSumber").value="BUYBACK";$("jSumber").disabled=true}
 else if(curJual==="KONSINYASI_MASUK"){$("jSumber").value="KONSINYASI";$("jSumber").disabled=true}
