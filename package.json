@@ -17,6 +17,6 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^6.2.0",
-    "live-server": "^4.1.0"
+    "live-server": "^1.2.2"
   }
 }
