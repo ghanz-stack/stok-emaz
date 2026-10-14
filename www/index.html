@@ -58,6 +58,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
 .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--ink);color:#FEF3E2;padding:10px 16px;border-radius:999px;font-size:13px;z-index:50;display:none;max-width:92vw}
 .badge{font-size:10px;padding:3px 8px;border-radius:999px;background:#FBE3C3;display:inline-block}
+.blogo{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;border-radius:8px;color:#fff;font-size:11px;font-weight:800;padding:0 6px;vertical-align:middle}
 .muted{color:var(--muted);font-size:12px}
 .login{max-width:420px;margin:8vh auto}
 .kv{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px dashed var(--line)}
@@ -70,8 +71,8 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
   #printArea .p-head{display:flex;gap:12px;align-items:center;border-bottom:2.5px solid #111;padding-bottom:8px}
   #printArea img{width:52px;height:52px;object-fit:contain}
   #printArea table{width:100%;border-collapse:collapse;margin-top:10px}
-  #printArea th,#printArea td{border:1px solid #333;padding:5px 6px;text-align:left}
-  #printArea th{background:#eee}
+  #printArea th,#printArea td{border:1.5px solid #222;padding:5px 6px;text-align:left}
+  #printArea th{background:#E8E8E8}
   #printArea .p-foot{margin-top:16px;display:flex;justify-content:space-between}
   #printArea .sign{text-align:center;width:30%}
 }
@@ -88,7 +89,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 
 <div class="wrap">
 <div id="pg-login" class="page on"><div class="card login">
-<h2 style="margin:0">Masuk ✨</h2><p class="muted">Semua user full akses • Aktivitas tercatat di Log</p>
+<h2 style="margin:0">Masuk ✨</h2><p class="muted">Khusus user terdaftar • Login awal: <b>ADMIN / ADMIN</b></p>
 <label>Nama pengguna</label><input id="inUser" placeholder="cth: Kedaton / Kasir">
 <label>PIN / Kode (bebas, untuk jejak)</label><input id="inPin" placeholder="cth: 1234">
 <div style="height:10px"></div><button class="btn btn-burnt" onclick="doLogin()">Masuk Aplikasi →</button>
@@ -99,6 +100,9 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div class="card"><div class="kv"><span>Status hari</span><b id="stHari">—</b></div>
 <div class="kv"><span>Pengguna</span><b id="stUser">—</b></div>
 <div class="btn-row" style="margin-top:10px"><button class="btn btn-burnt" onclick="bukaHari()">☀️ Buka Hari</button><button class="btn btn-ghost" onclick="tutupHari()">🌙 Tutup Hari</button></div></div>
+<h2 class="sec">☁️ Sinkron & Perangkat</h2>
+<div class="card"><div class="btn-row"><button class="btn btn-dark" onclick="pushManual()">⬆️ Push</button><button class="btn btn-dark" onclick="pullManual()">⬇️ Pull</button><button class="btn btn-ghost" onclick="hardRefresh()">🔄 Refresh PWA</button></div>
+<p class="muted" id="cloudStat">Push = kirim data HP ini ke cloud • Pull = tarik data cloud ke HP ini • Refresh = bersihkan cache & muat ulang app.</p></div>
 <h2 class="sec">💰 Stok Brankas (terpisah + total)</h2>
 <div class="grid2">
 <div class="stat"><small>🏛️ PUSAT</small><b id="brPusat">0 pcs</b><em id="brPusatGr">0 gr</em></div>
@@ -131,14 +135,14 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div class="card"><div class="chips" id="chipsJual"></div>
 <div class="chips" id="chipsJenisJ"></div>
 <div class="grid2"><div><label>Sumber</label><select id="jSumber"><option value="PUSAT">PUSAT</option><option value="BUYBACK">BUYBACK</option><option value="KONSINYASI">KONSINYASI</option></select></div>
-<div><label>Lokasi</label><select id="jLok"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option><option value="BRANKAS">BRANKAS</option></select></div></div>
+<div><label>Lokasi (hanya display)</label><select id="jLok"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div></div>
 <div id="boxJL"><label>Brand LM (24K • 99.9999%)</label><select id="jBrand"></select><label>Gramasi</label><select id="jGram"></select></div>
 <div id="boxJP" style="display:none"><label>Jenis perhiasan</label><select id="jJenisPH"></select>
 <div class="grid3"><div><label>Kadar</label><select id="jKadar"></select></div><div><label>Berat (gr)</label><input id="jBerat" type="number" step="0.01" min="0"></div><div><label>Kode item</label><input id="jKode" placeholder="PH-..."></div></div>
-<p class="muted">🔒 Perhiasan 1× masuk 1× keluar. Buyback perhiasan tidak bisa dijual → Retur ke Pusat.</p></div>
+</div>
 <div class="grid3"><div><label>Qty (pcs)</label><input id="jQty" type="number" min="1" value="1"></div>
 <div><label>Harga Rp</label><input id="jHarga" type="number" min="0"></div>
-<div><label>Pemilik (konsinyasi)</label><input id="jPemilik" placeholder="Nama pemilik"></div></div>
+<div id="boxPemilikJ"><label>Pemilik (konsinyasi)</label><input id="jPemilik" placeholder="Nama pemilik"></div></div>
 <label>Catatan</label><input id="jNote">
 <div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanJual()">💾 Simpan</button></div>
 <h2 class="sec">📋 Transaksi terakhir</h2><div class="card"><div style="overflow:auto"><table class="tbl" id="tblJual"></table></div></div>
@@ -180,8 +184,8 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div id="pg-lap" class="page">
 <h2 class="sec">🖨️ Cetak & Rekap (A4 Portrait)</h2>
 <div class="card"><div class="grid2">
-<div><label>Periode</label><select id="rPeriode" onchange="renderLaporan()"><option value="harian">Harian</option><option value="mingguan">Mingguan</option><option value="bulanan">Bulanan</option><option value="triwulan">Triwulan / Quartal</option><option value="semester">Semester</option><option value="tahunan">Setahun</option><option value="custom">Custom Range</option></select></div>
-<div><label>Jenis laporan</label><select id="rJenis" onchange="renderLaporan()"><option value="penjualan">Laporan Penjualan</option><option value="stok">Laporan Stok</option><option value="kategori">Rekap per Kategori</option><option value="jenis">Rekap per Jenis</option><option value="selisih">Selisih & Tutup Hari</option></select></div></div>
+<div><label>Periode</label><select id="rPeriode" onchange="renderLaporan()"><option value="harian">Harian</option><option value="custom">Custom Range</option></select></div>
+<div><label>Jenis laporan</label><select id="rJenis" onchange="renderLaporan()"><option value="penjualan">Laporan Penjualan</option><option value="stok">Laporan Stok</option><option value="kategori">Rekap per Kategori</option><option value="jenis">Rekap per Jenis</option><option value="sisa_lm">Sisa Stok LM Hari Ini</option><option value="selisih">Selisih & Tutup Hari</option></select></div></div>
 <div class="grid2" id="boxRange" style="display:none;margin-top:8px"><div><label>Dari</label><input type="date" id="rDari" onchange="renderLaporan()"></div><div><label>Sampai</label><input type="date" id="rSampai" onchange="renderLaporan()"></div></div>
 <div style="height:10px"></div>
 <div class="btn-row"><button class="btn btn-dark" onclick="ekspor('xlsx')">XLSX</button><button class="btn btn-dark" onclick="ekspor('xls')">XLS</button><button class="btn btn-burnt" onclick="eksporPDF()">PDF</button><button class="btn btn-ghost" onclick="cetakA4()">🖨️ A4</button></div></div>
@@ -201,8 +205,13 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div id="pg-more" class="page">
 <h2 class="sec">⚙️ Pengguna & Log</h2>
 <div class="card"><h3 style="margin:0">👥 Kelola Pengguna</h3>
-<div class="btn-row" style="margin-top:8px"><input id="newUser" placeholder="Nama user baru"><button class="btn btn-dark" onclick="tambahUser()">+ Tambah</button></div>
+<p class="muted">🔐 Hanya ADMIN yang bisa menambah user. Login awal: <b>ADMIN / ADMIN</b> (segera daftarkan user lain & catat PIN-nya).</p>
+<div class="grid2" style="margin-top:8px"><input id="newUser" placeholder="Nama user baru" tabindex="1"><input id="newPin" placeholder="PIN baru" tabindex="2"></div>
+<div style="height:8px"></div><button class="btn btn-dark" onclick="tambahUser()">+ Daftarkan User</button>
 <div id="listUser" style="margin-top:8px"></div></div>
+<div class="card" style="margin-top:10px"><h3 style="margin:0">☁️ Backup Cloud</h3><p class="muted">Saran: snapshot manual + otomatis tiap Tutup Hari. Restore khusus ADMIN.</p>
+<div class="btn-row" style="margin-top:8px"><button class="btn btn-dark" onclick="backupCloud()">☁️ Backup Sekarang</button></div>
+<div id="listBackup" style="margin-top:8px"></div></div>
 <div class="card" style="margin-top:10px"><h3 style="margin:0">📜 Log Aktivitas</h3>
 <div style="overflow:auto;max-height:320px;margin-top:8px"><table class="tbl" id="tblLog"></table></div>
 <div class="btn-row" style="margin-top:8px"><button class="btn btn-ghost" onclick="backupJSON()">💾 Backup JSON</button><button class="btn btn-ghost" onclick="keluar()">Keluar</button></div></div>
@@ -228,24 +237,31 @@ function uid(p){return (p||"ID")+"-"+Date.now().toString(36).toUpperCase()+"-"+M
 function todayStr(d){d=d||new Date();return d.toISOString().slice(0,10)}
 function fmtRp(n){return "Rp "+(Number(n)||0).toLocaleString("id-ID")}
 function esc(s){return String(s??"").replace(/</g,"&lt")}
-function load(){try{const r=localStorage.getItem("g24kedaton_v1");if(r)DB=Object.assign(DB,JSON.parse(r))}catch(e){}}
+function load(){try{const r=localStorage.getItem("g24kedaton_v1");if(r)DB=Object.assign(DB,JSON.parse(r))}catch(e){}DB.hidden=DB.hidden||[];seedAdminSafe()}
+function seedAdminSafe(){if(!DB.users.find(x=>x.nama==="ADMIN"))DB.users.push({nama:"ADMIN",pin:"ADMIN",at:todayStr()})}
 function save(){localStorage.setItem("g24kedaton_v1",JSON.stringify(DB))}
 function pgMap(p){return{dash:"pg-dash",mutasi:"pg-mutasi",jual:"pg-jual",masuk:"pg-masuk",retur:"pg-retur",stok:"pg-stok",lap:"pg-lap",master:"pg-master",more:"pg-more",login:"pg-login"}[p]}
-function go(p){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".rail button").forEach(x=>x.classList.remove("on"));
+function go(p){if(!curUser&&p!=="login")p="login";
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".rail button").forEach(x=>x.classList.remove("on"));
 $(pgMap(p)).classList.add("on");const b=document.querySelector(`[data-pg="${p}"]`);if(b)b.classList.add("on");
 if(p==="lap")renderLaporan();if(p==="stok")renderStok();if(p==="more")renderMore();if(p==="master")renderMaster();
 if(p==="mutasi")renderMutasi();if(p==="jual")renderJual();if(p==="masuk")renderMasuk();if(p==="retur")renderRetur();
-window.scrollTo({top:0,behavior:"smooth"})}
+window.scrollTo({top:0,behavior:"smooth"});
+const f=$(pgMap(p)).querySelector("input,select");if(f)setTimeout(()=>{try{f.focus()}catch(e){}},200)}
 /* master gabungan default + custom */
+function bb(b){const m={ANTAM:["A","#B8860B"],UBS:["U","#1D4ED8"],G24:["24","#D4621A"]}[b]||["•","#999"];return `<span class="blogo" style="background:${m[1]}">${m[0]}</span>`}
+function isHidden(o){return (DB.hidden||[]).some(h=>JSON.stringify(h)===JSON.stringify(o))}
 function brands(){const s=new Set(["ANTAM","UBS","G24"]);DB.master.filter(m=>m.t==="LM").forEach(m=>s.add(m.brand));return[...s]}
 function grams(b){const base=DEF_LM[b]||[];const ex=DB.master.filter(m=>m.t==="LM"&&m.brand===b).map(m=>m.gram);return[...new Set([...base,...ex])].sort((a,c)=>a-c)}
-function phJenis(){const s=new Set(DEF_PH);DB.master.filter(m=>m.t==="PH").forEach(m=>s.add(m.jenis));return[...s]}
-function kadars(){const s=new Set(DEF_KADAR);DB.master.filter(m=>m.t==="PH").forEach(m=>s.add(m.kadar));return[...s]}
+function gramsEff(b){return grams(b).filter(g=>!isHidden({t:"LM",brand:b,gram:g}))}
+function phJenis(){const s=new Set(DEF_PH.filter(j=>!isHidden({t:"PHJ",jenis:j})));DB.master.filter(m=>m.t==="PH").forEach(m=>{if(!isHidden({t:"PHJ",jenis:m.jenis}))s.add(m.jenis)});return[...s]}
+function kadars(){const s=new Set(DEF_KADAR.filter(k=>!isHidden({t:"PHK",kadar:k})));DB.master.filter(m=>m.t==="PH").forEach(m=>{if(!isHidden({t:"PHK",kadar:m.kadar}))s.add(m.kadar)});return[...s]}
 function fillSel(id,arr){$(id).innerHTML=arr.map(v=>`<option>${v}</option>`).join("")}
 /* login */
-function doLogin(){const u=$("inUser").value.trim();if(!u){toast("Isi nama dulu ya ✨");return}
-curUser={nama:u,pin:$("inPin").value.trim(),at:new Date().toISOString()};localStorage.setItem("g24_user",JSON.stringify(curUser));
-if(!DB.users.find(x=>x.nama===u)){DB.users.push({nama:u,at:todayStr()});pushCloud("users",{nama:u,at:todayStr()})}
+function seedAdmin(){if(!DB.users.find(x=>x.nama==="ADMIN")){DB.users.push({nama:"ADMIN",pin:"ADMIN",at:todayStr()});pushCloud("users",{nama:"ADMIN",pin:"ADMIN",at:todayStr()});save()}}
+function doLogin(){const u=$("inUser").value.trim(),pw=$("inPin").value.trim();if(!u||!pw){toast("Isi nama + PIN");return}
+const f=DB.users.find(x=>x.nama===u&&x.pin===pw);if(!f){toast("⛔ User belum terdaftar — hubungi ADMIN");return}
+curUser={nama:u,at:new Date().toISOString()};localStorage.setItem("g24_user",JSON.stringify(curUser));
 addLog("LOGIN","Masuk sebagai "+u);save();enter()}
 function keluar(){localStorage.removeItem("g24_user");location.reload()}
 function enter(){$("stUser").textContent=curUser.nama;$("tglHari").textContent=todayStr();buildRail();paintAll();go("dash");refresh()}
@@ -255,8 +271,8 @@ if(!c||!c.apiKey||String(c.apiKey).includes("TODO")){$("syncLbl").textContent="L
 if(typeof firebase==="undefined")return;firebase.initializeApp(c);cloud=firebase.firestore();
 try{cloud.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}
 cloudOK=true;$("syncLbl").textContent="Live ☁️";$("dotNet").classList.add("on");
-["mutasi","sessions","logs","users","master"].forEach(col=>{cloud.collection(col).orderBy("at","desc").limit(500).onSnapshot(s=>{const a=[];s.forEach(d=>a.push(Object.assign({id:d.id},d.data())));
-if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);if(col==="users")DB.users=a;if(col==="master")DB.master=a;
+["mutasi","sessions","logs","users","master"].forEach(col=>{cloud.collection(col).orderBy("at","desc").limit(500).onSnapshot(s=>{const a=[];s.forEach(d=>a.push(Object.assign({id:d.id},d.data())));a.forEach(o=>o._c=1);
+if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);if(col==="users")DB.users=a;if(col==="master")DB.master=a;seedAdmin();
 save();paintAll();refresh()},()=>{})});toast("Cloud realtime tersambung ☁️")}catch(e){console.log(e)}}
 function pushCloud(col,obj){if(!cloudOK)return;obj.at=obj.at||new Date().toISOString();cloud.collection(col).add(obj).catch(()=>{})}
 function addLog(aksi,detail){const l={by:curUser?curUser.nama:"-",aksi,detail,at:new Date().toISOString()};DB.logs.unshift(l);DB.logs=DB.logs.slice(0,300);pushCloud("logs",l);save()}
@@ -267,7 +283,7 @@ const s={tanggal:todayStr(),status:"BUKA",by:curUser.nama,at:new Date().toISOStr
 function tutupHari(){const s=sesiHari();if(!s){toast("Belum buka hari");return}
 const sls=prompt("Opname selesai? Tulis selisih (cth: cocok / kurang 1pcs cincin):","cocok");if(sls===null)return;
 s.status="TUTUP";s.tutupOleh=curUser.nama;s.selisih=sls;pushCloud("sessions",{tanggal:s.tanggal,status:"TUTUP",tutupOleh:curUser.nama,selisih:sls,at:new Date().toISOString()});
-addLog("TUTUP_HARI",todayStr()+" • selisih: "+sls);save();refresh();toast("Tutup hari 🌙 • Berita Acara siap dicetak")}
+addLog("TUTUP_HARI",todayStr()+" • selisih: "+sls);save();refresh();backupCloud(true);toast("Tutup hari 🌙 • Berita Acara siap dicetak")}
 /* cari data barang masuk by kode */
 function findMasuk(kode){return DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe))}
 /* MUTASI */
@@ -275,7 +291,7 @@ function autoMut(){const k=$("mKode").value.trim(),f=findMasuk(k);
 $("mAuto").innerHTML=f?`Status: <b>${f.jenis}</b> • ${esc(f.desc)} • sumber <b>${f.sumber}</b> • ${f.qty}pcs ${Number(f.berat).toFixed(2)}gr`:"Status: — (kode belum terdata di Barang Masuk)"}
 function simpanMutasi(){if(!curUser){toast("Masuk dulu");return}
 const kode=$("mKode").value.trim(),f=findMasuk(kode);
-if(!f){toast("Pilih kode yang sudah terdata di Barang Masuk");return}
+if(!f){toast("Pilih kode yang sudah terdata di Barang Masuk");$("mKode").focus();return}
 const lok=$("mLok").value,qty=Math.max(1,Number($("mQty").value)||1),note=$("mNote").value.trim();
 const perUnit=f.berat/Math.max(1,f.qty);
 const m={id:uid("M"),tipe:curMut,jenis:f.jenis,sumber:f.sumber,lok,qty,berat:perUnit*qty,harga:0,pemilik:"-",note,desc:f.desc,brand:f.brand,kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
@@ -289,13 +305,15 @@ const sumber=$("jSumber").value,lok=$("jLok").value,qty=Math.max(1,Number($("jQt
 let desc,berat,kode;
 if(curJJenis==="LM"){const br=$("jBrand").value,gr=Number($("jGram").value);berat=gr*qty;desc=`${br} ${gr}gr × ${qty}`;kode=`${br}-${gr}G`}
 else{const jp=$("jJenisPH").value;berat=Number($("jBerat").value)||0;const kd=$("jKadar").value;kode=$("jKode").value.trim()||uid("PH");
-if(!berat){toast("Isi berat perhiasan dulu ⚖️");return}
+if(!berat){toast("Isi berat perhiasan dulu ⚖️");$("jBerat").focus();return}
 if(curJual==="PENJUALAN"&&sumber==="BUYBACK"){toast("⛔ Buyback perhiasan wajib Retur ke Pusat");return}
+if(curJual==="KONSINYASI_MASUK"&&curJJenis==="PERHIASAN"){toast("⛔ Tidak ada konsinyasi perhiasan");return}
+if(curJual==="KONSINYASI_MASUK"&&!pemilik){toast("Isi nama pemilik");$("jPemilik").focus();return}
 if(curJual==="PENJUALAN"){const dup=DB.mutasi.find(m=>m.kode===kode&&m.tipe==="PENJUALAN");if(dup){toast("⛔ Kode sudah 1× terjual");return}}
 desc=`${jp} ${kd} ${berat}gr • ${kode}`}
 const m={id:uid("M"),tipe:curJual,jenis:curJJenis,sumber,lok,qty,berat,harga,pemilik:curJual==="KONSINYASI_MASUK"?(pemilik||"-"):(pemilik||"-"),note,desc,brand:curJJenis==="LM"?$("jBrand").value:"-",kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
 DB.mutasi.unshift(m);pushCloud("mutasi",m);autoMaster(m);addLog(curJual,`${desc} • ${qty}pcs ${fmtRp(harga)}`);save();refresh();renderJual();toast("Tersimpan ✨")}
-function renderJual(){const rows=DB.mutasi.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)).slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td><b>${m.tipe}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber}/${m.lok}${m.pemilik&&m.pemilik!=="-"?"<br>👤"+esc(m.pemilik):""}</td><td>${m.qty}pcs ${Number(m.berat).toFixed(2)}gr<br>${fmtRp(m.harga)}</td></tr>`).join("");
+function renderJual(){const rows=DB.mutasi.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)).slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td>${m.jenis==="LM"?bb(m.brand):"💍"} <b>${m.tipe}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber}/${m.lok}${m.pemilik&&m.pemilik!=="-"?"<br>👤"+esc(m.pemilik):""}</td><td>${m.qty}pcs ${Number(m.berat).toFixed(2)}gr<br>${fmtRp(m.harga)}</td></tr>`).join("");
 $("tblJual").innerHTML=`<tr><th>Tgl/User</th><th>Transaksi</th><th>Sumber/Lok</th><th>Qty/Harga</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Belum ada transaksi</td></tr>`);
 $("rKode")&&null}
 /* BARANG MASUK */
@@ -304,16 +322,16 @@ const qty=Math.max(1,Number($("mQtyIn").value)||1),harga=Number($("mHarga").valu
 let desc,berat,kode;
 if(curMJenis==="LM"){const br=$("mBrand").value,gr=Number($("mGram").value);berat=gr*qty;desc=`${br} ${gr}gr × ${qty}`;kode=`${br}-${gr}G-${uid("").slice(-4)}`}
 else{const jp=$("mJenisPH").value;berat=Number($("mBerat").value)||0;const kd=$("mKadar").value;kode=$("mKodeIn").value.trim()||uid("PH");
-if(!berat){toast("Isi berat perhiasan dulu ⚖️");return}
+if(!berat){toast("Isi berat perhiasan dulu ⚖️");$("mBerat").focus();return}
 const dup=DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe));if(dup){toast("⛔ Kode sudah 1× masuk");return}
 desc=`${jp} ${kd} ${berat}gr • ${kode}`}
 const m={id:uid("M"),tipe:"MASUK_PUSAT",jenis:curMJenis,sumber:"PUSAT",lok:"BRANKAS",qty,berat,harga,pemilik:"-",note,desc,brand:curMJenis==="LM"?$("mBrand").value:"-",kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
 DB.mutasi.unshift(m);pushCloud("mutasi",m);autoMaster(m);addLog("MASUK_PUSAT",`${desc} • ${qty}pcs`);save();refresh();renderMasuk();$("mKodeIn").value="PH-"+Date.now().toString(36).toUpperCase();toast("Barang masuk tersimpan ✨")}
-function renderMasuk(){const rows=DB.mutasi.filter(m=>m.tipe==="MASUK_PUSAT").slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td><b>${esc(m.kode)}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.qty}pcs ${Number(m.berat).toFixed(2)}gr</td></tr>`).join("");
+function renderMasuk(){const rows=DB.mutasi.filter(m=>m.tipe==="MASUK_PUSAT").slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td>${m.jenis==="LM"?bb(m.brand):"💍"} <b>${esc(m.kode)}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.qty}pcs ${Number(m.berat).toFixed(2)}gr</td></tr>`).join("");
 $("tblMasuk").innerHTML=`<tr><th>Tgl/User</th><th>Kode/Barang</th><th>Qty</th></tr>`+(rows||`<tr><td colspan="3" class="muted">Belum ada barang masuk</td></tr>`)}
 /* RETUR */
 function simpanRetur(){if(!curUser){toast("Masuk dulu");return}
-const kode=$("rKode").value.trim();if(!kode){toast("Isi kode barang");return}
+const kode=$("rKode").value.trim();if(!kode){toast("Isi kode barang");$("rKode").focus();return}
 const f=findMasuk(kode);const pemilik=$("rPemilik").value.trim();
 const m={id:uid("M"),tipe:curRet,jenis:f?f.jenis:"PERHIASAN",sumber:curRet==="RETUR_PEMILIK"?"KONSINYASI":"PUSAT",lok:curRet==="RETUR_PEMILIK"?"PEMILIK":"BRANKAS",qty:1,berat:f?f.berat:0,harga:0,pemilik:curRet==="RETUR_PEMILIK"?(pemilik||"-"):"-",note:$("rNote").value.trim(),desc:"Retur "+kode,brand:f?f.brand:"-",kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
 DB.mutasi.unshift(m);pushCloud("mutasi",m);addLog(curRet,kode+(pemilik?" → "+pemilik:""));save();refresh();renderRetur();$("rKode").value="";toast("Retur tersimpan ↩️")}
@@ -328,8 +346,31 @@ const o={brand:b,gram:g,t:"LM",at:todayStr()};DB.master.unshift(o);pushCloud("ma
 else{const j=$("msJenis").value,k=$("msKadar").value;if(DB.master.find(x=>x.t==="PH"&&x.jenis===j&&x.kadar===k)){toast("Sudah ada");return}
 const o={jenis:j,kadar:k,t:"PH",at:todayStr()};DB.master.unshift(o);pushCloud("master",o);addLog("MASTER",`PH ${j} ${k}`)}
 save();paintAll();renderMaster();toast("Master ditambah 🏷️")}
-function renderMaster(){const rows=DB.master.map(m=>`<tr><td>${m.t==="LM"?`🪙 ${m.brand} ${m.gram}gr`:`💍 ${m.jenis} ${m.kadar}`}</td><td>${m.at||""}</td></tr>`).join("");
-$("tblMaster").innerHTML=`<tr><th>Produk</th><th>Dibuat</th></tr>`+(rows||`<tr><td colspan="2" class="muted">Master default aktif (ANTAM/UBS/G24 + 6 perhiasan). Tambahanmu muncul di sini.</td></tr>`)}
+function delLM(b,g){const i=DB.master.findIndex(x=>x.t==="LM"&&x.brand===b&&x.gram===g);
+if(i>=0){DB.master.splice(i,1)}else{DB.hidden=DB.hidden||[];DB.hidden.push({t:"LM",brand:b,gram:g})}
+addLog("MASTER_HAPUS",`LM ${b} ${g}gr`);save();paintAll();renderMaster()}
+function editLM(b,g){const v=prompt(`Edit gramasi ${b} (semula ${g}):`,g);if(v===null)return;const ng=Number(v);if(!ng||ng<=0){toast("Gramasi tidak valid");return}
+const i=DB.master.findIndex(x=>x.t==="LM"&&x.brand===b&&x.gram===g);
+if(i>=0)DB.master[i].gram=ng;else{DB.hidden=DB.hidden||[];DB.hidden.push({t:"LM",brand:b,gram:g});DB.master.unshift({brand:b,gram:ng,t:"LM",at:todayStr()})}
+addLog("MASTER_EDIT",`LM ${b} ${g}→${ng}gr`);save();paintAll();renderMaster()}
+function delPH(i){const m=DB.master[i];DB.master.splice(i,1);addLog("MASTER_HAPUS",`PH ${m.jenis} ${m.kadar}`);save();paintAll();renderMaster()}
+function editPH(i){const m=DB.master[i];const v=prompt(`Edit kadar ${m.jenis} (semula ${m.kadar}):`,m.kadar);if(v===null)return;if(!v.trim()){toast("Kadar tidak valid");return}
+m.kadar=v.trim().toUpperCase();addLog("MASTER_EDIT",`PH ${m.jenis} → ${m.kadar}`);save();paintAll();renderMaster()}
+function hideJenis(j){DB.hidden=DB.hidden||[];DB.hidden.push({t:"PHJ",jenis:j});addLog("MASTER_HAPUS","Jenis "+j);save();paintAll();renderMaster()}
+function hideKadar(k){DB.hidden=DB.hidden||[];DB.hidden.push({t:"PHK",kadar:k});addLog("MASTER_HAPUS","Kadar "+k);save();paintAll();renderMaster()}
+function resetMaster(){if(!confirm("Kembalikan master default? Tambahan manual tetap ada."))return;DB.hidden=[];addLog("MASTER_RESET","Default dikembalikan");save();paintAll();renderMaster();toast("Master default kembali ↺")}
+function renderMaster(){let h=`<tr><th>Master Produk</th><th>Aksi</th></tr>`;
+["ANTAM","UBS","G24"].forEach(b=>{h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>${bb(b)} ${b}</b></td></tr>`;
+gramsEff(b).forEach(g=>{const custom=DB.master.findIndex(x=>x.t==="LM"&&x.brand===b&&x.gram===g);
+h+=`<tr><td>${g} gram</td><td><button class="chip" onclick="editLM('${b}',${g})">✏️</button> <button class="chip" onclick="delLM('${b}',${g})">🗑️</button></td></tr>`})});
+h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>💍 Perhiasan (jenis)</b></td></tr>`;
+phJenis().forEach(j=>{h+=`<tr><td>${j}</td><td><button class="chip" onclick="hideJenis('${j}')">🗑️</button></td></tr>`});
+h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>✨ Kadar</b></td></tr>`;
+kadars().forEach(k=>{h+=`<tr><td>${k}</td><td><button class="chip" onclick="hideKadar('${k}')">🗑️</button></td></tr>`});
+const ci=[];DB.master.forEach((m,i)=>{if(m.t==="PH")ci.push(`<tr><td>💍 ${m.jenis} ${m.kadar} (manual)</td><td><button class="chip" onclick="editPH(${i})">✏️</button> <button class="chip" onclick="delPH(${i})">🗑️</button></td></tr>`)});
+if(ci.length)h+=`<tr><td colspan="2" style="background:#FBE3C3"><b>➕ Tambahan manual</b></td></tr>`+ci.join("");
+h+=`<tr><td colspan="2" style="text-align:center"><button class="chip" onclick="resetMaster()">↺ Kembalikan default</button></td></tr>`;
+$("tblMaster").innerHTML=h}
 /* TEMPLATE + IMPOR */
 function imporExcel(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();
 r.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:"array"});const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
@@ -358,22 +399,33 @@ const e=stokLokasi("ETALASE"),z=stokLokasi("BAZAR");
 $("stEtalase").textContent=e.pcs+" pcs";$("stEtalaseGr").textContent=e.gr.toFixed(2)+" gr";
 $("stBazar").textContent=z.pcs+" pcs";$("stBazarGr").textContent=z.gr.toFixed(2)+" gr";
 const s=sesiHari();$("stHari").textContent=s?(s.status==="BUKA"?"☀️ BUKA":"🌙 TUTUP")+" • "+s.tanggal:"Belum buka"}
+function breakdown(s){const g={};function add(k,pcs,gr){g[k]=g[k]||{pcs:0,gr:0};g[k].pcs+=pcs;g[k].gr+=gr}
+DB.mutasi.forEach(m=>{const key=m.jenis==="LM"?("LM|"+m.brand):"PH";
+const inP=m.tipe==="MASUK_PUSAT"&&m.sumber===s,b=m.tipe==="BUYBACK_MASUK"&&s==="BUYBACK",k=m.tipe==="KONSINYASI_MASUK"&&s==="KONSINYASI";
+if(inP||b||k)add(key,m.qty,m.berat);
+if(m.tipe==="DISTRIBUSI"&&m.sumber===s)add(key,-m.qty,-m.berat);
+if(m.tipe==="PENGEMBALIAN"&&m.sumber===s)add(key,m.qty,m.berat)});return g}
+function toggleBr(s){const r=$("brx-"+s);if(r)r.style.display=r.style.display==="none"?"table-row":"none"}
 function renderStok(){const tabs=["BRANKAS","ETALASE","BAZAR"];$("chipsStok").innerHTML=tabs.map(t=>`<button class="chip ${curStok===t?"on":""}" onclick="curStok='${t}';renderStok()">${t}</button>`).join("");
-let rows="";if(curStok==="BRANKAS"){["PUSAT","BUYBACK","KONSINYASI"].forEach(s=>{const v=stokBrankas(s);rows+=`<tr><td><b>${s}</b></td><td>LM + Perhiasan</td><td>${v.pcs} pcs</td><td>${v.gr.toFixed(2)} gr</td></tr>`})}
-else{DB.mutasi.filter(m=>m.tipe==="DISTRIBUSI"&&m.lok===curStok).slice(0,50).forEach(m=>{rows+=`<tr><td>${m.tanggal}</td><td>${esc(m.desc)}<br><span class="muted">${m.sumber} • ${esc(m.by)}</span></td><td>${m.qty} pcs</td><td>${Number(m.berat).toFixed(2)} gr</td></tr>`})}
-$("tblStok").innerHTML=`<tr><th>Waktu/Sumber</th><th>Barang</th><th>Qty</th><th>Berat</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Kosong</td></tr>`)}
+let rows="";if(curStok==="BRANKAS"){["PUSAT","BUYBACK","KONSINYASI"].forEach(s=>{const v=stokBrankas(s);const g=breakdown(s);
+const det=Object.entries(g).filter(([k,v])=>v.pcs>0).map(([k,v])=>{const[ty,br]=k.split("|");return `<div class="kv"><span>${ty==="LM"?bb(br)+" "+br:"💍 Perhiasan"}</span><b>${v.pcs} pcs • ${v.gr.toFixed(2)} gr</b></div>`}).join("")||`<span class="muted">Kosong</span>`;
+rows+=`<tr onclick="toggleBr('${s}')" style="cursor:pointer"><td><b>${s}</b> ▾</td><td>LM + Perhiasan</td><td>${v.pcs} pcs</td><td>${v.gr.toFixed(2)} gr</td></tr><tr id="brx-${s}" style="display:none"><td colspan="4">${det}</td></tr>`})}
+else{DB.mutasi.filter(m=>m.tipe==="DISTRIBUSI"&&m.lok===curStok).slice(0,50).forEach(m=>{rows+=`<tr><td>${m.tanggal}</td><td>${m.jenis==="LM"?bb(m.brand):"💍"} ${esc(m.desc)}<br><span class="muted">${m.sumber} • ${esc(m.by)}</span></td><td>${m.qty} pcs</td><td>${Number(m.berat).toFixed(2)} gr</td></tr>`})}
+$("tblStok").innerHTML=`<tr><th>ASAL STOK</th><th>Barang</th><th>Qty</th><th>Berat</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Kosong</td></tr>`)}
 /* LAPORAN */
 function rangePeriode(){const p=$("rPeriode").value;$("boxRange").style.display=p==="custom"?"grid":"none";
 const t=new Date();let dari=t,sampai=t;
-if(p==="mingguan")dari=new Date(Date.now()-6*864e5);if(p==="bulanan")dari=new Date(t.getFullYear(),t.getMonth(),1);
-if(p==="triwulan")dari=new Date(t.getFullYear(),t.getMonth()-2,1);if(p==="semester")dari=new Date(t.getFullYear(),t.getMonth()-5,1);
-if(p==="tahunan")dari=new Date(t.getFullYear(),0,1);if(p==="custom"){dari=new Date($("rDari").value||todayStr());sampai=new Date($("rSampai").value||todayStr())}
+if(p==="custom"){dari=new Date($("rDari").value||todayStr());sampai=new Date($("rSampai").value||todayStr())}
 return{dari:dari.toISOString().slice(0,10),sampai:sampai.toISOString().slice(0,10),label:p.toUpperCase()}}
 function lapData(){const r=rangePeriode(),j=$("rJenis").value;const flt=DB.mutasi.filter(m=>m.tanggal>=r.dari&&m.tanggal<=r.sampai);
 if(j==="penjualan")return{rows:flt.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)),r};
 if(j==="stok")return{rows:flt,r};
 if(j==="kategori"){const g={};flt.forEach(m=>{g[m.sumber]=g[m.sumber]||{pcs:0,gr:0};g[m.sumber].pcs+=m.qty;g[m.sumber].gr+=m.berat});return{rows:Object.entries(g).map(([k,v])=>({tanggal:`${r.dari}→${r.sampai}`,tipe:"REKAP",desc:"Kategori "+k,sumber:k,lok:"-",qty:v.pcs,berat:v.gr,harga:0,by:"-"})),r}}
 if(j==="jenis"){const g={};flt.forEach(m=>{g[m.jenis]=g[m.jenis]||{pcs:0,gr:0};g[m.jenis].pcs+=m.qty;g[m.jenis].gr+=m.berat});return{rows:Object.entries(g).map(([k,v])=>({tanggal:`${r.dari}→${r.sampai}`,tipe:"REKAP",desc:"Jenis "+k,sumber:"-",lok:"-",qty:v.pcs,berat:v.gr,harga:0,by:"-"})),r}}
+if(j==="sisa_lm"){const g={};DB.mutasi.filter(m=>m.jenis==="LM").forEach(m=>{const gm=(m.desc.match(/([\d.]+)\s*gr/)||[])[1]||"?";const k=m.brand+" "+gm+" gr";g[k]=g[k]||{pcs:0,gr:0,asal:{}};
+if(["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK","PENGEMBALIAN"].includes(m.tipe)){g[k].pcs+=m.qty;g[k].gr+=m.berat;g[k].asal[m.sumber]=1}
+if(m.tipe==="PENJUALAN"||m.tipe==="RETUR_PEMILIK"){g[k].pcs-=m.qty;g[k].gr-=m.berat}});
+return{rows:Object.entries(g).filter(([k,v])=>v.pcs!==0).map(([k,v])=>({tanggal:"HARI INI",tipe:"SISA",desc:k+" • asal: "+(Object.keys(v.asal).join(", ")||"-"),sumber:Object.keys(v.asal).join("+")||"-",lok:"BRANKAS+ETALASE+BAZAR",qty:v.pcs,berat:v.gr,harga:0,by:"-"})),r}}
 return{rows:DB.sessions.filter(s=>s.tanggal>=r.dari&&s.tanggal<=r.sampai).map(s=>({tanggal:s.tanggal,tipe:s.status,desc:"Sesi "+(s.selisih||"-"),sumber:"-",lok:"-",qty:0,berat:0,harga:0,by:s.by||s.tutupOleh||"-"})),r}}
 function renderLaporan(){const{r,rows}=lapData(),j=$("rJenis").value;let tp=0,tg=0,th=0;rows.forEach(m=>{tp+=m.qty||0;tg+=m.berat||0;th+=m.harga||0});
 $("lapOut").innerHTML=`<p class="muted">${j.toUpperCase()} • ${r.dari} → ${r.sampai} • ${rows.length} baris • Total ${tp}pcs ${tg.toFixed(2)}gr ${fmtRp(th)}</p>
@@ -385,8 +437,9 @@ const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();XLSX.util
 XLSX.writeFile(wb,`G24Kedaton_${r.label}_${r.dari}_${r.sampai}.${t}`);addLog("EXPORT",t.toUpperCase()+" "+rows.length+" baris")}
 function eksporPDF(){const{rows,r}=lapData();if(typeof window.jspdf==="undefined"){toast("Gunakan Print A4");cetakA4();return}
 const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"portrait",format:"a4"});
-d.addImage("./LOGO.png","PNG",14,8,16,16);d.setFontSize(13);d.text("GUDANG STOK G24 KEDATON",34,14);d.setFontSize(9);d.text(`${$("rJenis").value} • ${r.dari} s/d ${r.sampai}`,34,19);
-d.autoTable({startY:28,head:[["Tgl","Tipe","Deskripsi","Sumber/Lok","Qty","Berat","Harga"]],body:rows.slice(0,400).map(m=>[m.tanggal,m.tipe,m.desc,m.sumber+"/"+m.lok,m.qty,Number(m.berat).toFixed(2),m.harga]),styles:{fontSize:7}});
+try{d.addImage("./LOGO.png","PNG",12,8,15,15)}catch(e){}
+d.setFontSize(13);d.text("GUDANG STOK G24 KEDATON",31,14);d.setFontSize(9);d.text(`${$("rJenis").value} • ${r.dari} s/d ${r.sampai}`,31,19);
+d.autoTable({startY:28,head:[["No","Tgl","Transaksi","Sumber/Lokasi","Qty","Berat","Harga"]],body:rows.slice(0,400).map((m,i)=>[i+1,m.tanggal,m.tipe+" "+m.desc,m.sumber+"/"+m.lok,m.qty+"pcs",Number(m.berat).toFixed(2)+"gr",m.harga]),styles:{fontSize:7,lineWidth:.4,lineColor:[40,26,14]},headStyles:{fillColor:[212,98,26],lineWidth:.4,lineColor:[40,26,14]}});
 d.setFontSize(8);d.text(`Diprint oleh ${curUser.nama} • ${new Date().toLocaleString("id-ID")}`,14,292);d.save(`G24Kedaton_${r.label}.pdf`);addLog("EXPORT","PDF portrait "+rows.length+" baris")}
 function cetakA4(){const{rows,r}=lapData(),j=$("rJenis").value;
 $("printArea").innerHTML=`<div class="p-head"><img src="./LOGO.png"><div><b>GUDANG STOK G24 KEDATON</b><br>${j.toUpperCase()} • Periode ${r.dari} → ${r.sampai} • ${rows.length} baris</div></div>
@@ -396,10 +449,36 @@ ${rows.slice(0,400).map((m,i)=>`<tr><td>${i+1}</td><td>${m.tanggal}</td><td><b>$
 <div class="p-foot"><div class="sign">Dibuat<br><br><br>( ${esc(curUser.nama)} )</div><div class="sign">Diperiksa<br><br><br>( .......... )</div><div class="sign">Mengetahui<br><br><br>( .......... )</div></div>`;
 addLog("CETAK",j+" "+r.label);window.print()}
 /* MORE */
-function renderMore(){$("listUser").innerHTML=DB.users.map(u=>`<span class="badge" style="margin:2px">👤 ${esc(u.nama)}</span>`).join("")||`<span class="muted">Belum ada user</span>`;
+function renderMore(){$("listUser").innerHTML=DB.users.map(u=>`<span class="badge" style="margin:2px">👤 ${esc(u.nama)}${u.nama==="ADMIN"?" ⭐":""}</span>`).join("")||`<span class="muted">Belum ada user</span>`;renderBackups();
 $("tblLog").innerHTML=`<tr><th>Waktu</th><th>User</th><th>Aksi</th></tr>`+DB.logs.slice(0,100).map(l=>`<tr><td>${String(l.at).slice(0,16).replace("T"," ")}</td><td>${esc(l.by)}</td><td><b>${esc(l.aksi)}</b><br><span class="muted">${esc(l.detail)}</span></td></tr>`).join("")}
-function tambahUser(){const v=$("newUser").value.trim();if(!v)return;DB.users.push({nama:v,at:todayStr()});pushCloud("users",{nama:v,at:todayStr()});addLog("USER","Tambah "+v);save();renderMore();$("newUser").value="";toast("User ditambah")}
-function backupJSON(){const b=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup-g24kedaton-"+todayStr()+".json";a.click()}
+function tambahUser(){if(!curUser||curUser.nama!=="ADMIN"){toast("⛔ Hanya ADMIN yang bisa daftarkan user");return}
+const v=$("newUser").value.trim(),pw=$("newPin").value.trim();if(!v||!pw){toast("Isi nama + PIN");return}
+if(DB.users.find(x=>x.nama===v)){toast("Sudah terdaftar");return}
+DB.users.push({nama:v,pin:pw,at:todayStr()});pushCloud("users",{nama:v,pin:pw,at:todayStr()});addLog("USER","Daftarkan "+v+" oleh ADMIN");save();renderMore();$("newUser").value="";$("newPin").value="";toast("User ditambah")}
+function backupJSON(){const b=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup-g24kedaton-"+todayStr()+".json";a.click();addLog("BACKUP_JSON","Unduh backup JSON")}
+/* PUSH / PULL manual — hanya data yang belum ada di cloud (bertanda _c) yang dikirim */
+function pushManual(){if(!cloudOK){toast("Cloud belum tersambung — isi Firebase dulu");return}
+let n=0;["mutasi","sessions","logs","users","master"].forEach(col=>{DB[col].forEach(o=>{if(!o._c){const c=Object.assign({},o);delete c._c;delete c.id;pushCloud(col,c);o._c=1;n++}})});
+save();addLog("PUSH",n+" data dikirim ke cloud");toast("⬆️ "+n+" data di-push")}
+async function pullManual(){if(!cloudOK){toast("Cloud belum tersambung");return}
+for(const col of["mutasi","sessions","logs","users","master"]){const s=await cloud.collection(col).orderBy("at","desc").limit(1000).get();const a=[];s.forEach(d=>{const o=Object.assign({id:d.id},d.data());o._c=1;a.push(o)});
+if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);if(col==="users")DB.users=a;if(col==="master")DB.master=a}
+seedAdmin();save();paintAll();refresh();addLog("PULL","Tarik data cloud");toast("⬇️ Pull selesai")}
+async function hardRefresh(){toast("Membersihkan cache…");if("serviceWorker"in navigator){const r=await navigator.serviceWorker.getRegistrations();for(const x of r)await x.unregister()}
+const ks=await caches.keys();for(const k of ks)await caches.delete(k);location.reload(true)}
+/* BACKUP CLOUD — snapshot ber-timestamp di koleksi backups + auto tiap Tutup Hari. Restore khusus ADMIN. */
+async function backupCloud(silent){if(!cloudOK){if(!silent)toast("Cloud belum tersambung");return}
+const snap={by:curUser?curUser.nama:"-",at:new Date().toISOString(),tanggal:todayStr(),data:{mutasi:DB.mutasi,sessions:DB.sessions,logs:DB.logs.slice(0,100),users:DB.users,master:DB.master,hidden:DB.hidden||[]}};
+await cloud.collection("backups").add(snap);if(!silent){addLog("BACKUP_CLOUD","Snapshot "+todayStr());renderBackups();toast("☁️ Backup cloud tersimpan")}}
+async function renderBackups(){if(!cloudOK){$("listBackup").innerHTML=`<span class="muted">Sambungkan Firebase dulu untuk backup cloud.</span>`;return}
+const s=await cloud.collection("backups").orderBy("at","desc").limit(10).get();let h="";s.forEach(d=>{const b=d.data();h+=`<div class="kv"><span>${String(b.at).slice(0,16).replace("T"," ")} • ${esc(b.by)} • ${(b.data.mutasi||[]).length} mutasi</span><button class="chip" onclick="restoreBackup('${d.id}')">Restore</button></div>`});
+$("listBackup").innerHTML=h||`<span class="muted">Belum ada backup cloud</span>`}
+async function restoreBackup(id){if(!curUser||curUser.nama!=="ADMIN"){toast("⛔ Hanya ADMIN");return}
+if(!confirm("Restore backup ini? Data lokal diganti."))return;
+const d=await cloud.collection("backups").doc(id).get();const b=d.data().data;
+DB.mutasi=b.mutasi||[];DB.sessions=b.sessions||[];DB.logs=b.logs||[];DB.users=b.users||[];DB.master=b.master||[];DB.hidden=b.hidden||[];
+["mutasi","sessions","logs","users","master"].forEach(c=>DB[c].forEach(o=>delete o._c));
+seedAdmin();save();paintAll();refresh();addLog("RESTORE","Restore backup "+id.slice(0,6)+" — tekan Push untuk kirim ke cloud");toast("Restore OK — tekan Push ⬆️")}
 /* paint */
 function buildRail(){$("rail").innerHTML=NAV.map(n=>`<button data-pg="${n[0]}" onclick="go('${n[0]}')"><i>${n[1]}</i><span>${n[2]}</span></button>`).join("")}
 function paintAll(){
@@ -410,9 +489,15 @@ const JJ=[["LM","🪙 LM 24K"],["PERHIASAN","💍 Perhiasan"]];
 $("chipsJenisJ").innerHTML=JJ.map(t=>`<button class="chip ${curJJenis===t[0]?"on":""}" onclick="curJJenis='${t[0]}';paintAll()">${t[1]}</button>`).join("");
 $("chipsJenisM").innerHTML=JJ.map(t=>`<button class="chip ${curMJenis===t[0]?"on":""}" onclick="curMJenis='${t[0]}';paintAll()">${t[1]}</button>`).join("");
 $("chipsJenisMaster").innerHTML=JJ.map(t=>`<button class="chip ${curMst===t[0]?"on":""}" onclick="curMst='${t[0]}';paintAll()">${t[1]}</button>`).join("");
+if(curJual==="KONSINYASI_MASUK"&&curJJenis==="PERHIASAN")curJJenis="LM";
+if(curJual==="PENJUALAN"&&curJJenis==="PERHIASAN"){$("jSumber").value="PUSAT";$("jSumber").disabled=true}
+else if(curJual==="BUYBACK_MASUK"){$("jSumber").value="BUYBACK";$("jSumber").disabled=true}
+else if(curJual==="KONSINYASI_MASUK"){$("jSumber").value="KONSINYASI";$("jSumber").disabled=true}
+else{$("jSumber").disabled=false}
+$("boxPemilikJ").style.display=curJual==="KONSINYASI_MASUK"?"block":"none";
 fillSel("jBrand",brands());fillSel("mBrand",brands());fillSel("jJenisPH",phJenis());fillSel("mJenisPH",phJenis());fillSel("jKadar",kadars());fillSel("mKadar",kadars());
-$("jGram").innerHTML=grams($("jBrand").value).map(v=>`<option>${v}</option>`).join("");
-$("mGram").innerHTML=grams($("mBrand").value).map(v=>`<option>${v}</option>`).join("");
+$("jGram").innerHTML=gramsEff($("jBrand").value).map(v=>`<option>${v}</option>`).join("");
+$("mGram").innerHTML=gramsEff($("mBrand").value).map(v=>`<option>${v}</option>`).join("");
 $("boxJL").style.display=curJJenis==="LM"?"block":"none";$("boxJP").style.display=curJJenis==="LM"?"none":"block";
 $("boxML").style.display=curMJenis==="LM"?"block":"none";$("boxMP").style.display=curMJenis==="LM"?"none":"block";
 $("boxMasterLM").style.display=curMst==="LM"?"block":"none";$("boxMasterPH").style.display=curMst==="LM"?"none":"block";

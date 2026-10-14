@@ -8,5 +8,7 @@ service cloud.firestore {
     match /sessions/{d} { allow read: if authed(); allow create, update: if authed(); allow delete: if false; }
     match /logs/{d}     { allow read: if authed(); allow create: if authed(); allow update, delete: if false; }
     match /users/{d}    { allow read: if authed(); allow create, update: if authed(); allow delete: if false; }
+    match /master/{d}   { allow read: if authed(); allow create, update: if authed(); allow delete: if false; }
+    match /backups/{d}  { allow read: if authed(); allow create: if authed(); allow update, delete: if false; }
   }
 }
