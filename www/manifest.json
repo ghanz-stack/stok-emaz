@@ -1,15 +1,15 @@
 {
-  "name": "Stok Emas Gudang Ibu NID",
-  "short_name": "IbuNID Emas",
-  "description": "Brankas Etalase Bazar realtime — pastel minimalis",
+  "name": "Gudang Stok G24 Kedaton",
+  "short_name": "G24 Kedaton",
+  "description": "Brankas Etalase Bazar realtime",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#FFF8F6",
-  "theme_color": "#F9A8D4",
+  "background_color": "#FEF3E2",
+  "theme_color": "#D4621A",
   "orientation": "portrait",
   "icons": [
-    { "src": "./LOGO.png", "sizes": "any", "type": "image/png", "purpose": "any" },
+    { "src": "./logo-app.jpg", "sizes": "any", "type": "image/jpeg", "purpose": "any" },
     { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
