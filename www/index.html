@@ -89,7 +89,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 
 <div class="wrap">
 <div id="pg-login" class="page on"><div class="card login">
-<h2 style="margin:0">Masuk ✨</h2><p class="muted">Khusus user terdaftar • Login awal: <b>ADMIN / ADMIN</b></p>
+<h2 style="margin:0">Masuk ✨</h2><p class="muted">Khusus user terdaftar</p>
 <label>Nama pengguna</label><input id="inUser" placeholder="cth: Kedaton / Kasir">
 <label>PIN / Kode (bebas, untuk jejak)</label><input id="inPin" placeholder="cth: 1234">
 <div style="height:10px"></div><button class="btn btn-burnt" onclick="doLogin()">Masuk Aplikasi →</button>
@@ -120,11 +120,11 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div class="card"><p class="muted">Hanya status barang (otomatis dari data Barang Masuk). Tanpa kolom harga & pemilik.</p>
 <div class="chips" id="chipsMut"></div>
 <label>Kode barang (ketik/pilih — status terisi otomatis)</label>
-<input id="mKode" list="dlKode" placeholder="cth: ANTAM-1G / PH-..." oninput="autoMut()">
-<datalist id="dlKode"></datalist>
+<input id="mKode" list="dlMut" placeholder="cth: ANTAM-1G / PH-..." oninput="autoMut()">
+<datalist id="dlKode"></datalist><datalist id="dlMut"></datalist><datalist id="dlJual"></datalist>
 <div class="autostat" id="mAuto">Status: —</div>
 <label>Keterangan barang</label><select id="mKet"><option value="SALDO PAGI">SALDO PAGI</option><option value="SALDO SUSULAN">SALDO SUSULAN (tambahan dari brankas)</option></select>
-<div class="grid2"><div><label>Lokasi display</label><select id="mLok"><option value="ETALASE">ETALASE (Depan)</option><option value="BAZAR">BAZAR (Event)</option></select></div>
+<div class="grid2"><div><label>Lokasi display</label><select id="mLok" onchange="renderMutasi()"><option value="ETALASE">ETALASE (Depan)</option><option value="BAZAR">BAZAR (Event)</option></select></div>
 <div><label>Qty (pcs)</label><input id="mQty" type="number" min="1" value="1"></div></div>
 <label>Catatan</label><input id="mNote" placeholder="cth: display pagi / sisa sore kembali">
 <div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMutasi()">💾 Simpan Mutasi</button></div>
@@ -136,11 +136,12 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div class="card"><div class="chips" id="chipsJual"></div>
 <div id="boxJenisJ"><div class="chips" id="chipsJenisJ"></div></div>
 <div class="grid2"><div><label>Sumber</label><select id="jSumber"><option value="PUSAT">PUSAT</option><option value="BUYBACK">BUYBACK</option><option value="KONSINYASI">KONSINYASI</option></select></div>
-<div><label>Lokasi (hanya display)</label><select id="jLok"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div></div>
+<div><label>Lokasi (hanya display)</label><select id="jLok" onchange="refreshDlJual()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div></div>
 <div id="boxJL"><label>Brand LOGAM MULIA (24K • 99.9999%)</label><select id="jBrand"></select><label>Gramasi</label><select id="jGram"></select></div>
 <div id="boxJP" style="display:none"><label>Jenis perhiasan</label><select id="jJenisPH"></select>
 <div class="grid3"><div><label>Kadar</label><select id="jKadar"></select></div><div><label>Berat (gr)</label><input id="jBerat" type="number" step="0.01" min="0"></div><div><label>Kode item</label><input id="jKode" placeholder="PH-..."></div></div>
 </div>
+<div id="boxJStok"><label>Kode barang (stok display — wajib)</label><input id="jKodeStok" list="dlJual" placeholder="pilih kode di Etalase/Bazar" oninput="autoJual()"><div class="autostat" id="jAuto">—</div></div>
 <div class="grid3"><div><label>Qty (pcs)</label><input id="jQty" type="number" min="1" value="1"></div>
 <div><label>Harga Rp</label><input id="jHarga" type="number" min="0"></div>
 <div id="boxPemilikJ"><label>Pemilik (konsinyasi)</label><input id="jPemilik" placeholder="Nama pemilik"></div></div>
@@ -294,33 +295,67 @@ s.status="TUTUP";s.tutupOleh=curUser.nama;s.selisih=sls;pushCloud("sessions",{ta
 addLog("TUTUP_HARI",todayStr()+" • selisih: "+sls);save();refresh();backupCloud(true);toast("Tutup hari 🌙 • Berita Acara siap dicetak")}
 /* cari data barang masuk by kode */
 function findMasuk(kode){return DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe))}
+function MasukOf(kode){return findMasuk(kode)}
+/* POSISI STOK PER KODE: BRANKAS ⇄ ETALASE/BAZAR → TERJUAL. Retur ke Pusat = reklas sumber (lokasi tetap Brankas). Retur Pemilik = keluar sistem. */
+function posKode(kode){const f=MasukOf(kode);if(!f)return null;const r={brankas:f.qty,ETALASE:0,BAZAR:0,terjual:0};
+DB.mutasi.forEach(m=>{if(m.kode!==kode)return;
+if(m.tipe==="DISTRIBUSI"){r.brankas-=m.qty;if(m.lok==="ETALASE"||m.lok==="BAZAR")r[m.lok]+=m.qty}
+else if(m.tipe==="PENGEMBALIAN"){if(m.lok==="ETALASE"||m.lok==="BAZAR")r[m.lok]-=m.qty;r.brankas+=m.qty}
+else if(m.tipe==="PENJUALAN"){if(m.lok==="ETALASE"||m.lok==="BAZAR")r[m.lok]-=m.qty;r.terjual+=m.qty}
+else if(m.tipe==="RETUR_PEMILIK"){r.brankas-=m.qty}});
+r.brankas=Math.max(0,r.brankas);r.ETALASE=Math.max(0,r.ETALASE);r.BAZAR=Math.max(0,r.BAZAR);r.terjual=Math.max(0,r.terjual);
+return{f,pos:r}}
 /* MUTASI */
 function autoMut(){const k=$("mKode").value.trim(),f=findMasuk(k);
-$("mAuto").innerHTML=f?`Status: <b>${f.jenis}</b> • ${esc(f.desc)} • sumber <b>${f.sumber}</b> • ${f.qty}pcs ${Number(f.berat).toFixed(2)}gr`:"Status: — (kode belum terdata di Barang Masuk)"}
+if(!f){$("mAuto").innerHTML="Status: — (kode belum terdata di Barang Masuk)";return}
+const p=posKode(k);
+$("mAuto").innerHTML=`Status: <b>${f.jenis}</b> • ${esc(f.desc)} • sumber <b>${f.sumber}</b><br>📦 Brankas: <b>${p.pos.brankas}</b> • 🪞 Etalase: <b>${p.pos.ETALASE}</b> • 🎪 Bazar: <b>${p.pos.BAZAR}</b> • Terjual: ${p.pos.terjual}`}
+function refreshDlMut(){const allIn=DB.mutasi.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)).slice(0,400);
+$("dlKode").innerHTML=allIn.map(m=>`<option value="${esc(m.kode)}">${esc(m.desc)}</option>`).join("");
+const lk=$("mLok").value;
+$("dlMut").innerHTML=allIn.filter(m=>{const p=posKode(m.kode);if(!p)return false;return curMut==="DISTRIBUSI"?p.pos.brankas>0:p.pos[lk]>0}).slice(0,200).map(m=>{const p=posKode(m.kode);const av=curMut==="DISTRIBUSI"?p.pos.brankas:p.pos[lk];return `<option value="${esc(m.kode)}">${esc(m.desc)} • sisa ${av}</option>`}).join("")}
 function simpanMutasi(){if(!curUser){toast("Masuk dulu");return}
 const kode=$("mKode").value.trim(),f=findMasuk(kode);
-if(!f){toast("Pilih kode yang sudah terdata di Barang Masuk");$("mKode").focus();return}
+if(!f){toast("⛔ Kode tidak ada di stok gudang");$("mKode").focus();return}
+const pv=posKode(kode);
+if(curMut==="DISTRIBUSI"&&pv.pos.brankas<qty){toast(`⛔ Stok BRANKAS kode ini tinggal ${pv.pos.brankas}pcs`);return}
+if(curMut==="PENGEMBALIAN"&&pv.pos[lok]<qty){toast(`⛔ Stok ${lok} kode ini tinggal ${pv.pos[lok]}pcs`);return}
 const lok=$("mLok").value,qty=Math.max(1,Number($("mQty").value)||1),note=$("mNote").value.trim(),ket=$("mKet").value;
 const perUnit=f.berat/Math.max(1,f.qty);
 const m={id:uid("M"),tipe:curMut,jenis:f.jenis,sumber:f.sumber,lok,qty,berat:perUnit*qty,harga:0,pemilik:"-",note,ket,desc:f.desc,brand:f.brand,kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
 DB.mutasi.unshift(m);pushCloud("mutasi",m);addLog(curMut,`${f.desc} • ${qty}pcs → ${lok}`);save();refresh();renderMutasi();$("mKode").value="";$("mNote").value="";autoMut();toast("Mutasi tersimpan ✨")}
 function renderMutasi(){const rows=DB.mutasi.filter(m=>["DISTRIBUSI","PENGEMBALIAN"].includes(m.tipe)).slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td><b>${m.tipe==="DISTRIBUSI"?"📤 Keluar":"📥 Masuk"}</b> <span class="badge">${m.ket||""}</span><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber} • ${m.lok}</td><td>${m.qty}pcs<br>${Number(m.berat).toFixed(2)}gr</td></tr>`).join("");
 $("tblMutasi").innerHTML=`<tr><th>Tgl/User</th><th>Transaksi</th><th>Status Barang</th><th>Qty</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Belum ada mutasi</td></tr>`);
-$("dlKode").innerHTML=DB.mutasi.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)).slice(0,200).map(m=>`<option value="${esc(m.kode)}">${esc(m.desc)}</option>`).join("")}
+refreshDlMut()}
 /* PENJUALAN */
+function autoJual(){const k=$("jKodeStok").value.trim(),f=MasukOf(k);
+if(!f){$("jAuto").innerHTML="— (kode tidak terdata di gudang)";return}
+const p=posKode(k);try{$("jSumber").value=f.sumber}catch(e){}
+$("jAuto").innerHTML=`${f.jenis} • ${esc(f.desc)} • sumber <b>${f.sumber}</b><br>🪞 Etalase: <b>${p.pos.ETALASE}</b> • 🎪 Bazar: <b>${p.pos.BAZAR}</b> • Terjual: ${p.pos.terjual}`;refreshDlJual()}
+function refreshDlJual(){if(!$("dlJual"))return;const lk=$("jLok").value;
+const all=DB.mutasi.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)&&m.jenis===curJJenis).slice(0,400);
+$("dlJual").innerHTML=all.filter(m=>{const p=posKode(m.kode);return p&&p.pos[lk]>0}).slice(0,200).map(m=>{const p=posKode(m.kode);return `<option value="${esc(m.kode)}">${esc(m.desc)} • sisa ${p.pos[lk]}</option>`}).join("")}
 function simpanJual(){if(!curUser){toast("Masuk dulu");return}
-const sumber=$("jSumber").value,lok=$("jLok").value,qty=Math.max(1,Number($("jQty").value)||1),harga=Number($("jHarga").value)||0,pemilik=$("jPemilik").value.trim(),note=$("jNote").value.trim();
-let desc,berat,kode;
-if(curJJenis==="LM"){const br=$("jBrand").value,gr=Number($("jGram").value);berat=gr*qty;desc=`${br} ${gr}gr × ${qty}`;kode=`${br}-${gr}G`}
+const lok=$("jLok").value,qty=Math.max(1,Number($("jQty").value)||1),harga=Number($("jHarga").value)||0,pemilik=$("jPemilik").value.trim(),note=$("jNote").value.trim();
+let desc,berat,kode,sumber,jns,brand="-";
+if(curJual==="PENJUALAN"){
+kode=$("jKodeStok").value.trim();const f=MasukOf(kode);
+if(!f){toast("⛔ Kode tidak ada di stok gudang");$("jKodeStok").focus();return}
+const pp=posKode(kode);
+if(pp.pos[lok]<qty){toast(`⛔ Stok ${lok} kode ini tinggal ${pp.pos[lok]}pcs`);return}
+jns=f.jenis;sumber=f.sumber;brand=f.brand;desc=f.desc;berat=(f.berat/Math.max(1,f.qty))*qty;
+if(jns==="PERHIASAN"){if(sumber==="BUYBACK"){toast("⛔ Buyback perhiasan wajib Retur ke Pusat");return}
+const dup=DB.mutasi.find(m=>m.kode===kode&&m.tipe==="PENJUALAN");if(dup){toast("⛔ Kode sudah 1× terjual");return}}
+}else{
+jns=curJJenis;sumber=$("jSumber").value;
+if(curJual==="KONSINYASI_MASUK"&&!pemilik){toast("Isi nama pemilik");$("jPemilik").focus();return}
+if(jns==="LM"){const br=$("jBrand").value,gr=Number($("jGram").value);brand=br;berat=gr*qty;desc=`${br} ${gr}gr × ${qty}`;kode=`${br}-${gr}G-${uid("").slice(-4)}`}
 else{const jp=$("jJenisPH").value;berat=Number($("jBerat").value)||0;const kd=$("jKadar").value;kode=$("jKode").value.trim()||uid("PH");
 if(!berat){toast("Isi berat perhiasan dulu ⚖️");$("jBerat").focus();return}
-if(curJual==="PENJUALAN"&&sumber==="BUYBACK"){toast("⛔ Buyback perhiasan wajib Retur ke Pusat");return}
-if(curJual==="KONSINYASI_MASUK"&&curJJenis==="PERHIASAN"){toast("⛔ Tidak ada konsinyasi perhiasan");return}
-if(curJual==="KONSINYASI_MASUK"&&!pemilik){toast("Isi nama pemilik");$("jPemilik").focus();return}
-if(curJual==="PENJUALAN"){const dup=DB.mutasi.find(m=>m.kode===kode&&m.tipe==="PENJUALAN");if(dup){toast("⛔ Kode sudah 1× terjual");return}}
+const dup2=DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe));if(dup2){toast("⛔ Kode sudah 1× masuk");return}
 desc=`${jp} ${kd} ${berat}gr • ${kode}`}
-const m={id:uid("M"),tipe:curJual,jenis:curJJenis,sumber,lok,qty,berat,harga,pemilik:curJual==="KONSINYASI_MASUK"?(pemilik||"-"):(pemilik||"-"),note,desc,brand:curJJenis==="LM"?$("jBrand").value:"-",kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
-DB.mutasi.unshift(m);pushCloud("mutasi",m);autoMaster(m);addLog(curJual,`${desc} • ${qty}pcs ${fmtRp(harga)}`);save();refresh();renderJual();toast("Tersimpan ✨")}
+const m={id:uid("M"),tipe:curJual,jenis:jns,sumber,lok,qty,berat,harga,pemilik:pemilik||"-",note,desc,brand,kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
+DB.mutasi.unshift(m);pushCloud("mutasi",m);autoMaster(m);addLog(curJual,`${desc} • ${qty}pcs ${fmtRp(harga)}`);save();refresh();renderJual();refreshDlJual();toast("Tersimpan ✨")}
 function renderJual(){const rows=DB.mutasi.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)).slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td>${m.jenis==="LM"?bb(m.brand):"💍"} <b>${m.tipe}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber}/${m.lok}${m.pemilik&&m.pemilik!=="-"?"<br>👤"+esc(m.pemilik):""}</td><td>${m.qty}pcs ${Number(m.berat).toFixed(2)}gr<br>${fmtRp(m.harga)}</td></tr>`).join("");
 $("tblJual").innerHTML=`<tr><th>Tgl/User</th><th>Transaksi</th><th>Sumber/Lok</th><th>Qty/Harga</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Belum ada transaksi</td></tr>`);
 $("rKode")&&null}
@@ -394,10 +429,11 @@ const m={id:uid("M"),tipe,jenis,sumber,lok:"BRANKAS",qty:Number(x.qty)||1,berat,
 DB.mutasi.unshift(m);autoMaster(m);ok++});
 addLog("IMPOR",ok+" baris OK"+(bad.length?" • tolak baris "+bad.join(","):""));save();refresh();renderMasuk();toast(ok+" baris diimpor ✨"+(bad.length?" • "+bad.length+" ditolak":""))}catch(err){toast("Gagal impor: "+err.message)}};r.readAsArrayBuffer(f);inp.value=""}
 /* STOK */
-function stokLokasi(lok){let pcs=0,gr=0;DB.mutasi.forEach(m=>{if(m.tipe==="DISTRIBUSI"&&m.lok===lok){pcs+=m.qty;gr+=m.berat}if(m.tipe==="PENGEMBALIAN"){pcs-=m.qty;gr-=m.berat}if(m.tipe==="PENJUALAN"&&m.lok===lok){pcs-=m.qty;gr-=m.berat}});return{pcs:Math.max(0,pcs),gr:Math.max(0,gr)}}
+function stokLokasi(lok){let pcs=0,gr=0;DB.mutasi.forEach(m=>{if(m.tipe==="DISTRIBUSI"&&m.lok===lok){pcs+=m.qty;gr+=m.berat}if(m.tipe==="PENGEMBALIAN"&&m.lok===lok){pcs-=m.qty;gr-=m.berat}if(m.tipe==="PENJUALAN"&&m.lok===lok){pcs-=m.qty;gr-=m.berat}});return{pcs:Math.max(0,pcs),gr:Math.max(0,gr)}}
 function stokBrankas(s){let pcs=0,gr=0;DB.mutasi.forEach(m=>{const inP=m.tipe==="MASUK_PUSAT"&&m.sumber===s,b=m.tipe==="BUYBACK_MASUK"&&s==="BUYBACK",k=m.tipe==="KONSINYASI_MASUK"&&s==="KONSINYASI";
 if(inP||b||k){pcs+=m.qty;gr+=m.berat}if(m.tipe==="DISTRIBUSI"&&m.sumber===s){pcs-=m.qty;gr-=m.berat}if(m.tipe==="PENGEMBALIAN"&&m.sumber===s){pcs+=m.qty;gr+=m.berat}
-if((m.tipe==="RETUR_PUSAT"||m.tipe==="RETUR_PERHIASAN")&&s==="PUSAT"){pcs+=m.qty;gr+=m.berat}});return{pcs:Math.max(0,pcs),gr:Math.max(0,gr)}}
+if(m.tipe==="RETUR_PEMILIK"&&s==="KONSINYASI"){pcs-=m.qty;gr-=m.berat}
+if(m.tipe==="RETUR_PUSAT"||m.tipe==="RETUR_PERHIASAN"){if(s==="PUSAT"){pcs+=m.qty;gr+=m.berat}else{const f0=MasukOf(m.kode);if(f0&&f0.sumber===s){pcs-=m.qty;gr-=m.berat}}}});return{pcs:Math.max(0,pcs),gr:Math.max(0,gr)}}
 function refresh(){const p=stokBrankas("PUSAT"),b=stokBrankas("BUYBACK"),k=stokBrankas("KONSINYASI");
 $("brPusat").textContent=p.pcs+" pcs";$("brPusatGr").textContent=p.gr.toFixed(2)+" gr";
 $("brBuy").textContent=b.pcs+" pcs";$("brBuyGr").textContent=b.gr.toFixed(2)+" gr";
@@ -562,6 +598,8 @@ else if(curJual==="BUYBACK_MASUK"){$("jSumber").value="BUYBACK";$("jSumber").dis
 else if(curJual==="KONSINYASI_MASUK"){$("jSumber").value="KONSINYASI";$("jSumber").disabled=true}
 else{$("jSumber").disabled=false}
 $("boxPemilikJ").style.display=curJual==="KONSINYASI_MASUK"?"block":"none";
+$("boxJStok").style.display=curJual==="PENJUALAN"?"block":"none";
+refreshDlMut();refreshDlJual();
 fillSel("jBrand",brands());fillSel("mBrand",brands());fillSel("jJenisPH",phJenis());fillSel("mJenisPH",phJenis());fillSel("jKadar",kadars());fillSel("mKadar",kadars());
 $("jGram").innerHTML=gramsEff($("jBrand").value).map(v=>`<option>${v}</option>`).join("");
 $("mGram").innerHTML=gramsEff($("mBrand").value).map(v=>`<option>${v}</option>`).join("");
