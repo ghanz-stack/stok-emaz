@@ -63,6 +63,16 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 .login{max-width:420px;margin:8vh auto}
 .kv{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px dashed var(--line)}
 .autostat{background:#FBE3C3;border:1px dashed var(--burnt);border-radius:12px;padding:8px 10px;font-size:12px;margin-top:8px}
+@media(max-width:680px){
+ body{padding:0 0 112px 0}
+ nav.rail{left:0;right:0;top:auto;bottom:0;transform:none;border-radius:18px 18px 0 0;padding:6px 8px;flex-direction:row;gap:6px;overflow-x:auto;overflow-y:hidden;max-height:none}
+ .rail button{min-width:60px;font-size:9px;padding:7px 4px}
+ .rail button i{font-size:22px}
+ .wrap{padding:10px}
+ .stat{padding:14px}.stat b{font-size:20px}
+ .toast{bottom:120px}
+ table.tbl{font-size:11px}
+}
 #printArea{display:none}
 @page{size:A4 portrait;margin:14mm}
 @media print{
@@ -268,8 +278,8 @@ function fillSel(id,arr){$(id).innerHTML=arr.map(v=>`<option>${v}</option>`).joi
 /* login */
 function seedAdmin(){if(!DB.users.find(x=>x.nama==="ADMIN")){DB.users.push({nama:"ADMIN",pin:"ADMIN",at:todayStr()});pushCloud("users",{nama:"ADMIN",pin:"ADMIN",at:todayStr()});save()}}
 function doLogin(){const u=$("inUser").value.trim(),pw=$("inPin").value.trim();if(!u||!pw){toast("Isi nama + PIN");return}
-const f=DB.users.find(x=>x.nama===u&&x.pin===pw&&!x.deleted);if(!f){toast("⛔ User belum terdaftar — hubungi ADMIN");return}
-curUser={nama:u,at:new Date().toISOString()};localStorage.setItem("g24_user",JSON.stringify(curUser));
+const f=DB.users.find(x=>String(x.nama).toUpperCase()===u.toUpperCase()&&x.pin===pw&&!x.deleted);if(!f){toast("⛔ User belum terdaftar — hubungi ADMIN");return}
+curUser={nama:f.nama,at:new Date().toISOString()};localStorage.setItem("g24_user",JSON.stringify(curUser));
 addLog("LOGIN","Masuk sebagai "+u);save();enter()}
 function keluar(){localStorage.removeItem("g24_user");location.reload()}
 function enter(){$("stUser").textContent=curUser.nama;$("tglHari").textContent=todayStr();buildRail();paintAll();go("dash");refresh()}
@@ -353,7 +363,7 @@ if(jns==="LM"){const br=$("jBrand").value,gr=Number($("jGram").value);brand=br;b
 else{const jp=$("jJenisPH").value;berat=Number($("jBerat").value)||0;const kd=$("jKadar").value;kode=$("jKode").value.trim()||uid("PH");
 if(!berat){toast("Isi berat perhiasan dulu ⚖️");$("jBerat").focus();return}
 const dup2=DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe));if(dup2){toast("⛔ Kode sudah 1× masuk");return}
-desc=`${jp} ${kd} ${berat}gr • ${kode}`}
+desc=`${jp} ${kd} ${berat}gr • ${kode}`}}
 const m={id:uid("M"),tipe:curJual,jenis:jns,sumber,lok,qty,berat,harga,pemilik:pemilik||"-",note,desc,brand,kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
 DB.mutasi.unshift(m);pushCloud("mutasi",m);autoMaster(m);addLog(curJual,`${desc} • ${qty}pcs ${fmtRp(harga)}`);save();refresh();renderJual();refreshDlJual();toast("Tersimpan ✨")}
 function renderJual(){const rows=DB.mutasi.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)).slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td>${m.jenis==="LM"?bb(m.brand):"💍"} <b>${m.tipe}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber}/${m.lok}${m.pemilik&&m.pemilik!=="-"?"<br>👤"+esc(m.pemilik):""}</td><td>${m.qty}pcs ${Number(m.berat).toFixed(2)}gr<br>${fmtRp(m.harga)}</td></tr>`).join("");
@@ -540,19 +550,20 @@ addLog("CETAK",j+" "+r.label);window.print()}
 function renderUsers(){const us=DB.users.filter(u=>!u.deleted);
 $("listUser").innerHTML=us.map(u=>`<span class="badge" style="margin:2px">👤 ${esc(u.nama)}${u.nama==="ADMIN"?" ⭐":""}</span>`).join("");
 $("tblUser").innerHTML=`<tr><th>Nama</th><th>PIN</th><th>Aksi</th></tr>`+us.map(u=>`<tr><td><b>${esc(u.nama)}</b>${u.nama==="ADMIN"?" ⭐":""}</td><td>••••</td><td>${u.nama==="ADMIN"?"<span class='muted'>terkunci</span>":`<button class="chip" onclick="editUser('${esc(u.nama)}')">✏️ PIN</button> <button class="chip" onclick="delUser('${esc(u.nama)}')">🗑️</button>`}</td></tr>`).join("")}
-function editUser(nm){if(!curUser||curUser.nama!=="ADMIN"){toast("⛔ Hanya ADMIN");return}
+function editUser(nm){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
 const v=prompt("PIN baru untuk "+nm+":");if(v===null)return;if(!v.trim()){toast("PIN tidak valid");return}
 const u=DB.users.find(x=>x.nama===nm);u.pin=v.trim();u.at=new Date().toISOString();pushCloud("users",{nama:nm,pin:u.pin,at:u.at});addLog("USER_EDIT","PIN "+nm+" diubah ADMIN");save();renderUsers();toast("PIN diubah")}
-function delUser(nm){if(!curUser||curUser.nama!=="ADMIN"){toast("⛔ Hanya ADMIN");return}
-if(nm==="ADMIN"){toast("ADMIN tidak bisa dihapus");return}
+function delUser(nm){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
+if(String(nm).toUpperCase()==="ADMIN"){toast("ADMIN tidak bisa dihapus");return}
 if(!confirm("Hapus user "+nm+"?"))return;
 const u=DB.users.find(x=>x.nama===nm);u.deleted=1;u.at=new Date().toISOString();pushCloud("users",{nama:nm,pin:"",deleted:1,at:u.at});addLog("USER_HAPUS",nm+" dihapus ADMIN");save();renderUsers();toast("User dihapus")}
 function dedup(arr,kf){const seen=new Set(),out=[];arr.slice().sort((a,b)=>String(b.at||"").localeCompare(String(a.at||""))).forEach(o=>{const k=kf(o);if(!seen.has(k)){seen.add(k);out.push(o)}});return out}
 function renderMore(){renderBackups();
 $("tblLog").innerHTML=`<tr><th>Waktu</th><th>User</th><th>Aksi</th></tr>`+DB.logs.slice(0,100).map(l=>`<tr><td>${String(l.at).slice(0,16).replace("T"," ")}</td><td>${esc(l.by)}</td><td><b>${esc(l.aksi)}</b><br><span class="muted">${esc(l.detail)}</span></td></tr>`).join("")}
-function tambahUser(){if(!curUser||curUser.nama!=="ADMIN"){toast("⛔ Hanya ADMIN yang bisa daftarkan user");return}
+const isAdmin=()=>curUser&&String(curUser.nama).toUpperCase()==="ADMIN";
+function tambahUser(){if(!isAdmin()){toast("⛔ Hanya ADMIN yang bisa daftarkan user");return}
 const v=$("newUser").value.trim(),pw=$("newPin").value.trim();if(!v||!pw){toast("Isi nama + PIN");return}
-if(DB.users.find(x=>x.nama===v)){toast("Sudah terdaftar");return}
+if(DB.users.find(x=>String(x.nama).toUpperCase()===v.toUpperCase())){toast("Sudah terdaftar");return}
 DB.users.push({nama:v,pin:pw,at:todayStr()});pushCloud("users",{nama:v,pin:pw,at:todayStr()});addLog("USER","Daftarkan "+v+" oleh ADMIN");save();renderMore();$("newUser").value="";$("newPin").value="";toast("User ditambah")}
 function backupJSON(){const b=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup-g24kedaton-"+todayStr()+".json";a.click();addLog("BACKUP_JSON","Unduh backup JSON")}
 /* PUSH / PULL manual — hanya data yang belum ada di cloud (bertanda _c) yang dikirim */
@@ -573,7 +584,7 @@ await cloud.collection("backups").add(snap);if(!silent){addLog("BACKUP_CLOUD","S
 async function renderBackups(){if(!cloudOK){$("listBackup").innerHTML=`<span class="muted">Sambungkan Firebase dulu untuk backup cloud.</span>`;return}
 const s=await cloud.collection("backups").orderBy("at","desc").limit(10).get();let h="";s.forEach(d=>{const b=d.data();h+=`<div class="kv"><span>${String(b.at).slice(0,16).replace("T"," ")} • ${esc(b.by)} • ${(b.data.mutasi||[]).length} mutasi</span><button class="chip" onclick="restoreBackup('${d.id}')">Restore</button></div>`});
 $("listBackup").innerHTML=h||`<span class="muted">Belum ada backup cloud</span>`}
-async function restoreBackup(id){if(!curUser||curUser.nama!=="ADMIN"){toast("⛔ Hanya ADMIN");return}
+async function restoreBackup(id){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
 if(!confirm("Restore backup ini? Data lokal diganti."))return;
 const d=await cloud.collection("backups").doc(id).get();const b=d.data().data;
 DB.mutasi=b.mutasi||[];DB.sessions=b.sessions||[];DB.logs=b.logs||[];DB.users=b.users||[];DB.master=b.master||[];DB.hidden=b.hidden||[];
