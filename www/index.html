@@ -81,6 +81,8 @@ body[data-theme="krem"]{--bg:#F5E7C6;--card:#FAF3E1;--ink:#222222;--muted:#6E5F4
 body[data-theme="krem"] .tbl th{background:#EBD3A4;color:#222222}
 body[data-theme="krem"] .chip.on{background:#222222;border-color:#222222}
 body[data-theme="krem"] .btn-dark{background:#222222}
+.btn-min{background:#B3261E;color:#fff;font-size:18px}
+.btn-plus{background:#2E7D32;color:#fff;font-size:18px}
 .scrollbox{overflow:auto;max-height:300px}
 .mutgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
 @media(max-width:900px){.mutgrid{grid-template-columns:1fr}}
@@ -163,7 +165,7 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 <div class="mutgrid">
 <div class="card"><h3 style="margin:0">📤 Mutasi Brankas Ke Display</h3><p class="muted">Keluarkan dari Brankas ke Etalase/Bazar.</p>
 <div class="grid2"><div><label>Ke lokasi</label><select id="muToA"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
-<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyA',-1)" aria-label="Kurangi">−</button><input id="muQtyA" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyA',1)" aria-label="Tambah">+</button></div></div></div>
+<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-min" style="flex:0 0 46px" onclick="stepQty('muQtyA',-1)" aria-label="Kurangi">−</button><input id="muQtyA" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-plus" style="flex:0 0 46px" onclick="stepQty('muQtyA',1)" aria-label="Tambah">+</button></div></div></div>
 <label>Barang (stok di Brankas)</label><input id="qA" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="muPickA" onchange="autoMutA()"></select>
 <div class="autostat" id="mAutoA">Status: —</div>
 <div class="grid2"><div><label>Keterangan</label><select id="muKetA"><option value="SALDO PAGI">SALDO PAGI</option><option value="SALDO SUSULAN">SALDO SUSULAN</option></select></div>
@@ -174,7 +176,7 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 <div><label>Ke lokasi</label><select id="muToC"><option value="BAZAR">BAZAR</option><option value="ETALASE">ETALASE</option></select></div></div>
 <label>Barang</label><input id="qC" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="muPickC" onchange="autoMutC()"></select>
 <div class="autostat" id="mAutoC">Status: —</div>
-<div class="grid2"><div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyC',-1)" aria-label="Kurangi">−</button><input id="muQtyC" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyC',1)" aria-label="Tambah">+</button></div></div>
+<div class="grid2"><div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-min" style="flex:0 0 46px" onclick="stepQty('muQtyC',-1)" aria-label="Kurangi">−</button><input id="muQtyC" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-plus" style="flex:0 0 46px" onclick="stepQty('muQtyC',1)" aria-label="Tambah">+</button></div></div>
 <div><label>Catatan</label><input id="muNoteC"></div></div>
 <div style="height:10px"></div><button id="btnMutC" class="btn btn-burnt" onclick="simpanMutasiC()">💾 Simpan Mutasi</button></div>
 </div>
@@ -182,7 +184,7 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 <p class="muted">Kembalikan sisa display ke Brankas. <b>Wajib kosongkan display sebelum Tutup Hari.</b></p>
 <p class="muted" id="setorHint">—</p>
 <div class="grid2"><div><label>Dari lokasi</label><select id="muFromB" onchange="refreshPick()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
-<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyB',-1)" aria-label="Kurangi">−</button><input id="muQtyB" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyB',1)" aria-label="Tambah">+</button></div></div></div>
+<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-min" style="flex:0 0 46px" onclick="stepQty('muQtyB',-1)" aria-label="Kurangi">−</button><input id="muQtyB" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-plus" style="flex:0 0 46px" onclick="stepQty('muQtyB',1)" aria-label="Tambah">+</button></div></div></div>
 <label>Barang (stok di lokasi asal)</label><input id="qB" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="muPickB" onchange="autoMutB()"></select>
 <div class="autostat" id="mAutoB">Status: —</div>
 <label>Catatan</label><input id="muNoteB" placeholder="cth: setor sisa sore">
@@ -195,7 +197,7 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 <div class="card"><div class="chips" id="chipsJual"></div>
 <div id="boxJualKeluar">
 <div class="grid2"><div><label>Lokasi barang</label><select id="jLok" onchange="refreshPick()"></select></div>
-<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('jQty',-1)" aria-label="Kurangi">−</button><input id="jQty" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('jQty',1)" aria-label="Tambah">+</button></div></div></div>
+<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-min" style="flex:0 0 46px" onclick="stepQty('jQty',-1)" aria-label="Kurangi">−</button><input id="jQty" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-plus" style="flex:0 0 46px" onclick="stepQty('jQty',1)" aria-label="Tambah">+</button></div></div></div>
 <label>Barang</label><input id="qJ" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="jPick" onchange="autoJual()"></select>
 <div class="autostat" id="jAuto">—</div>
 <div class="grid2"><div><label>Pembeli (opsional)</label><input id="jPembeli" placeholder="Nama pembeli"></div>
@@ -204,7 +206,7 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 <div id="boxJualMasuk" style="display:none">
 <div class="chips" id="chipsJenisJ"></div>
 <div class="grid2"><div><label>Lokasi masuk</label><select id="jMasukLok"><option value="ETALASE">ETALASE (Depan)</option><option value="BAZAR">BAZAR</option></select></div>
-<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('jQtyIn',-1)" aria-label="Kurangi">−</button><input id="jQtyIn" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('jQtyIn',1)" aria-label="Tambah">+</button></div></div></div>
+<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-min" style="flex:0 0 46px" onclick="stepQty('jQtyIn',-1)" aria-label="Kurangi">−</button><input id="jQtyIn" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-plus" style="flex:0 0 46px" onclick="stepQty('jQtyIn',1)" aria-label="Tambah">+</button></div></div></div>
 <div id="boxJL"><label>Brand LOGAM MULIA (24K • 99.9999%)</label><select id="jBrand"></select><label>Gramasi</label><select id="jGram"></select></div>
 <div id="boxJP" style="display:none"><label>Jenis perhiasan</label><select id="jJenisPH"></select>
 <label>Brand perhiasan</label><input id="jBrandPH" list="dlBrand" placeholder="cth: UBS / custom">
@@ -219,7 +221,7 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 <div id="pg-masuk" class="page">
 <h2 class="sec">📥 Barang Masuk — dari Pusat</h2>
 <div class="card"><div class="chips" id="chipsJenisM"></div>
-<label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('mQtyIn',-1)" aria-label="Kurangi">−</button><input id="mQtyIn" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('mQtyIn',1)" aria-label="Tambah">+</button></div>
+<label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-min" style="flex:0 0 46px" onclick="stepQty('mQtyIn',-1)" aria-label="Kurangi">−</button><input id="mQtyIn" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-plus" style="flex:0 0 46px" onclick="stepQty('mQtyIn',1)" aria-label="Tambah">+</button></div>
 <p class="muted">Tujuan barang masuk: <b>BRANKAS</b> (satu-satunya).</p>
 <div id="boxML"><label>Brand LOGAM MULIA</label><select id="mBrand"></select><label>Gramasi</label><select id="mGram"></select></div>
 <div id="boxMP" style="display:none"><label>Jenis perhiasan</label><select id="mJenisPH"></select>
@@ -242,7 +244,7 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 <div class="card"><p class="muted">Retur mengurangi stok gudang (barang keluar). Bukan reklas sumber.</p>
 <label>Barang (stok di Brankas)</label><input id="qR" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="rPick" onchange="autoRetur()"></select>
 <div class="autostat" id="rAuto">—</div>
-<div class="grid2"><div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('rQty',-1)" aria-label="Kurangi">−</button><input id="rQty" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('rQty',1)" aria-label="Tambah">+</button></div></div>
+<div class="grid2"><div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-min" style="flex:0 0 46px" onclick="stepQty('rQty',-1)" aria-label="Kurangi">−</button><input id="rQty" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-plus" style="flex:0 0 46px" onclick="stepQty('rQty',1)" aria-label="Tambah">+</button></div></div>
 <div><label>Sumber (otomatis ikut barang)</label><input id="rAsal" disabled></div></div>
 <label>Catatan</label><input id="rNote">
 <div style="height:10px"></div><button id="btnRetur" class="btn btn-burnt" onclick="simpanRetur()">↩️ Simpan Retur</button></div>
@@ -305,7 +307,6 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 </div>
 </div>
 
-<div class="foot">© 2026 GHANZ-STACK(@ghnwldn). SEMUA HAK CIPTA DILINDUNGI UNDANG-UNDANG</div>
 <datalist id="dlBrand"></datalist>
 <div id="modalWrap"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h3 id="modalTitle"></h3><div id="modalBody"></div><div id="modalActs" class="btn-row"></div></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -978,8 +979,8 @@ function cetakA4(){const j=$("rJenis").value,r=rangePeriode();
  go()}
 
 /* ---------- MORE / BACKUP / RESET ---------- */
-function curTema(){try{return localStorage.getItem("g24_tema")||""}catch(e){return""}}
-function setTema(t){try{if(t)localStorage.setItem("g24_tema",t);else localStorage.removeItem("g24_tema")}catch(e){}
+function curTema(){try{const v=localStorage.getItem("g24_tema");return v==null?"krem":v}catch(e){return"krem"}}
+function setTema(t){try{localStorage.setItem("g24_tema",t||"")}catch(e){}
  try{document.body.dataset.theme=t||""}catch(e){}renderTema();toast("Tema diganti 🎨","ok")}
 function renderTema(){const t=curTema();const el=$("chipsTema");if(!el)return;
  el.innerHTML=[["","🏠 Klasik"],["krem","🍯 Krem"]].map(x=>'<button class="chip '+(t===x[0]?"on":"")+'" aria-pressed="'+(t===x[0])+'" onclick="setTema(\''+x[0]+'\')">'+x[1]+'</button>').join("")}
@@ -1098,7 +1099,7 @@ function go(p){if(!curUser&&p!=="login")p="login";
  if(p==="mutasi")paintSetor();
  window.scrollTo({top:0,behavior:"smooth"})}
 function enter(){$("stUser").textContent=curUser.nama;buildRail();recomputeBalances();paintAll();refresh();renderAllTables();go("dash")}
-load();seedAdminSafe();try{document.body.dataset.theme=localStorage.getItem("g24_tema")||""}catch(e){}buildRail();
+load();seedAdminSafe();try{document.body.dataset.theme=curTema()}catch(e){}buildRail();
 if($("jBrand"))$("jBrand").addEventListener("change",paintAll);
 if($("mBrand"))$("mBrand").addEventListener("change",paintAll);
 try{document.querySelectorAll('input[type="number"]').forEach(function(e){try{e.setAttribute("inputmode",e.step&&String(e.step).indexOf(".")>=0?"decimal":"numeric")}catch(_){}})}catch(_){}
