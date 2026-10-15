@@ -151,30 +151,30 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 <div class="mutgrid">
 <div class="card"><h3 style="margin:0">📤 Mutasi Brankas Ke Display</h3><p class="muted">Keluarkan dari Brankas ke Etalase/Bazar.</p>
 <div class="grid2"><div><label>Ke lokasi</label><select id="muToA"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
-<div><label>Qty (pcs)</label><input id="muQtyA" type="number" min="1" value="1"></div></div>
+<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyA',-1)" aria-label="Kurangi">−</button><input id="muQtyA" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyA',1)" aria-label="Tambah">+</button></div></div></div>
 <label>Barang (stok di Brankas)</label><input id="qA" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="muPickA" onchange="autoMutA()"></select>
 <div class="autostat" id="mAutoA">Status: —</div>
 <div class="grid2"><div><label>Keterangan</label><select id="muKetA"><option value="SALDO PAGI">SALDO PAGI</option><option value="SALDO SUSULAN">SALDO SUSULAN</option></select></div>
 <div><label>Catatan</label><input id="muNoteA" placeholder="cth: display pagi"></div></div>
-<div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMutasiA()">💾 Simpan Mutasi</button></div>
+<div style="height:10px"></div><button id="btnMutA" class="btn btn-burnt" onclick="simpanMutasiA()">💾 Simpan Mutasi</button></div>
 <div class="card"><h3 style="margin:0">🔁 Etalase ↔ Bazar</h3><p class="muted">Pindah antar display.</p>
 <div class="grid2"><div><label>Dari lokasi</label><select id="muFromC" onchange="refreshPick()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
 <div><label>Ke lokasi</label><select id="muToC"><option value="BAZAR">BAZAR</option><option value="ETALASE">ETALASE</option></select></div></div>
 <label>Barang</label><input id="qC" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="muPickC" onchange="autoMutC()"></select>
 <div class="autostat" id="mAutoC">Status: —</div>
-<div class="grid2"><div><label>Qty (pcs)</label><input id="muQtyC" type="number" min="1" value="1"></div>
+<div class="grid2"><div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyC',-1)" aria-label="Kurangi">−</button><input id="muQtyC" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyC',1)" aria-label="Tambah">+</button></div></div>
 <div><label>Catatan</label><input id="muNoteC"></div></div>
-<div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMutasiC()">💾 Simpan Mutasi</button></div>
+<div style="height:10px"></div><button id="btnMutC" class="btn btn-burnt" onclick="simpanMutasiC()">💾 Simpan Mutasi</button></div>
 </div>
 <div class="card card-hi" style="margin-top:10px"><h3 style="margin:0">Mutasi Barang Ke Brankas</h3>
 <p class="muted">Kembalikan sisa display ke Brankas. <b>Wajib kosongkan display sebelum Tutup Hari.</b></p>
 <p class="muted" id="setorHint">—</p>
 <div class="grid2"><div><label>Dari lokasi</label><select id="muFromB" onchange="refreshPick()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
-<div><label>Qty (pcs)</label><input id="muQtyB" type="number" min="1" value="1"></div></div>
+<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyB',-1)" aria-label="Kurangi">−</button><input id="muQtyB" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('muQtyB',1)" aria-label="Tambah">+</button></div></div></div>
 <label>Barang (stok di lokasi asal)</label><input id="qB" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="muPickB" onchange="autoMutB()"></select>
 <div class="autostat" id="mAutoB">Status: —</div>
 <label>Catatan</label><input id="muNoteB" placeholder="cth: setor sisa sore">
-<div style="height:10px"></div><button class="btn btn-dark" onclick="simpanMutasiB()">📥 Setor ke Brankas</button></div>
+<div style="height:10px"></div><button id="btnMutB" class="btn btn-dark" onclick="simpanMutasiB()">📥 Setor ke Brankas</button></div>
 <h2 class="sec">📋 Mutasi terakhir</h2><div class="card"><div class="scrollbox"><table class="tbl" id="tblMutasi"></table></div></div>
 </div>
 
@@ -183,7 +183,7 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 <div class="card"><div class="chips" id="chipsJual"></div>
 <div id="boxJualKeluar">
 <div class="grid2"><div><label>Lokasi barang</label><select id="jLok" onchange="refreshPick()"></select></div>
-<div><label>Qty (pcs)</label><input id="jQty" type="number" min="1" value="1"></div></div>
+<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('jQty',-1)" aria-label="Kurangi">−</button><input id="jQty" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('jQty',1)" aria-label="Tambah">+</button></div></div></div>
 <label>Barang</label><input id="qJ" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="jPick" onchange="autoJual()"></select>
 <div class="autostat" id="jAuto">—</div>
 <div class="grid2"><div><label>Pembeli (opsional)</label><input id="jPembeli" placeholder="Nama pembeli"></div>
@@ -192,7 +192,7 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 <div id="boxJualMasuk" style="display:none">
 <div class="chips" id="chipsJenisJ"></div>
 <div class="grid2"><div><label>Lokasi masuk</label><select id="jMasukLok"><option value="ETALASE">ETALASE (Depan)</option><option value="BAZAR">BAZAR</option></select></div>
-<div><label>Qty (pcs)</label><input id="jQtyIn" type="number" min="1" value="1"></div></div>
+<div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('jQtyIn',-1)" aria-label="Kurangi">−</button><input id="jQtyIn" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('jQtyIn',1)" aria-label="Tambah">+</button></div></div></div>
 <div id="boxJL"><label>Brand LOGAM MULIA (24K • 99.9999%)</label><select id="jBrand"></select><label>Gramasi</label><select id="jGram"></select></div>
 <div id="boxJP" style="display:none"><label>Jenis perhiasan</label><select id="jJenisPH"></select>
 <label>Brand perhiasan</label><input id="jBrandPH" list="dlBrand" placeholder="cth: UBS / custom">
@@ -200,14 +200,14 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 <div class="grid2"><div><label id="lbPemilikJ">Pemilik</label><input id="jPemilik" placeholder="Nama pemilik"></div>
 <div><label>Catatan</label><input id="jNoteIn"></div></div>
 </div>
-<div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanJual()">💾 Simpan</button></div>
+<div style="height:10px"></div><button id="btnJual" class="btn btn-burnt" onclick="simpanJual()">💾 Simpan</button></div>
 <h2 class="sec">📋 Transaksi terakhir</h2><div class="card"><div class="scrollbox"><table class="tbl" id="tblJual"></table></div></div>
 </div>
 
 <div id="pg-masuk" class="page">
 <h2 class="sec">📥 Barang Masuk — dari Pusat</h2>
 <div class="card"><div class="chips" id="chipsJenisM"></div>
-<label>Qty (pcs)</label><input id="mQtyIn" type="number" min="1" value="1">
+<label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('mQtyIn',-1)" aria-label="Kurangi">−</button><input id="mQtyIn" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('mQtyIn',1)" aria-label="Tambah">+</button></div>
 <p class="muted">Tujuan barang masuk: <b>BRANKAS</b> (satu-satunya).</p>
 <div id="boxML"><label>Brand LOGAM MULIA</label><select id="mBrand"></select><label>Gramasi</label><select id="mGram"></select></div>
 <div id="boxMP" style="display:none"><label>Jenis perhiasan</label><select id="mJenisPH"></select>
@@ -216,11 +216,11 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 <p class="muted">Perhiasan berlaku aturan 1× masuk 1× keluar. Qty perhiasan otomatis dipecah menjadi unit berkode sendiri.</p></div>
 <div class="grid2"><div><label>Harga beli Rp (opsional)</label><input id="mHarga" type="number" min="0"></div>
 <div><label>Catatan</label><input id="mNoteIn" placeholder="cth: stok awal / kiriman pusat"></div></div>
-<div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMasuk()">💾 Simpan Manual</button></div>
+<div style="height:10px"></div><button id="btnMasuk" class="btn btn-burnt" onclick="simpanMasuk()">💾 Simpan Manual</button></div>
 <h2 class="sec">📦 Jalur Bulk — Template Excel</h2>
 <div class="card"><p class="muted">Template sudah ada combo box tipe/jenis/brand/jenis perhiasan/kadar. Isi → Impor.</p>
 <div class="btn-row"><a class="btn btn-dark" style="text-align:center;text-decoration:none" href="./Template_Barang_Masuk_PUSAT.xlsx" download>⬇️ Template</a>
-<button class="btn btn-burnt" onclick="document.getElementById('fileImp').click()">⬆️ Impor Excel</button>
+<button id="btnImpor" class="btn btn-burnt" onclick="document.getElementById('fileImp').click()">⬆️ Impor Excel</button>
 <input type="file" id="fileImp" accept=".xlsx,.xls,.csv" style="display:none" onchange="imporExcel(this)"></div></div>
 <h2 class="sec">📋 Barang masuk terakhir</h2><div class="card"><div class="scrollbox"><table class="tbl" id="tblMasuk"></table></div></div>
 </div>
@@ -230,10 +230,10 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 <div class="card"><p class="muted">Retur mengurangi stok gudang (barang keluar). Bukan reklas sumber.</p>
 <label>Barang (stok di Brankas)</label><input id="qR" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="rPick" onchange="autoRetur()"></select>
 <div class="autostat" id="rAuto">—</div>
-<div class="grid2"><div><label>Qty (pcs)</label><input id="rQty" type="number" min="1" value="1"></div>
+<div class="grid2"><div><label>Qty (pcs)</label><div class="btn-row"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('rQty',-1)" aria-label="Kurangi">−</button><input id="rQty" type="number" min="1" value="1" style="flex:1;text-align:center" inputmode="numeric"><button type="button" class="btn btn-ghost" style="flex:0 0 46px" onclick="stepQty('rQty',1)" aria-label="Tambah">+</button></div></div>
 <div><label>Sumber (otomatis ikut barang)</label><input id="rAsal" disabled></div></div>
 <label>Catatan</label><input id="rNote">
-<div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanRetur()">↩️ Simpan Retur</button></div>
+<div style="height:10px"></div><button id="btnRetur" class="btn btn-burnt" onclick="simpanRetur()">↩️ Simpan Retur</button></div>
 <h2 class="sec">📋 Retur terakhir</h2><div class="card"><div class="scrollbox"><table class="tbl" id="tblRetur"></table></div></div>
 </div>
 
@@ -331,6 +331,14 @@ function openModal(o){$("modalWrap").onclick=null;$("modalTitle").textContent=(o
  $("modalWrap").style.display="flex";if(o&&o.onOpen)o.onOpen()}
 function closeModal(){try{$("modalWrap").style.display="none";$("modalWrap").onclick=null;$("modalBody").innerHTML=""}catch(e){}}
 function modalSetInput(id,v){const e=$(id);if(e)e.value=v}
+function busy(id,on,label){const b=$(id);if(!b)return true;try{if(!b.dataset)b.dataset={}}catch(e){return true}
+ if(on){if(b.dataset.busy)return false;b.dataset.busy="1";b.disabled=true;if(b.dataset.lbl===undefined)b.dataset.lbl=b.textContent;b.textContent=label||"Menyimpan…";return true}
+ try{delete b.dataset.busy}catch(e){}b.disabled=false;if(b.dataset.lbl!==undefined)b.textContent=b.dataset.lbl;return true}
+function busyLbl(id,label){try{const b=$(id);if(b&&b.dataset&&b.dataset.busy)b.textContent=label}catch(e){}}
+function stepQty(id,d){const e=$(id);if(!e)return;let v=Math.round(num(e.value,1))+d;const mx=num(e.max||0);if(mx>0)v=Math.min(v,mx);e.value=Math.max(1,v)}
+function setMax(id,qty){const e=$(id);if(!e)return;if(qty>0){e.max=qty;if(num(e.value)>qty)e.value=qty}else e.removeAttribute("max")}
+function flashFirst(id){try{const t=$(id);const r=t&&t.querySelector?t.querySelector("tr:nth-child(2)"):null;if(r){r.classList.add("flash");setTimeout(function(){try{r.classList.remove("flash")}catch(e){}},3100)}}catch(e){}}
+function afterSave(qtyId,tblId){const q=$(qtyId);if(q)q.value="1";renderAllTables();flashFirst(tblId)}
 function confirmModal(msg,okLabel){return new Promise(function(res){let done=false;const fin=function(v){if(!done){done=true;res(v)}};
  openModal({title:"Konfirmasi",body:'<p style="font-size:16px;line-height:1.7">'+esc(msg)+'</p>',actions:[{label:"Batal",onClick:function(){fin(false)}},{label:okLabel||"Ya, lanjutkan",primary:1,onClick:function(){fin(true)}}]});
  $("modalWrap").onclick=function(e){if(e.target===$("modalWrap")){fin(false);closeModal()}}})}
@@ -554,29 +562,32 @@ function simpanMutasiA(){const b=curPick("muPickA");if(!b){toast("Pilih barang d
  if(isBuybackPH(b)){toast("⛔ Perhiasan BUYBACK hanya mengendap di BRANKAS — tidak boleh keluar ke display");return}
  const to=$("muToA").value;const q1=Math.round(num($("muQtyA").value,1));if(q1<1){toast("Qty minimal 1");return}
  if(q1>b.qty){toast("⛔ Sisa Brankas hanya "+b.qty+" pcs");return}
+ if(!busy("btnMutA",true))return;
  post({tipe:"MUTASI",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,pemilik:b.pemilik||"",
   qty:q1,berat:mutQty(b,q1),sumber:b.sumber,
   from:{loc:"BRANKAS",sumber:b.sumber},to:{loc:to,sumber:b.sumber},ket:$("muKetA").value,note:$("muNoteA").value.trim()})
- .then(function(ok){if(ok){$("muNoteA").value="";refreshPick();toast("Mutasi tersimpan ✨")}})}
+ .then(function(ok){busy("btnMutA",false);if(ok){$("muNoteA").value="";refreshPick();afterSave("muQtyA","tblMutasi");toast("Mutasi tersimpan ✨")}})}
 function simpanMutasiB(){const b=curPick("muPickB");if(!b){toast("Pilih barang di display");return}
  const from=$("muFromB").value;const q1=Math.round(num($("muQtyB").value,1));if(q1<1){toast("Qty minimal 1");return}
  if(q1>b.qty){toast("⛔ Sisa di "+from+" hanya "+b.qty+" pcs");return}
+ if(!busy("btnMutB",true))return;
  post({tipe:"MUTASI",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,pemilik:b.pemilik||"",
   qty:q1,berat:mutQty(b,q1),sumber:b.sumber,
   from:{loc:from,sumber:b.sumber},to:{loc:"BRANKAS",sumber:b.sumber},ket:"SETOR SISA",note:$("muNoteB").value.trim()})
- .then(function(ok){if(ok){$("muNoteB").value="";refreshPick();paintSetor();toast("📥 Disetor ke Brankas ✨")}})}
+ .then(function(ok){busy("btnMutB",false);if(ok){$("muNoteB").value="";refreshPick();paintSetor();afterSave("muQtyB","tblMutasi");toast("📥 Disetor ke Brankas ✨")}})}
 function simpanMutasiC(){const b=curPick("muPickC");if(!b){toast("Pilih barang");return}
  if(isBuybackPH(b)){toast("⛔ Perhiasan BUYBACK hanya mengendap di BRANKAS");return}
  const from=$("muFromC").value,to=$("muToC").value;if(to===from){toast("Lokasi asal & tujuan sama");return}
  const q1=Math.round(num($("muQtyC").value,1));if(q1<1){toast("Qty minimal 1");return}
  if(q1>b.qty){toast("⛔ Sisa di "+from+" hanya "+b.qty+" pcs");return}
+ if(!busy("btnMutC",true))return;
  post({tipe:"MUTASI",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,pemilik:b.pemilik||"",
   qty:q1,berat:mutQty(b,q1),sumber:b.sumber,
   from:{loc:from,sumber:b.sumber},to:{loc:to,sumber:b.sumber},note:$("muNoteC").value.trim()})
- .then(function(ok){if(ok){$("muNoteC").value="";refreshPick();toast("Mutasi tersimpan ✨")}})}
-function autoMutA(){const b=curPick("muPickA");$("mAutoA").innerHTML=b?("Status: "+skuLabel(b)+statusTag(b)+" • sisa Brankas: <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"Status: —"}
-function autoMutB(){const b=curPick("muPickB");const f=$("muFromB").value;$("mAutoB").innerHTML=b?("Status: "+skuLabel(b)+statusTag(b)+" • sisa di "+f+": <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"Status: —"}
-function autoMutC(){const b=curPick("muPickC");const f=$("muFromC").value;$("mAutoC").innerHTML=b?("Status: "+skuLabel(b)+statusTag(b)+" • sisa di "+f+": <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"Status: —"}
+ .then(function(ok){busy("btnMutC",false);if(ok){$("muNoteC").value="";refreshPick();afterSave("muQtyC","tblMutasi");toast("Mutasi tersimpan ✨")}})}
+function autoMutA(){const b=curPick("muPickA");setMax("muQtyA",b?b.qty:0);$("mAutoA").innerHTML=b?("Status: "+skuLabel(b)+statusTag(b)+" • sisa Brankas: <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"Status: —"}
+function autoMutB(){const b=curPick("muPickB");setMax("muQtyB",b?b.qty:0);const f=$("muFromB").value;$("mAutoB").innerHTML=b?("Status: "+skuLabel(b)+statusTag(b)+" • sisa di "+f+": <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"Status: —"}
+function autoMutC(){const b=curPick("muPickC");setMax("muQtyC",b?b.qty:0);const f=$("muFromC").value;$("mAutoC").innerHTML=b?("Status: "+skuLabel(b)+statusTag(b)+" • sisa di "+f+": <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"Status: —"}
 function paintSetor(){if(!$("setorHint"))return;const e=totLoc("ETALASE"),z=totLoc("BAZAR");const d=e.pcs+z.pcs;
  $("setorHint").innerHTML="Display saat ini: Etalase <b>"+e.pcs+" pcs</b> • Bazar <b>"+z.pcs+" pcs</b>"+(d>0?' — <b style="color:#B3261E">wajib disetor ke Brankas sebelum Tutup Hari</b>':" — ✅ display kosong, boleh Tutup Hari")}
 
@@ -587,53 +598,60 @@ function simpanJual(){if(JUAL_T==="PENJUALAN"){
   const loc=DB.balances[b._id].loc;
   const q1=Math.round(num($("jQty").value,1));if(q1<1){toast("Qty minimal 1");return}
   if(q1>b.qty){toast("⛔ Sisa di "+loc+" hanya "+b.qty+" pcs");return}
+  if(!busy("btnJual",true))return;
   post({tipe:"PENJUALAN",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,pemilik:b.pemilik||"",
    qty:q1,berat:num(b.berat)/Math.max(1,num(b.qty))*q1,sumber:b.sumber,
    from:{loc:loc,sumber:b.sumber},to:{loc:"TERJUAL",sumber:b.sumber},pembeli:$("jPembeli").value.trim(),note:$("jNote").value.trim()})
-  .then(function(ok){if(ok){$("jPembeli").value="";$("jNote").value="";refreshPick();toast("Penjualan tercatat ✨")}});
+  .then(function(ok){busy("btnJual",false);if(ok){$("jPembeli").value="";$("jNote").value="";refreshPick();afterSave("jQty","tblJual");toast("Penjualan tercatat ✨")}});
   return}
  const big=(JUAL_T==="BUYBACK_MASUK")?"BUYBACK":"KONSINYASI";
  const masukLok=$("jMasukLok").value;
  if(JUAL_T==="KONSINYASI_MASUK"&&!$("jPemilik").value.trim()){toast("Isi nama pemilik");return}
  const q1=Math.round(num($("jQtyIn").value,1));if(q1<1){toast("Qty minimal 1");return}
- if(J_JENIS==="LM"){
+  if(J_JENIS==="LM"){
   const br=san($("jBrand").value),g=num($("jGram").value);if(!(g>0)){toast("Pilih gramasi");return}
+  if(!busy("btnJual",true))return;
   post({tipe:JUAL_T,jenis:"LM",sku:"LM#"+br+"#"+g,brand:br,gram:g,kadar:"24K",kode:"-",desc:br+" "+g+"gr",
    qty:q1,berat:g*q1,sumber:big,from:{loc:"PUSAT_EXT",sumber:big},to:{loc:masukLok,sumber:big},
    pemilik:$("jPemilik").value.trim(),pemilikOnly:big==="KONSINYASI",note:$("jNoteIn").value.trim(),nonResale:big==="BUYBACK"})
-  .then(function(ok){if(ok){$("jNoteIn").value="";toast("Tersimpan ✨")}});
+  .then(function(ok){busy("btnJual",false);if(ok){$("jNoteIn").value="";afterSave("jQtyIn","tblJual");toast("Tersimpan ✨")}});
   return}
  const jp=$("jJenisPH").value,kd=$("jKadar").value,bp=num($("jBerat").value);if(!(bp>0)){toast("Isi berat per unit");return}
  const jb=String($("jBrandPH").value||"").trim().toUpperCase()||"-";const jbD=jb==="-"?"":jb+" ";
  const base=san($("jKode").value||("PH"+Date.now().toString(36).toUpperCase()));
+ if(!busy("btnJual",true))return;
  const run=async function(){let okAll=true;
-  for(let i=0;i<q1;i++){const kode=q1===1?base:base+"-"+String(i+1);
+  for(let i=0;i<q1;i++){const kode=q1===1?base:base+"-"+String(i+1);busyLbl("btnJual","Menyimpan "+(i+1)+"/"+q1+"…");
    const ok=await post({tipe:JUAL_T,jenis:"PERHIASAN",sku:"PH#"+kode,brand:jb,gram:bp,kadar:kd,jenisPH:jp,kode:kode,desc:jbD+jp+" "+kd+" "+bp+"gr • "+kode,
     qty:1,berat:bp,sumber:big,from:{loc:"PUSAT_EXT",sumber:big},to:{loc:masukLok,sumber:big},
     pemilik:$("jPemilik").value.trim(),note:$("jNoteIn").value.trim(),nonResale:big==="BUYBACK"});
    if(!ok){okAll=false;break}}
-  if(okAll){toast("Tersimpan ✨ ("+q1+" unit)")}else{toast("Sebagian unit gagal disimpan")}};
+  busy("btnJual",false);afterSave("jQtyIn","tblJual");
+  if(okAll){toast("Tersimpan ✨ ("+q1+" unit)")}else{toast("Sebagian unit gagal disimpan","warn")}};
  run();$("jKode").value="PH-"+Date.now().toString(36).toUpperCase()}
-function autoJual(){const b=curPick("jPick");$("jAuto").innerHTML=b?(skuLabel(b)+statusTag(b)+" • sisa <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"—"}
+function autoJual(){const b=curPick("jPick");setMax("jQty",b?b.qty:0);$("jAuto").innerHTML=b?(skuLabel(b)+statusTag(b)+" • sisa <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"—"}
 
 /* ---------- BARANG MASUK ---------- */
 function simpanMasuk(){
  const q1=Math.round(num($("mQtyIn").value,1));if(q1<1){toast("Qty minimal 1");return}
  const lok="BRANKAS",harga=num($("mHarga").value),note=$("mNoteIn").value.trim();
- if(M_JENIS==="LM"){
+  if(M_JENIS==="LM"){
   const br=san($("mBrand").value),g=num($("mGram").value);if(!(g>0)){toast("Pilih gramasi");return}
+  if(!busy("btnMasuk",true))return;
   post({tipe:"MASUK_PUSAT",jenis:"LM",sku:"LM#"+br+"#"+g,brand:br,gram:g,kadar:"24K",kode:"-",desc:br+" "+g+"gr",
    qty:q1,berat:g*q1,sumber:"PUSAT",harga:harga,from:{loc:"PUSAT_EXT",sumber:"PUSAT"},to:{loc:lok,sumber:"PUSAT"},note:note})
-  .then(function(ok){if(ok){$("mNoteIn").value="";toast("Barang masuk tersimpan ✨")}});
+  .then(function(ok){busy("btnMasuk",false);if(ok){$("mNoteIn").value="";afterSave("mQtyIn","tblMasuk");toast("Barang masuk tersimpan ✨")}});
   return}
  const jp=$("mJenisPH").value,kd=$("mKadar").value,bp=num($("mBerat").value);if(!(bp>0)){toast("Isi berat per unit");return}
  const mb=String($("mBrandPH").value||"").trim().toUpperCase()||"-";const mbD=mb==="-"?"":mb+" ";
  const base=san($("mKodeIn").value||("PH"+Date.now().toString(36).toUpperCase()));
+ if(!busy("btnMasuk",true))return;
  const run=async function(){let n=0;
-  for(let i=0;i<q1;i++){const kode=q1===1?base:base+"-"+String(i+1);
+  for(let i=0;i<q1;i++){const kode=q1===1?base:base+"-"+String(i+1);busyLbl("btnMasuk","Menyimpan "+(i+1)+"/"+q1+"…");
    const ok=await post({tipe:"MASUK_PUSAT",jenis:"PERHIASAN",sku:"PH#"+kode,brand:mb,gram:bp,kadar:kd,jenisPH:jp,kode:kode,desc:mbD+jp+" "+kd+" "+bp+"gr • "+kode,
     qty:1,berat:bp,sumber:"PUSAT",harga:harga,from:{loc:"PUSAT_EXT",sumber:"PUSAT"},to:{loc:lok,sumber:"PUSAT"},note:note});
    if(ok)n++}
+  busy("btnMasuk",false);afterSave("mQtyIn","tblMasuk");
   $("mKodeIn").value="PH-"+Date.now().toString(36).toUpperCase();toast("Masuk tersimpan ✨ ("+n+" unit)")};
  run()}
 
@@ -641,11 +659,12 @@ function simpanMasuk(){
 function simpanRetur(){const b=curPick("rPick");if(!b){toast("Pilih barang di Brankas");return}
  const q1=Math.round(num($("rQty").value,1));if(q1<1){toast("Qty minimal 1");return}
  if(q1>b.qty){toast("⛔ Sisa Brankas hanya "+b.qty+" pcs");return}
+ if(!busy("btnRetur",true))return;
  post({tipe:"RETUR_PUSAT",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,pemilik:b.pemilik||"",
   qty:q1,berat:num(b.berat)/Math.max(1,num(b.qty))*q1,sumber:b.sumber,
   from:{loc:"BRANKAS",sumber:b.sumber},to:{loc:"PUSAT_EXT",sumber:"PUSAT"},note:$("rNote").value.trim()})
- .then(function(ok){if(ok){$("rNote").value="";refreshPick();toast("Retur tersimpan ↩️")}})}
-function autoRetur(){const b=curPick("rPick");$("rAuto").innerHTML=b?(skuLabel(b)+statusTag(b)+" • sisa Brankas <b>"+num(b.qty)+" pcs</b>"):"—";if(b)$("rAsal").value=b.sumber}
+ .then(function(ok){busy("btnRetur",false);if(ok){$("rNote").value="";refreshPick();afterSave("rQty","tblRetur");toast("Retur tersimpan ↩️")}})}
+function autoRetur(){const b=curPick("rPick");setMax("rQty",b?b.qty:0);$("rAuto").innerHTML=b?(skuLabel(b)+statusTag(b)+" • sisa Brankas <b>"+num(b.qty)+" pcs</b>"):"—";if(b)$("rAsal").value=b.sumber}
 
 /* ---------- IMPOR EXCEL ---------- */
 function imporExcel(inp){const f=inp.files[0];if(!f)return;
@@ -672,10 +691,11 @@ function imporExcel(inp){const f=inp.files[0];if(!f)return;
     for(let k=0;k<qty;k++){const kode=qty===1?base:base+"-"+String(k+1);const key="PH#"+kode;
      if(seen[key]){bad.push(n+":kode ganda");continue}seen[key]=1;
      jobs.push({tipe:tipe,jenis:"PERHIASAN",sku:key,brand:"-",gram:bp,kadar:kd,jenisPH:jp,kode:kode,desc:jp+" "+kd+" "+bp+"gr • "+kode,qty:1,berat:bp,sumber:sumber,harga:num(x.harga),from:{loc:"PUSAT_EXT",sumber:sumber},to:{loc:"BRANKAS",sumber:sumber},note:String(x.keterangan||"impor"),tanggal:tgl})}}});
-  const run=async function(){let ok=0;
-   for(let i=0;i<jobs.length;i++){const mv=jobs[i];mv.id=uid("MV");mv.ts=new Date().toISOString();mv.by=curUser.nama;
+  const run=async function(){if(!busy("btnImpor",true))return;let ok=0;
+   for(let i=0;i<jobs.length;i++){if(i%10===0)busyLbl("btnImpor","Impor "+i+"/"+jobs.length+"…");const mv=jobs[i];mv.id=uid("MV");mv.ts=new Date().toISOString();mv.by=curUser.nama;
     if(!cloudOK){DB.outbox.push(mv);ok++;continue}
     try{await txPost(mv);ok++}catch(err){bad.push("baris gagal: "+mv.desc)}}
+   busy("btnImpor",false);
    rebuildMovements();recomputeBalances();save();refresh();renderAllTables();
    addLog("IMPOR",ok+" baris tersimpan"+(bad.length?" • tolak "+bad.join(", "):""));
    toast(ok+" baris diimpor ✨"+(bad.length?" • "+bad.length+" ditolak":""))};
