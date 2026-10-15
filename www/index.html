@@ -45,7 +45,7 @@ label{font-size:12px;color:var(--muted);display:block;margin:10px 0 5px}
 input,select{width:100%;padding:11px 12px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font-size:16px;color:var(--ink);outline:none}
 input:focus,select:focus{border-color:var(--burnt)}
 .btn{border:0;border-radius:14px;padding:14px;font-weight:700;font-size:15px;cursor:pointer;width:100%}
-.btn-burnt{background:linear-gradient(135deg,#F4AE52,#D4621A);color:#fff}
+.btn-burnt{background:linear-gradient(135deg,var(--amber),var(--burnt));color:#fff}
 .btn-dark{background:var(--ink);color:#FEF3E2}
 .btn-danger{background:#B3261E;color:#fff}
 .btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
@@ -75,6 +75,10 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 .flash{animation:flash 3s}
 @keyframes flash{0%,60%{background:#FFF0D6}100%{background:transparent}}
 .foot{text-align:center;font-size:11px;color:#7A6350;margin:26px 0 10px;letter-spacing:.2px}
+body[data-theme="krem"]{--bg:#F5E7C6;--card:#FAF3E1;--ink:#222222;--muted:#6E5F4C;--amber:#FA8112;--burnt:#FA8112;--line:#E2C896}
+body[data-theme="krem"] .tbl th{background:#EBD3A4;color:#222222}
+body[data-theme="krem"] .chip.on{background:#222222;border-color:#222222}
+body[data-theme="krem"] .btn-dark{background:#222222}
 .scrollbox{overflow:auto;max-height:300px}
 .mutgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
 @media(max-width:900px){.mutgrid{grid-template-columns:1fr}}
@@ -285,8 +289,9 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 </div>
 
 <div id="pg-more" class="page">
-<h2 class="sec">📜 Log &amp; Backup</h2>
-<div class="card"><h3 style="margin:0">☁️ Sinkron & Perangkat</h3><p class="muted">Kirim = flush antrean lokal ke cloud • Tarik = ambil ulang dari cloud • Refresh = bersihkan cache.</p><div class="btn-row" style="margin-top:8px"><button class="btn btn-dark" onclick="pushManual()">⬆️ Kirim</button><button class="btn btn-dark" onclick="pullManual()">⬇️ Tarik</button><button class="btn btn-ghost" onclick="hardRefresh()">🔄 Refresh PWA</button></div></div>
+<h2 class="sec">⚙️ Pengaturan</h2>
+<div class="card"><h3 style="margin:0">🎨 Tema Tampilan</h3><p class="muted">Pilih warna aplikasi.</p><div class="chips" id="chipsTema"></div></div>
+<div class="card" style="margin-top:10px"><h3 style="margin:0">☁️ Sinkron & Perangkat</h3><p class="muted">Kirim = flush antrean lokal ke cloud • Tarik = ambil ulang dari cloud • Refresh = bersihkan cache.</p><div class="btn-row" style="margin-top:8px"><button class="btn btn-dark" onclick="pushManual()">⬆️ Kirim</button><button class="btn btn-dark" onclick="pullManual()">⬇️ Tarik</button><button class="btn btn-ghost" onclick="hardRefresh()">🔄 Refresh PWA</button></div></div>
 <div class="card" style="margin-top:10px"><h3 style="margin:0">☁️ Backup Cloud</h3><p class="muted">Snapshot manual + otomatis tiap Tutup Hari. Restore khusus ADMIN.</p>
 <div class="btn-row" style="margin-top:8px"><button class="btn btn-dark" onclick="backupCloud()">☁️ Backup Sekarang</button><button class="btn btn-ghost" onclick="unduhBackupCloud()">⬇️ Unduh Semua</button></div>
 <div id="listBackup" style="margin-top:8px"></div></div>
@@ -313,7 +318,7 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 const DEF_LM={ANTAM:[0.5,1,2,3,5,10,25,50,100],UBS:[0.5,1,2,3,5,10,25,50,100],G24:[0.1,0.25,0.5,1,2,5,10,25,50,100]};
 const DEF_PH=["CINCIN","KALUNG & LIONTIN","GIWANG","ANTING-ANTING","GELANG","BROS & PIN"];
 const DEF_KADAR=["24K","22K","21K","18K","16K","9K"];
-const NAV=[["dash","🏠","Home"],["mutasi","🔄","Mutasi"],["jual","💸","Jual"],["masuk","📥","Masuk"],["retur","↩️","Retur"],["stok","📦","Stok"],["lap","🖨️","Lapor"],["master","🏷️","Master"],["user","👥","User"],["more","📜","Log"]];
+const NAV=[["dash","🏠","Home"],["mutasi","🔄","Mutasi"],["jual","💸","Jual"],["masuk","📥","Masuk"],["retur","↩️","Retur"],["stok","📦","Stok"],["lap","🖨️","Lapor"],["master","🏷️","Master"],["user","👥","User"],["more","⚙️","Pengaturan"]];
 const LOCS=["BRANKAS","ETALASE","BAZAR","TERJUAL"];
 const SUMBER=["PUSAT","BUYBACK","KONSINYASI"];
 const LS_KEY="g24kedaton_v2";
@@ -971,7 +976,12 @@ function cetakA4(){const j=$("rJenis").value,r=rangePeriode();
  go()}
 
 /* ---------- MORE / BACKUP / RESET ---------- */
-function renderMore(){renderBackups();
+function curTema(){try{return localStorage.getItem("g24_tema")||""}catch(e){return""}}
+function setTema(t){try{if(t)localStorage.setItem("g24_tema",t);else localStorage.removeItem("g24_tema")}catch(e){}
+ try{document.body.dataset.theme=t||""}catch(e){}renderTema();toast("Tema diganti 🎨","ok")}
+function renderTema(){const t=curTema();const el=$("chipsTema");if(!el)return;
+ el.innerHTML=[["","🏠 Klasik"],["krem","🍯 Krem"]].map(x=>'<button class="chip '+(t===x[0]?"on":"")+'" aria-pressed="'+(t===x[0])+'" onclick="setTema(\''+x[0]+'\')">'+x[1]+'</button>').join("")}
+function renderMore(){renderTema();renderBackups();
  $("tblLog").innerHTML='<tr><th>Waktu</th><th>User</th><th>Aksi</th></tr>'+DB.logs.slice(0,100).map(l=>'<tr><td>'+esc(String(l.at).slice(0,16).replace("T"," "))+'</td><td>'+esc(l.by)+'</td><td><b>'+esc(l.aksi)+'</b><br><span class="muted">'+esc(l.detail)+'</span></td></tr>').join("")}
 function backupJSON(){const payload={v:2,at:new Date().toISOString(),balances:DB.balances,movements:DB.movements,sessions:DB.sessions,logs:DB.logs,users:DB.users,master:DB.master};
  const b=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup-g24kedaton-"+todayStr()+".json";a.click();addLog("BACKUP_JSON","Unduh backup JSON")}
@@ -1085,7 +1095,7 @@ function go(p){if(!curUser&&p!=="login")p="login";
  if(p==="mutasi")paintSetor();
  window.scrollTo({top:0,behavior:"smooth"})}
 function enter(){$("stUser").textContent=curUser.nama;buildRail();recomputeBalances();paintAll();refresh();renderAllTables();go("dash")}
-load();seedAdminSafe();buildRail();
+load();seedAdminSafe();try{document.body.dataset.theme=localStorage.getItem("g24_tema")||""}catch(e){}buildRail();
 if($("jBrand"))$("jBrand").addEventListener("change",paintAll);
 if($("mBrand"))$("mBrand").addEventListener("change",paintAll);
 try{document.querySelectorAll('input[type="number"]').forEach(function(e){try{e.setAttribute("inputmode",e.step&&String(e.step).indexOf(".")>=0?"decimal":"numeric")}catch(_){}})}catch(_){}
