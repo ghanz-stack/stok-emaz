@@ -59,7 +59,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 .card-hi{border:2.5px solid var(--burnt)!important;background:#FFF7EA}
 .tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:#FBE3C3;border:1px solid var(--burnt);margin-left:6px;white-space:nowrap}
 .scrollbox{overflow:auto;max-height:300px}
-.mutgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:start}
+.mutgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
 @media(max-width:900px){.mutgrid{grid-template-columns:1fr}}
 #lapOut .tbl th,#lapOut .tbl td{text-align:center}
 .badge{font-size:10px;padding:3px 8px;border-radius:999px;background:#FBE3C3;display:inline-block}
@@ -144,6 +144,15 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div class="grid2"><div><label>Keterangan</label><select id="muKetA"><option value="SALDO PAGI">SALDO PAGI</option><option value="SALDO SUSULAN">SALDO SUSULAN</option></select></div>
 <div><label>Catatan</label><input id="muNoteA" placeholder="cth: display pagi"></div></div>
 <div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMutasiA()">💾 Simpan Mutasi</button></div>
+<div class="card"><h3 style="margin:0">🔁 Etalase ↔ Bazar</h3><p class="muted">Pindah antar display.</p>
+<div class="grid2"><div><label>Dari lokasi</label><select id="muFromC" onchange="refreshPick()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
+<div><label>Ke lokasi</label><select id="muToC"><option value="BAZAR">BAZAR</option><option value="ETALASE">ETALASE</option></select></div></div>
+<label>Barang</label><select id="muPickC" onchange="autoMutC()"></select>
+<div class="autostat" id="mAutoC">Status: —</div>
+<div class="grid2"><div><label>Qty (pcs)</label><input id="muQtyC" type="number" min="1" value="1"></div>
+<div><label>Catatan</label><input id="muNoteC"></div></div>
+<div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMutasiC()">💾 Simpan Mutasi</button></div>
+</div>
 <div class="card card-hi" style="margin-top:10px"><h3 style="margin:0">Mutasi Barang Ke Brangkas</h3>
 <p class="muted">Kembalikan sisa display ke Brankas. <b>Wajib kosongkan display sebelum Tutup Hari.</b></p>
 <p class="muted" id="setorHint">—</p>
@@ -153,15 +162,6 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div class="autostat" id="mAutoB">Status: —</div>
 <label>Catatan</label><input id="muNoteB" placeholder="cth: setor sisa sore">
 <div style="height:10px"></div><button class="btn btn-dark" onclick="simpanMutasiB()">📥 Setor ke Brankas</button></div>
-<div class="card" style="margin-top:10px"><h3 style="margin:0">🔁 Etalase ↔ Bazar</h3><p class="muted">Pindah antar display.</p>
-<div class="grid2"><div><label>Dari lokasi</label><select id="muFromC" onchange="refreshPick()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
-<div><label>Ke lokasi</label><select id="muToC"><option value="BAZAR">BAZAR</option><option value="ETALASE">ETALASE</option></select></div></div>
-<label>Barang</label><select id="muPickC" onchange="autoMutC()"></select>
-<div class="autostat" id="mAutoC">Status: —</div>
-<div class="grid2"><div><label>Qty (pcs)</label><input id="muQtyC" type="number" min="1" value="1"></div>
-<div><label>Catatan</label><input id="muNoteC"></div></div>
-<div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMutasiC()">💾 Simpan Mutasi</button></div>
-</div>
 <h2 class="sec">📋 Mutasi terakhir</h2><div class="card"><div class="scrollbox"><table class="tbl" id="tblMutasi"></table></div></div>
 </div>
 
