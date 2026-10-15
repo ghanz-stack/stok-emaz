@@ -612,7 +612,8 @@ function imporExcel(inp){const f=inp.files[0];if(!f)return;
    if(["LM","PERHIASAN"].indexOf(jenis)<0){bad.push(n+":jenis");return}
    if(OK_T.indexOf(tipe)<0)tipe="MASUK_PUSAT";
    const sumber=tipe==="BUYBACK_MASUK"?"BUYBACK":tipe==="KONSINYASI_MASUK"?"KONSINYASI":"PUSAT";
-   let tgl=String(x.tanggal||"");if(/^\d+(\.\d+)?$/.test(tgl)){const d=new Date(Date.UTC(1899,11,30)+Number(tgl)*86400000);tgl=d.toLocaleDateString("sv-SE")}
+   let tgl=String(x.tanggal||"");const dm=tgl.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);if(dm)tgl=dm[3]+"-"+dm[2].padStart(2,"0")+"-"+dm[1].padStart(2,"0");
+   if(/^\d+(\.\d+)?$/.test(tgl)){const d=new Date(Date.UTC(1899,11,30)+Number(tgl)*86400000);tgl=d.toLocaleDateString("sv-SE")}
    if(!tgl)tgl=todayStr();
    const qty=Math.max(1,Math.round(Number(x.qty)||1));
    if(jenis==="LM"){const br=san(x.brand||"ANTAM"),g=num(x.gramasi);if(!(g>0)){bad.push(n+":gramasi");return}
@@ -653,23 +654,26 @@ async function fetchMov(r){if(!cloudOK)return DB.movements.filter(m=>m.tanggal>=
  catch(e){toast("Tarik data laporan gagal — pakai cache lokal");return DB.movements.filter(m=>m.tanggal>=r.dari&&m.tanggal<=r.sampai)}}
 function isDisplayLoc(l){return l==="ETALASE"||l==="BAZAR"}
 function arusBrands(rows){const s={};rows.forEach(function(m){if(m.jenis==="LM"&&m.brand)s[String(m.brand).toUpperCase()]=1});return Object.keys(s).sort()}
-function arusDataBrand(rows,brand){const z=function(){const o={};ARUS_COLS.forEach(c=>o[c]=0);return o};
+function arusDataBrand(rows,brand){const gs={};rows.forEach(function(m){if(m.jenis==="LM"&&String(m.brand||"").toUpperCase()===brand&&num(m.gram)>0)gs[num(m.gram)]=1});
+ const COLS=ARUS_COLS.concat(Object.keys(gs).map(Number).filter(g=>ARUS_COLS.indexOf(g)<0)).sort((a,b)=>a-b);
+ const z=function(){const o={};COLS.forEach(c=>o[c]=0);return o};
  const awal=z(),tamb=z(),jual=z(),buy=z(),kons=z(),setor=z();
- rows.forEach(function(m){if(m.jenis!=="LM"||String(m.brand||"").toUpperCase()!==brand)return;const g=num(m.gram);if(ARUS_COLS.indexOf(g)<0)return;
-  if(m.tipe==="MUTASI"&&m.from&&m.from.loc==="BRANKAS"&&isDisplayLoc(m.to.loc)){if(m.ket==="SALDO PAGI")awal[g]+=num(m.qty);else tamb[g]+=num(m.qty)}
-  else if(m.tipe==="MASUK_PUSAT"&&m.to&&isDisplayLoc(m.to.loc))tamb[g]+=num(m.qty);
-  else if(m.tipe==="PENJUALAN"&&m.from&&isDisplayLoc(m.from.loc))jual[g]+=num(m.qty);
-  else if(m.tipe==="BUYBACK_MASUK"&&m.to&&isDisplayLoc(m.to.loc))buy[g]+=num(m.qty);
-  else if(m.tipe==="KONSINYASI_MASUK"&&m.to&&isDisplayLoc(m.to.loc))kons[g]+=num(m.qty);
-  else if(m.tipe==="MUTASI"&&m.from&&isDisplayLoc(m.from.loc)&&m.to.loc==="BRANKAS")setor[g]+=num(m.qty)});
- const akhir={};ARUS_COLS.forEach(c=>akhir[c]=awal[c]+tamb[c]-jual[c]+buy[c]+kons[c]);
- return{cols:ARUS_COLS,rows:[{label:"Saldo Awal (Buka Pelayanan)",vals:awal,color:"#FFE699"},{label:"Barang Tambahan Dari Brankas",vals:tamb,color:"#fff"},{label:"Barang Terjual",vals:jual,color:"#fff"},{label:"Barang Buyback",vals:buy,color:"#fff"},{label:"Barang Konsinyasi",vals:kons,color:"#fff"},{label:"Saldo akhir penjualan",vals:akhir,color:"#C6EFCE"},{label:"Barang Disetor ke Brankas",vals:setor,color:"#BDD7EE"}]}}
+ rows.forEach(function(m){if(m.jenis!=="LM"||String(m.brand||"").toUpperCase()!==brand)return;const g=num(m.gram);if(!(g>0))return;
+  const toLoc=m.to&&m.to.loc,fromLoc=m.from&&m.from.loc;
+  if(m.tipe==="MUTASI"&&fromLoc==="BRANKAS"&&isDisplayLoc(toLoc)){if(m.ket==="SALDO PAGI")awal[g]+=num(m.qty);else tamb[g]+=num(m.qty)}
+  else if(m.tipe==="MASUK_PUSAT"&&isDisplayLoc(toLoc))tamb[g]+=num(m.qty);
+  else if(m.tipe==="PENJUALAN"&&isDisplayLoc(fromLoc))jual[g]+=num(m.qty);
+  else if(m.tipe==="BUYBACK_MASUK"&&isDisplayLoc(toLoc))buy[g]+=num(m.qty);
+  else if(m.tipe==="KONSINYASI_MASUK"&&isDisplayLoc(toLoc))kons[g]+=num(m.qty);
+  else if(m.tipe==="MUTASI"&&isDisplayLoc(fromLoc)&&toLoc==="BRANKAS")setor[g]+=num(m.qty)});
+ const akhir={};COLS.forEach(c=>akhir[c]=awal[c]+tamb[c]-jual[c]+buy[c]+kons[c]);
+ return{cols:COLS,rows:[{label:"Saldo Awal (Buka Pelayanan)",vals:awal,color:"#FFE699"},{label:"Barang Tambahan Dari Brankas",vals:tamb,color:"#fff"},{label:"Barang Terjual",vals:jual,color:"#fff"},{label:"Barang Buyback",vals:buy,color:"#fff"},{label:"Barang Konsinyasi",vals:kons,color:"#fff"},{label:"Saldo akhir penjualan",vals:akhir,color:"#C6EFCE"},{label:"Barang Disetor ke Brankas",vals:setor,color:"#BDD7EE"}]}}
 function r2(n){return Math.round(num(n)*100)/100}
 function finalizeLap(title,cols,rows,r,wide){
  const C=["No"].concat(cols);
  const R=rows.map(function(x,i){return [i+1].concat(x)});
  let T=null;const qi=[];
- cols.forEach(function(c,i){if(/\(pcs\)|\(gr\)/i.test(c))qi.push(i)});
+ cols.forEach(function(c,i){if(/\(pcs\)|\(gr\)/i.test(c)&&/^(qty|masuk|terjual|sisa|berat)/i.test(c))qi.push(i)});
  if(qi.length&&rows.length){T=["TOTAL"];for(let i=0;i<cols.length;i++){if(qi.indexOf(i)>=0){let s=0;rows.forEach(function(x){s+=num(x[i])});T.push(Math.round(s*100)/100)}else T.push("")}}
  return{title:title,cols:C,rows:R,total:T,r:r,wide:!!wide}}
 async function lapData(){const r=rangePeriode(),j=$("rJenis").value,all=DB.movements,flt=await fetchMov(r);
