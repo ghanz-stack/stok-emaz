@@ -580,14 +580,19 @@ function renderUsers(){const us=DB.users.filter(u=>!u.deleted);
 
 /* ---------- SESSION ---------- */
 function sesiHari(){return DB.sessions.find(s=>s.tanggal===todayStr())}
+function sesiTertutup(){const t=todayStr();return DB.sessions.find(s=>s.status==="BUKA"&&s.tanggal<t)}
 function hariBuka(){const s=sesiHari();return !!(s&&s.status==="BUKA")}
 function hariToggle(){if(hariBuka())tutupHari();else bukaHari()}
 function goStok(l){CUR_STOK=l;go("stok")}
 function paintBanner(){const el=$("bannerHari");if(!el)return;if(!curUser||hariBuka()){el.style.display="none";return}
  el.style.display="block";
- el.innerHTML='<b>🔒 Hari belum dibuka ('+todayStr()+').</b> Transaksi dikunci. <button class="chip" onclick="bukaHari()">☀️ Buka Hari</button>'}
+ const belum=sesiTertutup();
+ if(belum){el.innerHTML='<b>⚠️ Hari '+esc(belum.tanggal)+' belum ditutup (masih ☀️ BUKA).</b> Selesaikan opname dulu sebelum membuka hari baru. <button class="chip" onclick="go(\'dash\');setTimeout(tutupHari,200)">Tutup Hari</button>'}
+ else{el.innerHTML='<b>🔒 Hari belum dibuka ('+todayStr()+').</b> Transaksi dikunci. <button class="chip" onclick="bukaHari()">☀️ Buka Hari</button>'}}
 async function bukaHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.tanggal===t);
  if(s&&s.status==="BUKA"){toast("Hari ini sudah dibuka ☀️");return}
+ const belum=sesiTertutup();
+ if(belum){openModal({title:"⚠️ Hari Belum Ditutup",body:'<p style="font-size:16px;line-height:1.7">Ada hari yang <b>belum ditutup</b>:<br><b>'+esc(belum.tanggal)+'</b> — status: ☀️ BUKA<br><br>Selesaikan opname tutup hari dulu sebelum membuka hari baru.</p>',actions:[{label:"Nanti saja"},{label:"Tutup Hari Sekarang",primary:1,onClick:function(){closeModal();go("dash");setTimeout(tutupHari,200)}}]});return}
  const o={tanggal:t,status:"BUKA",bukaOleh:curUser?curUser.nama:"-",bukaAt:new Date().toISOString()};
  DB.sessions=DB.sessions.filter(x=>x.tanggal!==t);DB.sessions.unshift(o);
  addLog("BUKA_HARI",t);save();refresh();toast("☀️ Hari dibuka");
