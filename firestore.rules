@@ -1,16 +1,19 @@
-// RULES — paste ke console.firebase.google.com → project BARU G24 Kedaton
+// RULES — paste ke console.firebase.google.com → project G24 Kedaton
 // → Firestore Database → Rules → Publish.
 //
-// App tidak pakai Firebase Auth (login PIN lokal), jadi koleksi dibuka
-// tanpa auth. Hapus fisik dari client ditolak — pakai Void/status + Log.
+// MODEL B: koleksi movements + balances + sessions + logs + users + master + settings + backups.
+// App tidak pakai Firebase Auth (login PIN lokal), jadi koleksi dibuka tanpa auth.
+// delete diizinkan karena: Reset Semua Data (ADMIN), hapus Master, hapus User.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{db}/documents {
-    match /mutasi/{d}    { allow read: if true; allow create, update: if true; allow delete: if false; }
-    match /sessions/{d}  { allow read: if true; allow create, update: if true; allow delete: if false; }
-    match /logs/{d}      { allow read: if true; allow create: if true; allow update, delete: if false; }
-    match /users/{d}     { allow read: if true; allow create, update: if true; allow delete: if false; }
-    match /master/{d}    { allow read: if true; allow create, update: if true; allow delete: if false; }
-    match /backups/{d}   { allow read: if true; allow create: if true; allow update, delete: if false; }
+    match /movements/{d} { allow read, create, update, delete: if true; }
+    match /balances/{d}  { allow read, create, update, delete: if true; }
+    match /sessions/{d}  { allow read, create, update, delete: if true; }
+    match /logs/{d}      { allow read, create, update, delete: if true; }
+    match /users/{d}     { allow read, create, update, delete: if true; }
+    match /master/{d}    { allow read, create, update, delete: if true; }
+    match /settings/{d}  { allow read, create, update, delete: if true; }
+    match /backups/{d}   { allow read, create, update, delete: if true; }
   }
 }

@@ -1,5 +1,5 @@
 // SW Gudang Ibu NID v2 — NETWORK-FIRST (pola BudgetRumah)
-const CACHE='g24kedaton-v10';
+const CACHE='g24kedaton-v11';
 const ASSETS=['./','./index.html','./manifest.json','./firebase-config.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
