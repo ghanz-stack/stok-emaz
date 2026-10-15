@@ -64,6 +64,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 #modalWrap .modal{background:var(--card);border:1px solid var(--line);border-radius:20px;max-width:540px;width:100%;max-height:88vh;overflow:auto;padding:18px;box-shadow:0 24px 70px rgba(0,0,0,.45)}
 #modalWrap .modal h3{margin:0 0 10px}
 #modalActs{margin-top:14px}
+#bannerHari{background:#FFF3CD;border-bottom:1px solid #F0C36D;padding:9px 14px;font-size:13px;text-align:center;position:sticky;top:58px;z-index:15}
 .card-hi{border:2.5px solid var(--burnt)!important;background:#FFF7EA}
 .tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:#FBE3C3;border:1px solid var(--burnt);margin-left:6px;white-space:nowrap}
 button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible{outline:2.5px solid var(--burnt);outline-offset:2px}
@@ -110,8 +111,9 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 <header class="top"><div class="top-in">
 <img class="logo" src="./logo-app.jpg" alt="logo">
 <div class="app-t"><b>GUDANG STOK G24 KEDATON</b><br><span>Brankas • Etalase • Bazar — realtime</span></div>
-<div class="pill"><span class="dot" id="dotNet"></span><span class="sync" id="syncLbl">Lokal</span></div>
+<div class="pill"><span class="dot" id="dotNet"></span><span class="sync" id="syncLbl">Lokal</span><button id="btnOut" class="chip" style="display:none" onclick="keluar()">Keluar</button></div>
 </div></header>
+<div id="bannerHari" style="display:none" role="alert"></div>
 
 <nav class="rail" id="rail"></nav>
 
@@ -129,21 +131,17 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 <div class="card"><div class="kv"><span>Status hari</span><b id="stHari">—</b></div>
 <div class="kv"><span>Pengguna</span><b id="stUser">—</b></div>
 <div class="kv"><span>Antrean belum terkirim</span><b id="stOutbox">0</b></div>
-<div id="lockWarn" class="warn" style="display:none;margin-top:10px">🔒 Hari belum dibuka. Tekan <b>Buka Hari</b> sebelum mencatat transaksi.</div>
-<div class="btn-row" style="margin-top:10px"><button class="btn btn-burnt" onclick="bukaHari()">☀️ Buka Hari</button><button class="btn btn-ghost" onclick="tutupHari()">🌙 Tutup Hari</button></div></div>
-<h2 class="sec">☁️ Sinkron & Perangkat</h2>
-<div class="card"><div class="btn-row"><button class="btn btn-dark" onclick="pushManual()">⬆️ Kirim</button><button class="btn btn-dark" onclick="pullManual()">⬇️ Tarik</button><button class="btn btn-ghost" onclick="hardRefresh()">🔄 Refresh PWA</button></div>
-<p class="muted" id="cloudStat">Kirim = flush antrean lokal ke cloud • Tarik = ambil ulang dari cloud • Refresh = bersihkan cache.</p></div>
+<div style="margin-top:10px"><button id="btnHari" class="btn btn-burnt" onclick="hariToggle()">☀️ Buka Hari</button></div></div>
 <h2 class="sec">💰 Stok Brankas (per sumber)</h2>
 <div class="grid2">
-<div class="stat"><small>🏛️ PUSAT</small><b id="brPusat">0 pcs</b><em id="brPusatGr">0 gr</em></div>
-<div class="stat"><small>♻️ BUYBACK</small><b id="brBuy">0 pcs</b><em id="brBuyGr">0 gr</em></div>
-<div class="stat"><small>🤝 KONSINYASI</small><b id="brKons">0 pcs</b><em id="brKonsGr">0 gr</em></div>
-<div class="stat" style="background:#FBE3C3"><small>📦 TOTAL BRANKAS</small><b id="brTot">0 pcs</b><em id="brTotGr">0 gr</em></div></div>
+<div class="stat" style="cursor:pointer" onclick="goStok('BRANKAS')"><small>🏛️ PUSAT</small><b id="brPusat">0 pcs</b><em id="brPusatGr">0 gr</em></div>
+<div class="stat" style="cursor:pointer" onclick="goStok('BRANKAS')"><small>♻️ BUYBACK</small><b id="brBuy">0 pcs</b><em id="brBuyGr">0 gr</em></div>
+<div class="stat" style="cursor:pointer" onclick="goStok('BRANKAS')"><small>🤝 KONSINYASI</small><b id="brKons">0 pcs</b><em id="brKonsGr">0 gr</em></div>
+<div class="stat" style="background:#FBE3C3;cursor:pointer" onclick="goStok('BRANKAS')"><small>📦 TOTAL BRANKAS</small><b id="brTot">0 pcs</b><em id="brTotGr">0 gr</em></div></div>
 <h2 class="sec">🏪 Depan & Bazar</h2>
 <div class="grid2">
-<div class="stat"><small>🪞 Etalase</small><b id="stEtalase">0 pcs</b><em id="stEtalaseGr">0 gr</em></div>
-<div class="stat"><small>🎪 Bazar</small><b id="stBazar">0 pcs</b><em id="stBazarGr">0 gr</em></div></div>
+<div class="stat" style="cursor:pointer" onclick="goStok('ETALASE')"><small>🪞 Etalase</small><b id="stEtalase">0 pcs</b><em id="stEtalaseGr">0 gr</em></div>
+<div class="stat" style="cursor:pointer" onclick="goStok('BAZAR')"><small>🎪 Bazar</small><b id="stBazar">0 pcs</b><em id="stBazarGr">0 gr</em></div></div>
 </div>
 
 <div id="pg-mutasi" class="page">
@@ -278,7 +276,8 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 
 <div id="pg-more" class="page">
 <h2 class="sec">📜 Log &amp; Backup</h2>
-<div class="card"><h3 style="margin:0">☁️ Backup Cloud</h3><p class="muted">Snapshot manual + otomatis tiap Tutup Hari. Restore khusus ADMIN.</p>
+<div class="card"><h3 style="margin:0">☁️ Sinkron & Perangkat</h3><p class="muted">Kirim = flush antrean lokal ke cloud • Tarik = ambil ulang dari cloud • Refresh = bersihkan cache.</p><div class="btn-row" style="margin-top:8px"><button class="btn btn-dark" onclick="pushManual()">⬆️ Kirim</button><button class="btn btn-dark" onclick="pullManual()">⬇️ Tarik</button><button class="btn btn-ghost" onclick="hardRefresh()">🔄 Refresh PWA</button></div></div>
+<div class="card" style="margin-top:10px"><h3 style="margin:0">☁️ Backup Cloud</h3><p class="muted">Snapshot manual + otomatis tiap Tutup Hari. Restore khusus ADMIN.</p>
 <div class="btn-row" style="margin-top:8px"><button class="btn btn-dark" onclick="backupCloud()">☁️ Backup Sekarang</button><button class="btn btn-ghost" onclick="unduhBackupCloud()">⬇️ Unduh Semua</button></div>
 <div id="listBackup" style="margin-top:8px"></div></div>
 <div class="card" style="margin-top:10px"><h3 style="margin:0">📜 Log Aktivitas</h3>
@@ -304,7 +303,7 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 const DEF_LM={ANTAM:[0.5,1,2,3,5,10,25,50,100],UBS:[0.5,1,2,3,5,10,25,50,100],G24:[0.1,0.25,0.5,1,2,5,10,25,50,100]};
 const DEF_PH=["CINCIN","KALUNG & LIONTIN","GIWANG","ANTING-ANTING","GELANG","BROS & PIN"];
 const DEF_KADAR=["24K","22K","21K","18K","16K","9K"];
-const NAV=[["dash","🏠","Home"],["mutasi","🔄","Mutasi"],["jual","💸","Jual"],["masuk","📥","Masuk"],["retur","↩️","Retur"],["stok","📦","Stok"],["lap","🖨️","Lapor"],["master","🏷️","Master"],["user","👥","User"],["more","📜","Log"]];
+const NAV=[["dash","🏠","Home"],["mutasi","🔄","Mutasi"],["jual","💸","Jual"],["masuk","📥","Masuk"],["stok","📦","Stok"]];
 const LOCS=["BRANKAS","ETALASE","BAZAR","TERJUAL"];
 const SUMBER=["PUSAT","BUYBACK","KONSINYASI"];
 const LS_KEY="g24kedaton_v2";
@@ -518,6 +517,11 @@ function renderUsers(){const us=DB.users.filter(u=>!u.deleted);
 /* ---------- SESSION ---------- */
 function sesiHari(){return DB.sessions.find(s=>s.tanggal===todayStr())}
 function hariBuka(){const s=sesiHari();return !!(s&&s.status==="BUKA")}
+function hariToggle(){if(hariBuka())tutupHari();else bukaHari()}
+function goStok(l){CUR_STOK=l;go("stok")}
+function paintBanner(){const el=$("bannerHari");if(!el)return;if(!curUser||hariBuka()){el.style.display="none";return}
+ el.style.display="block";
+ el.innerHTML='<b>🔒 Hari belum dibuka ('+todayStr()+').</b> Transaksi dikunci. <button class="chip" onclick="bukaHari()">☀️ Buka Hari</button>'}
 async function bukaHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.tanggal===t);
  if(s&&s.status==="BUKA"){toast("Hari ini sudah dibuka ☀️");return}
  const o={tanggal:t,status:"BUKA",bukaOleh:curUser?curUser.nama:"-",bukaAt:new Date().toISOString()};
@@ -981,7 +985,9 @@ function refresh(){$("tglHari").textContent=todayStr();$("stUser").textContent=c
  $("stBazar").textContent=z.pcs+" pcs";$("stBazarGr").textContent=z.gr.toFixed(2)+" gr";
  const s=sesiHari();$("stHari").textContent=s?((s.status==="BUKA"?"☀️ BUKA":"🌙 TUTUP")+" • "+s.tanggal):"Belum buka";
  $("stOutbox").textContent=PENDN;
- $("lockWarn").style.display=hariBuka()?"none":"block";paintSetor()}
+ const bh=$("btnHari");if(bh){const open=hariBuka();bh.textContent=open?"🌙 Tutup Hari":"☀️ Buka Hari";bh.className="btn "+(open?"btn-dark":"btn-burnt")}
+ const sl=$("syncLbl");if(sl){if(cloudOK)sl.textContent="Live ☁️"+(PENDN?" • "+PENDN+" antre":"");else if(sl.textContent==="Lokal"||sl.textContent.indexOf("antre")>=0)sl.textContent="Offline"+(PENDN?" • "+PENDN+" antre":"")}
+ paintBanner();paintSetor()}
 function refreshPick(){if(!$("muPickA"))return;
  const Q=function(id){const e=$(id);return e?e.value.trim():""};
  $("muPickA").innerHTML=pickOpts("BRANKAS",Q("qA"),true);
@@ -1010,8 +1016,13 @@ function paintAll(){if(!$("chipsJual"))return;
  refreshPick();autoMutA();autoMutB();autoMutC();autoJual();autoRetur();paintSetor()}
 /* ---------- NAV/BOOT ---------- */
 function pgMap(p){return{dash:"pg-dash",mutasi:"pg-mutasi",jual:"pg-jual",masuk:"pg-masuk",retur:"pg-retur",stok:"pg-stok",lap:"pg-lap",master:"pg-master",user:"pg-user",more:"pg-more",login:"pg-login"}[p]}
-function buildRail(){$("rail").innerHTML=NAV.map(n=>'<button data-pg="'+n[0]+'" onclick="go(\''+n[0]+'\')"><i>'+n[1]+'</i><span>'+n[2]+'</span></button>').join("")}
+function buildRail(){$("rail").innerHTML=NAV.map(n=>'<button data-pg="'+n[0]+'" onclick="go(\''+n[0]+'\')"><i>'+n[1]+'</i><span>'+n[2]+'</span></button>').join("")+'<button onclick="openSheet()" aria-label="Menu lainnya"><i>⋯</i><span>Lainnya</span></button>'}
+function openSheet(){const items=[["retur","↩️","Retur"],["lap","🖨️","Lapor"]];
+ if(isAdmin())items.push(["master","🏷️","Master"],["user","👥","User"]);
+ items.push(["more","📜","Log & Backup"]);
+ openModal({title:"Lainnya",body:'<div class="grid2">'+items.map(i=>'<button class="btn btn-ghost" onclick="closeModal();go(\''+i[0]+'\')">'+i[1]+' '+i[2]+'</button>').join("")+'</div><button class="btn btn-danger" style="margin-top:10px" onclick="closeModal();keluar()">Keluar</button>',actions:[{label:"Tutup"}]})}
 function go(p){if(!curUser&&p!=="login")p="login";
+ if(curUser&&!isAdmin()&&(p==="master"||p==="user")){toast("⛔ Khusus ADMIN","err");return}
  document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".rail button").forEach(x=>{x.classList.remove("on");x.removeAttribute("aria-current")});
  $(pgMap(p)).classList.add("on");const b=document.querySelector('[data-pg="'+p+'"]');if(b){b.classList.add("on");b.setAttribute("aria-current","page")}
  if(p==="lap"){if(!$("rHari").value)$("rHari").value=todayStr();paintPeriode()}
@@ -1019,11 +1030,17 @@ function go(p){if(!curUser&&p!=="login")p="login";
  if(p==="mutasi"||p==="jual"||p==="retur"||p==="masuk")refreshPick();
  if(p==="mutasi")paintSetor();
  window.scrollTo({top:0,behavior:"smooth"})}
-function enter(){$("stUser").textContent=curUser.nama;buildRail();recomputeBalances();paintAll();refresh();go("dash")}
+function enter(){$("stUser").textContent=curUser.nama;const bo=$("btnOut");if(bo)bo.style.display="inline-block";buildRail();recomputeBalances();paintAll();refresh();go("dash")}
 load();seedAdminSafe();buildRail();
 if($("jBrand"))$("jBrand").addEventListener("change",paintAll);
 if($("mBrand"))$("mBrand").addEventListener("change",paintAll);
 try{document.querySelectorAll('input[type="number"]').forEach(function(e){try{e.setAttribute("inputmode",e.step&&String(e.step).indexOf(".")>=0?"decimal":"numeric")}catch(_){}})}catch(_){}
+let LAST_ACT=Date.now(),WARNED_IDLE=false;
+["pointerdown","keydown","touchstart"].forEach(function(ev){try{document.addEventListener(ev,function(){LAST_ACT=Date.now();WARNED_IDLE=false},{passive:true})}catch(e){}});
+const _idleT=setInterval(function(){if(!curUser)return;const idle=Date.now()-LAST_ACT;
+ if(idle>=20*60*1000){try{addLog("AUTOLOGOUT","20 menit tanpa aktivitas")}catch(e){}curUser=null;try{localStorage.removeItem("g24_user")}catch(e){}location.reload()}
+ else if(idle>=19*60*1000&&!WARNED_IDLE){WARNED_IDLE=true;openModal({title:"⏳ Sesi hampir berakhir",body:'<p style="font-size:16px;line-height:1.7">Tidak ada aktivitas 19 menit. Anda akan otomatis keluar dalam <b>1 menit</b>.</p>',actions:[{label:"Tetap masuk",primary:1}]})}},30000);
+try{if(_idleT&&_idleT.unref)_idleT.unref()}catch(e){}
 window.addEventListener("error",function(e){try{toast("⚠️ Galat: "+(e.message||"unknown"))}catch(_){}});
 recomputeBalances();
 initCloud();
