@@ -145,7 +145,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <h2 class="sec">💸 Penjualan — Jual / Buyback / Konsinyasi</h2>
 <div class="card"><div class="chips" id="chipsJual"></div>
 <div id="boxJenisJ"><div class="chips" id="chipsJenisJ"></div></div>
-<div class="grid2"><div><label>Sumber</label><select id="jSumber"><option value="PUSAT">PUSAT</option><option value="BUYBACK">BUYBACK</option><option value="KONSINYASI">KONSINYASI</option></select></div>
+<div class="grid2"><div id="boxSumberJ"><label>Sumber</label><select id="jSumber"><option value="PUSAT">PUSAT</option><option value="BUYBACK">BUYBACK</option><option value="KONSINYASI">KONSINYASI</option></select></div>
 <div><label>Lokasi (hanya display)</label><select id="jLok" onchange="refreshDlJual()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div></div>
 <div id="boxJL"><label>Brand LOGAM MULIA (24K • 99.9999%)</label><select id="jBrand"></select><label>Gramasi</label><select id="jGram"></select></div>
 <div id="boxJP" style="display:none"><label>Jenis perhiasan</label><select id="jJenisPH"></select>
@@ -294,18 +294,18 @@ if(typeof firebase==="undefined")return;firebase.initializeApp(c);cloud=firebase
 try{cloud.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}
 cloudOK=true;$("syncLbl").textContent="Live ☁️";$("dotNet").classList.add("on");
 ["mutasi","sessions","logs","users","master"].forEach(col=>{cloud.collection(col).orderBy("at","desc").limit(500).onSnapshot(s=>{const a=[];s.forEach(d=>a.push(Object.assign({id:d.id},d.data())));a.forEach(o=>o._c=1);
-if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);
+if(col==="mutasi")DB.mutasi=dedup(a,o=>o.id||"");if(col==="sessions")DB.sessions=dedup(a,o=>o.id||"");if(col==="logs")DB.logs=dedup(a,o=>o.id||"").slice(0,200);
 if(col==="users")DB.users=dedup(a,o=>o.nama);if(col==="master")DB.master=dedup(a,o=>JSON.stringify({t:o.t,brand:o.brand,gram:o.gram,jenis:o.jenis,kadar:o.kadar}));seedAdmin();
 save();if(curUser){paintAll();refresh()}},(e)=>{cloudOK=false;const s=$("syncLbl");if(s)s.textContent="Cloud ditolak ⚠️";const d=$("dotNet");if(d)d.classList.remove("on");console.log("Firestore ditolak:",e&&e.code);toast("⚠️ Cloud ditolak — paste firestore.rules ke console & Publish")})});toast("Cloud realtime tersambung ☁️")}catch(e){console.log(e)}}
-function pushCloud(col,obj){if(!cloudOK)return;obj.at=obj.at||new Date().toISOString();cloud.collection(col).add(obj).catch(()=>{})}
-function addLog(aksi,detail){const l={by:curUser?curUser.nama:"-",aksi,detail,at:new Date().toISOString()};DB.logs.unshift(l);DB.logs=DB.logs.slice(0,300);pushCloud("logs",l);save()}
+function pushCloud(col,obj){if(!cloudOK||!cloud)return;obj.at=obj.at||new Date().toISOString();obj.id=obj.id||uid("X");try{cloud.collection(col).doc(obj.id).set(obj).catch(()=>{})}catch(e){}}
+function addLog(aksi,detail){const l={id:uid("L"),by:curUser?curUser.nama:"-",aksi,detail,at:new Date().toISOString()};DB.logs.unshift(l);DB.logs=DB.logs.slice(0,300);pushCloud("logs",l);save()}
 /* session */
 function sesiHari(){return DB.sessions.find(s=>s.tanggal===todayStr())}
 function bukaHari(){if(sesiHari()&&sesiHari().status==="BUKA"){toast("Hari ini sudah dibuka ☀️");return}
-const s={tanggal:todayStr(),status:"BUKA",by:curUser.nama,at:new Date().toISOString()};DB.sessions.unshift(s);pushCloud("sessions",s);addLog("BUKA_HARI",todayStr());save();refresh();toast("Buka hari ☀️")}
+const s={id:uid("S"),tanggal:todayStr(),status:"BUKA",by:curUser.nama,at:new Date().toISOString()};DB.sessions.unshift(s);pushCloud("sessions",s);addLog("BUKA_HARI",todayStr());save();refresh();toast("Buka hari ☀️")}
 function tutupHari(){const s=sesiHari();if(!s){toast("Belum buka hari");return}
 const sls=prompt("Opname selesai? Tulis selisih (cth: cocok / kurang 1pcs cincin):","cocok");if(sls===null)return;
-s.status="TUTUP";s.tutupOleh=curUser.nama;s.selisih=sls;pushCloud("sessions",{tanggal:s.tanggal,status:"TUTUP",tutupOleh:curUser.nama,selisih:sls,at:new Date().toISOString()});
+s.status="TUTUP";s.tutupOleh=curUser.nama;s.selisih=sls;s.at=new Date().toISOString();s._dirty=1;pushCloud("sessions",s);
 addLog("TUTUP_HARI",todayStr()+" • selisih: "+sls);save();refresh();backupCloud(true);toast("Tutup hari 🌙 • Berita Acara siap dicetak")}
 /* cari data barang masuk by kode */
 function findMasuk(kode){return DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe))}
@@ -336,7 +336,7 @@ const pv=posKode(kode);
 if(curMut==="DISTRIBUSI"&&pv.pos.brankas<qty){toast(`⛔ Stok BRANKAS kode ini tinggal ${pv.pos.brankas}pcs`);return}
 if(curMut==="PENGEMBALIAN"&&pv.pos[lok]<qty){toast(`⛔ Stok ${lok} kode ini tinggal ${pv.pos[lok]}pcs`);return}
 const perUnit=f.berat/Math.max(1,f.qty);
-const m={id:uid("M"),tipe:curMut,jenis:f.jenis,sumber:f.sumber,lok,qty,berat:perUnit*qty,harga:0,pemilik:"-",note,ket,desc:f.desc,brand:f.brand,kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
+const m={id:uid("M"),tipe:curMut,jenis:f.jenis,sumber:f.sumber,lok,qty,berat:perUnit*qty,harga:0,pemilik:"-",note,ket,desc:f.desc,brand:f.brand,kode,gram:f.gram||0,kadar:f.kadar||"-",jenisPH:f.jenisPH||"-",by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
 DB.mutasi.unshift(m);pushCloud("mutasi",m);addLog(curMut,`${f.desc} • ${qty}pcs → ${lok}`);save();refresh();renderMutasi();$("mKode").value="";$("mNote").value="";autoMut();toast("Mutasi tersimpan ✨")}
 function renderMutasi(){const rows=DB.mutasi.filter(m=>["DISTRIBUSI","PENGEMBALIAN"].includes(m.tipe)).slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td><b>${m.tipe==="DISTRIBUSI"?"📤 Keluar":"📥 Masuk"}</b> <span class="badge">${m.ket||""}</span><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber} • ${m.lok}</td><td>${m.qty}pcs<br>${Number(m.berat).toFixed(2)}gr</td></tr>`).join("");
 $("tblMutasi").innerHTML=`<tr><th>Tgl/User</th><th>Transaksi</th><th>Status Barang</th><th>Qty</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Belum ada mutasi</td></tr>`);
@@ -345,13 +345,14 @@ refreshDlMut()}
 function autoJual(){const k=$("jKodeStok").value.trim(),f=MasukOf(k);
 if(!f){$("jAuto").innerHTML="— (kode tidak terdata di gudang)";return}
 const p=posKode(k);try{$("jSumber").value=f.sumber}catch(e){}
-$("jAuto").innerHTML=`${f.jenis} • ${esc(f.desc)} • sumber <b>${f.sumber}</b><br>🪞 Etalase: <b>${p.pos.ETALASE}</b> • 🎪 Bazar: <b>${p.pos.BAZAR}</b> • Terjual: ${p.pos.terjual}`;refreshDlJual()}
+const _gr=f.gram??((f.desc.match(/([\d.]+)\s*gr/)||[])[1]||"?");
+$("jAuto").innerHTML=`${f.jenis==="LM"?bb(f.brand):"💍"} <b>${f.brand} • ${_gr} gr${f.jenis==="PERHIASAN"?" • "+(f.kadar||""):""}</b><br>Asal: <b>${f.sumber}</b>${f.pemilik&&f.pemilik!=="-"?" • 👤 "+esc(f.pemilik):""} • ${esc(f.desc)}<br>🪞 Etalase: <b>${p.pos.ETALASE}</b> • 🎪 Bazar: <b>${p.pos.BAZAR}</b> • Terjual: ${p.pos.terjual}`;refreshDlJual()}
 function refreshDlJual(){if(!$("dlJual"))return;const lk=$("jLok").value;
-const all=DB.mutasi.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)&&m.jenis===curJJenis).slice(0,400);
+const all=DB.mutasi.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)&&(curJual==="PENJUALAN"?true:m.jenis===curJJenis)).slice(0,400);
 $("dlJual").innerHTML=all.filter(m=>{const p=posKode(m.kode);return p&&p.pos[lk]>0}).slice(0,200).map(m=>{const p=posKode(m.kode);return `<option value="${esc(m.kode)}">${esc(m.desc)} • sisa ${p.pos[lk]}</option>`}).join("")}
 function simpanJual(){if(!curUser){toast("Masuk dulu");return}
 const lok=$("jLok").value,qty=Math.max(1,Number($("jQty").value)||1),harga=Number($("jHarga").value)||0,pemilik=$("jPemilik").value.trim(),note=$("jNote").value.trim();
-let desc,berat,kode,sumber,jns,brand="-";
+let desc,berat,kode,sumber,jns,brand="-",gram=0,kadar="-",jenisPH="-";
 if(curJual==="PENJUALAN"){
 kode=$("jKodeStok").value.trim();const f=MasukOf(kode);
 if(!f){toast("⛔ Kode tidak ada di stok gudang");$("jKodeStok").focus();return}
@@ -363,29 +364,49 @@ const dup=DB.mutasi.find(m=>m.kode===kode&&m.tipe==="PENJUALAN");if(dup){toast("
 }else{
 jns=curJJenis;sumber=$("jSumber").value;
 if(curJual==="KONSINYASI_MASUK"&&!pemilik){toast("Isi nama pemilik");$("jPemilik").focus();return}
-if(jns==="LM"){const br=$("jBrand").value,gr=Number($("jGram").value);brand=br;berat=gr*qty;desc=`${br} ${gr}gr × ${qty}`;kode=`${br}-${gr}G-${uid("").slice(-4)}`}
-else{const jp=$("jJenisPH").value;berat=Number($("jBerat").value)||0;const kd=$("jKadar").value;kode=$("jKode").value.trim()||uid("PH");
+if(jns==="LM"){const br=$("jBrand").value,gr=Number($("jGram").value);brand=br;berat=gr*qty;desc=`${br} ${gr}gr × ${qty}`;kode=`${br}-${gr}G-${uid("").slice(-4)}`;gram=gr;kadar="24K"}
+else{const jp=$("jJenisPH").value;berat=Number($("jBerat").value)||0;const kd=$("jKadar").value;kode=$("jKode").value.trim()||uid("PH");gram=berat;kadar=kd;jenisPH=jp;
 if(!berat){toast("Isi berat perhiasan dulu ⚖️");$("jBerat").focus();return}
 const dup2=DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe));if(dup2){toast("⛔ Kode sudah 1× masuk");return}
 desc=`${jp} ${kd} ${berat}gr • ${kode}`}}
-const m={id:uid("M"),tipe:curJual,jenis:jns,sumber,lok,qty,berat,harga,pemilik:pemilik||"-",note,desc,brand,kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
+const m={id:uid("M"),tipe:curJual,jenis:jns,sumber,lok,qty,berat,harga,pemilik:pemilik||"-",note,desc,brand,kode,gram,kadar,jenisPH,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
 DB.mutasi.unshift(m);pushCloud("mutasi",m);autoMaster(m);addLog(curJual,`${desc} • ${qty}pcs ${fmtRp(harga)}`);save();refresh();renderJual();refreshDlJual();toast("Tersimpan ✨")}
-function renderJual(){const rows=DB.mutasi.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)).slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td>${m.jenis==="LM"?bb(m.brand):"💍"} <b>${m.tipe}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber}/${m.lok}${m.pemilik&&m.pemilik!=="-"?"<br>👤"+esc(m.pemilik):""}</td><td>${m.qty}pcs ${Number(m.berat).toFixed(2)}gr<br>${fmtRp(m.harga)}</td></tr>`).join("");
-$("tblJual").innerHTML=`<tr><th>Tgl/User</th><th>Transaksi</th><th>Sumber/Lok</th><th>Qty/Harga</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Belum ada transaksi</td></tr>`);
+function renderJual(){const rows=DB.mutasi.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe)).slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td>${m.jenis==="LM"?bb(m.brand):"💍"} <b>${m.tipe}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.sumber}/${m.lok}${m.pemilik&&m.pemilik!=="-"?"<br>👤"+esc(m.pemilik):""}</td><td>${m.qty}pcs ${Number(m.berat).toFixed(2)}gr<br>${fmtRp(m.harga)}</td><td><button class="chip" onclick="editJual('${m.id}')">✏️</button></td></tr>`).join("");
+$("tblJual").innerHTML=`<tr><th>Tgl/User</th><th>Transaksi</th><th>Sumber/Lok</th><th>Qty/Harga</th><th>✏️</th></tr>`+(rows||`<tr><td colspan="5" class="muted">Belum ada transaksi</td></tr>`);
 $("rKode")&&null}
 /* BARANG MASUK */
 function simpanMasuk(){if(!curUser){toast("Masuk dulu");return}
 const qty=Math.max(1,Number($("mQtyIn").value)||1),harga=Number($("mHarga").value)||0,note=$("mNoteIn").value.trim();
-let desc,berat,kode;
-if(curMJenis==="LM"){const br=$("mBrand").value,gr=Number($("mGram").value);berat=gr*qty;desc=`${br} ${gr}gr × ${qty}`;kode=`${br}-${gr}G-${uid("").slice(-4)}`}
-else{const jp=$("mJenisPH").value;berat=Number($("mBerat").value)||0;const kd=$("mKadar").value;kode=$("mKodeIn").value.trim()||uid("PH");
+let desc,berat,kode,gram=0,kadar="-",jenisPH="-";
+if(curMJenis==="LM"){const br=$("mBrand").value,gr=Number($("mGram").value);berat=gr*qty;desc=`${br} ${gr}gr × ${qty}`;kode=`${br}-${gr}G-${uid("").slice(-4)}`;gram=gr;kadar="24K"}
+else{const jp=$("mJenisPH").value;berat=Number($("mBerat").value)||0;const kd=$("mKadar").value;kode=$("mKodeIn").value.trim()||uid("PH");gram=berat;kadar=kd;jenisPH=jp;
 if(!berat){toast("Isi berat perhiasan dulu ⚖️");$("mBerat").focus();return}
 const dup=DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe));if(dup){toast("⛔ Kode sudah 1× masuk");return}
 desc=`${jp} ${kd} ${berat}gr • ${kode}`}
-const m={id:uid("M"),tipe:"MASUK_PUSAT",jenis:curMJenis,sumber:"PUSAT",lok:"BRANKAS",qty,berat,harga,pemilik:"-",note,desc,brand:curMJenis==="LM"?$("mBrand").value:"-",kode,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
+const m={id:uid("M"),tipe:"MASUK_PUSAT",jenis:curMJenis,sumber:"PUSAT",lok:"BRANKAS",qty,berat,harga,pemilik:"-",note,desc,brand:curMJenis==="LM"?$("mBrand").value:"-",kode,gram,kadar,jenisPH,by:curUser.nama,tanggal:todayStr(),at:new Date().toISOString()};
 DB.mutasi.unshift(m);pushCloud("mutasi",m);autoMaster(m);addLog("MASUK_PUSAT",`${desc} • ${qty}pcs`);save();refresh();renderMasuk();$("mKodeIn").value="PH-"+Date.now().toString(36).toUpperCase();toast("Barang masuk tersimpan ✨")}
-function renderMasuk(){const rows=DB.mutasi.filter(m=>m.tipe==="MASUK_PUSAT").slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td>${m.jenis==="LM"?bb(m.brand):"💍"} <b>${esc(m.kode)}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.qty}pcs ${Number(m.berat).toFixed(2)}gr</td></tr>`).join("");
-$("tblMasuk").innerHTML=`<tr><th>Tgl/User</th><th>Kode/Barang</th><th>Qty</th></tr>`+(rows||`<tr><td colspan="3" class="muted">Belum ada barang masuk</td></tr>`)}
+function renderMasuk(){const rows=DB.mutasi.filter(m=>m.tipe==="MASUK_PUSAT").slice(0,30).map(m=>`<tr><td>${m.tanggal}<br><span class="muted">${esc(m.by)}</span></td><td>${m.jenis==="LM"?bb(m.brand):"💍"} <b>${esc(m.kode)}</b><br><span class="muted">${esc(m.desc)}</span></td><td>${m.qty}pcs ${Number(m.berat).toFixed(2)}gr</td><td><button class="chip" onclick="editMasuk('${m.id}')">✏️</button></td></tr>`).join("");
+$("tblMasuk").innerHTML=`<tr><th>Tgl/User</th><th>Kode/Barang</th><th>Qty</th><th>✏️</th></tr>`+(rows||`<tr><td colspan="4" class="muted">Belum ada barang masuk</td></tr>`)}
+/* EDIT — ledger dihitung ulang dari catatan, jadi edit qty/berat aman selama kode & tipe tak berubah.
+   Qty/berat dikunci bila sudah ada mutasi lanjutan; harga & catatan selalu boleh. */
+function dependents(kode,selfId){return DB.mutasi.some(x=>x.kode===kode&&x.id!==selfId&&["DISTRIBUSI","PENGEMBALIAN","PENJUALAN","RETUR_PUSAT","RETUR_PEMILIK","RETUR_PERHIASAN"].includes(x.tipe))}
+function editMasuk(id){const m=DB.mutasi.find(x=>x.id===id);if(!m)return;const dep=dependents(m.kode,id);
+const h=prompt("Harga Rp:",m.harga||0);if(h===null)return;const n=prompt("Catatan:",m.note||"");if(n===null)return;
+m.harga=Number(h)||0;m.note=n;
+if(!dep){const q=prompt("Qty (pcs):",m.qty);if(q===null)return;const b=prompt("Berat total (gr):",m.berat);if(b===null)return;
+m.qty=Math.max(1,Number(q)||m.qty);m.berat=Number(b)||m.berat}else toast("🔒 Qty/berat terkunci (sudah ada mutasi lanjutan)");
+m.at=new Date().toISOString();m._dirty=1;
+addLog("EDIT_MASUK",m.kode+" → "+m.qty+"pcs");save();refresh();renderMasuk();toast("Edit tersimpan ✏️")}
+function editJual(id){const m=DB.mutasi.find(x=>x.id===id);if(!m)return;
+if(m.tipe==="PENJUALAN"){const p=posKode(m.kode);const avail=(p?p.pos[m.lok]:0)+m.qty;
+const q=prompt("Qty (pcs) — maks "+avail+":",m.qty);if(q===null)return;const nq=Math.max(1,Number(q)||m.qty);
+if(nq>avail){toast("⛔ Melebihi stok "+m.lok+" ("+avail+"pcs)");return}
+const pu=m.berat/Math.max(1,m.qty);m.qty=nq;m.berat=pu*nq}
+else if(dependents(m.kode,id)){toast("🔒 Qty terkunci (sudah ada mutasi lanjutan) — hanya harga & catatan")}
+else{const q=prompt("Qty (pcs):",m.qty);if(q===null)return;const nq=Math.max(1,Number(q)||m.qty);const pu=m.berat/Math.max(1,m.qty);m.qty=nq;m.berat=pu*nq}
+const h=prompt("Harga Rp:",m.harga||0);if(h===null)return;const n=prompt("Catatan:",m.note||"");if(n===null)return;
+m.harga=Number(h)||0;m.note=n;m.at=new Date().toISOString();m._dirty=1;
+addLog("EDIT_JUAL",m.kode+" → "+m.qty+"pcs");save();refresh();renderJual();refreshDlJual();toast("Edit tersimpan ✏️")}
 /* RETUR */
 function simpanRetur(){if(!curUser){toast("Masuk dulu");return}
 const kode=$("rKode").value.trim();if(!kode){toast("Isi kode barang");$("rKode").focus();return}
@@ -442,7 +463,7 @@ const kode=x.kode_item||uid("PH");
 if(jenis==="PERHIASAN"){if(DB.mutasi.find(m=>m.kode===kode&&["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].includes(m.tipe))){bad.push(n+":kode ganda");return}}
 const sumber=tipe==="BUYBACK_MASUK"?"BUYBACK":tipe==="KONSINYASI_MASUK"?"KONSINYASI":"PUSAT";
 const berat=Number(x.berat_gr)||Number(x.gramasi)||0;
-const m={id:uid("M"),tipe,jenis,sumber,lok:"BRANKAS",qty:Number(x.qty)||1,berat,harga:Number(x.harga)||0,pemilik:String(x.pemilik||"-"),note:String(x.keterangan||"impor"),desc:jenis==="LM"?`${x.brand} ${x.gramasi}gr`:`${x.jenis_perhiasan} ${x.kadar} ${berat}gr • ${kode}`,brand:String(x.brand||"-"),kode,by:curUser.nama,tanggal:String(x.tanggal||todayStr()),at:new Date().toISOString()};
+const m={id:uid("M"),tipe,jenis,sumber,lok:"BRANKAS",qty:Number(x.qty)||1,berat,harga:Number(x.harga)||0,pemilik:String(x.pemilik||"-"),note:String(x.keterangan||"impor"),desc:jenis==="LM"?`${x.brand} ${x.gramasi}gr`:`${x.jenis_perhiasan} ${x.kadar} ${berat}gr • ${kode}`,brand:String(x.brand||"-"),kode,gram:jenis==="LM"?(Number(x.gramasi)||0):berat,kadar:String(x.kadar||(jenis==="LM"?"24K":"-")),jenisPH:String(x.jenis_perhiasan||"-"),by:curUser.nama,tanggal:String(x.tanggal||todayStr()),at:new Date().toISOString()};
 DB.mutasi.unshift(m);autoMaster(m);ok++});
 addLog("IMPOR",ok+" baris OK"+(bad.length?" • tolak baris "+bad.join(","):""));save();refresh();renderMasuk();toast(ok+" baris diimpor ✨"+(bad.length?" • "+bad.length+" ditolak":""))}catch(err){toast("Gagal impor: "+err.message)}};r.readAsArrayBuffer(f);inp.value=""}
 /* STOK */
@@ -580,12 +601,12 @@ DB.users.push({nama:v,pin:pw,at:todayStr()});pushCloud("users",{nama:v,pin:pw,at
 function backupJSON(){const b=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup-g24kedaton-"+todayStr()+".json";a.click();addLog("BACKUP_JSON","Unduh backup JSON")}
 /* PUSH / PULL manual — hanya data yang belum ada di cloud (bertanda _c) yang dikirim */
 async function pushManual(){if(!cloudOK){toast("Cloud belum tersambung");return}
-let n=0,f=0;for(const col of["mutasi","sessions","logs","users","master"]){for(const o of DB[col]){if(!o._c){const c=Object.assign({},o);delete c._c;delete c.id;c.at=c.at||new Date().toISOString();try{await cloud.collection(col).add(c);o._c=1;n++}catch(e){f++}}}}
+let n=0,f=0;for(const col of["mutasi","sessions","logs","users","master"]){for(const o of DB[col]){if(!o._c||o._dirty){o.id=o.id||uid("X");const c=Object.assign({},o);delete c._c;delete c._dirty;c.at=c.at||new Date().toISOString();try{await cloud.collection(col).doc(o.id).set(c);o._c=1;delete o._dirty;n++}catch(e){f++}}}}
 save();addLog("PUSH",n+" OK"+(f?", "+f+" gagal (cek Rules)":""));toast(f?`⬆️ ${n} ok, ${f} gagal ⚠️ — paste firestore.rules & Publish`:`⬆️ ${n} data di-push`)}
 async function pullManual(){if(!cloudOK){toast("Cloud belum tersambung");return}
 try{
 for(const col of["mutasi","sessions","logs","users","master"]){const s=await cloud.collection(col).orderBy("at","desc").limit(1000).get();const a=[];s.forEach(d=>{const o=Object.assign({id:d.id},d.data());o._c=1;a.push(o)});
-if(col==="mutasi")DB.mutasi=a;if(col==="sessions")DB.sessions=a;if(col==="logs")DB.logs=a.slice(0,200);
+if(col==="mutasi")DB.mutasi=dedup(a,o=>o.id||"");if(col==="sessions")DB.sessions=dedup(a,o=>o.id||"");if(col==="logs")DB.logs=dedup(a,o=>o.id||"").slice(0,200);
 if(col==="users")DB.users=dedup(a,o=>o.nama);if(col==="master")DB.master=dedup(a,o=>JSON.stringify({t:o.t,brand:o.brand,gram:o.gram,jenis:o.jenis,kadar:o.kadar}))}
 }catch(e){toast("⬇️ Pull gagal — cek koneksi & Rules");return}
 seedAdmin();save();paintAll();refresh();addLog("PULL","Tarik data cloud");toast("⬇️ Pull selesai")}
@@ -618,17 +639,24 @@ const JJ=[["LM","LOGAM MULIA"],["PERHIASAN","💍 Perhiasan"]];
 $("chipsJenisJ").innerHTML=JJ.map(t=>`<button class="chip ${curJJenis===t[0]?"on":""}" onclick="curJJenis='${t[0]}';paintAll()">${t[1]}</button>`).join("");
 $("chipsJenisM").innerHTML=JJ.map(t=>`<button class="chip ${curMJenis===t[0]?"on":""}" onclick="curMJenis='${t[0]}';paintAll()">${t[1]}</button>`).join("");
 $("chipsJenisMaster").innerHTML=JJ.map(t=>`<button class="chip ${curMst===t[0]?"on":""}" onclick="curMst='${t[0]}';paintAll()">${t[1]}</button>`).join("");
+if(curJual==="PENJUALAN"){
+$("boxJenisJ").style.display="none";$("boxSumberJ").style.display="none";
+$("boxJL").style.display="none";$("boxJP").style.display="none";$("boxPemilikJ").style.display="none";
+$("boxJStok").style.display="block";
+}else{
 if(curJual==="KONSINYASI_MASUK"){curJJenis="LM";$("boxJenisJ").style.display="none"}else{$("boxJenisJ").style.display="block"}
-if(curJual==="PENJUALAN"&&curJJenis==="PERHIASAN"){$("jSumber").value="PUSAT";$("jSumber").disabled=true}
-else if(curJual==="BUYBACK_MASUK"){$("jSumber").value="BUYBACK";$("jSumber").disabled=true}
+$("boxSumberJ").style.display="block";
+if(curJual==="BUYBACK_MASUK"){$("jSumber").value="BUYBACK";$("jSumber").disabled=true}
 else if(curJual==="KONSINYASI_MASUK"){$("jSumber").value="KONSINYASI";$("jSumber").disabled=true}
 else{$("jSumber").disabled=false}
 $("boxPemilikJ").style.display=curJual==="KONSINYASI_MASUK"?"block":"none";
-$("boxJStok").style.display=curJual==="PENJUALAN"?"block":"none";
+$("boxJStok").style.display="none";
+$("boxJL").style.display=curJJenis==="LM"?"block":"none";$("boxJP").style.display=curJJenis==="LM"?"none":"block";
+}
 refreshDlMut();refreshDlJual();
 fillSel("jBrand",brands());fillSel("mBrand",brands());fillSel("jJenisPH",phJenis());fillSel("mJenisPH",phJenis());fillSel("jKadar",kadars());fillSel("mKadar",kadars());
 keepSel("jGram",gramsEff($("jBrand").value));keepSel("mGram",gramsEff($("mBrand").value));
-$("boxJL").style.display=curJJenis==="LM"?"block":"none";$("boxJP").style.display=curJJenis==="LM"?"none":"block";
+/* visibilitas form jual diatur di blok chip di atas */
 $("boxML").style.display=curMJenis==="LM"?"block":"none";$("boxMP").style.display=curMJenis==="LM"?"none":"block";
 $("boxMasterLM").style.display=curMst==="LM"?"block":"none";$("boxMasterPH").style.display=curMst==="LM"?"none":"block";
 if(!$("jKode").value)$("jKode").value="PH-"+Date.now().toString(36).toUpperCase();
