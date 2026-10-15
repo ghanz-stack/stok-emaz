@@ -227,8 +227,9 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 <p class="muted">Tujuan barang masuk: <b>BRANKAS</b> (satu-satunya).</p>
 <div id="boxML"><label>Brand LOGAM MULIA</label><select id="mBrand"></select><label>Gramasi</label><select id="mGram"></select></div>
 <div id="boxMP" style="display:none"><label>Jenis perhiasan</label><select id="mJenisPH"></select>
-<label>Brand perhiasan</label><input id="mBrandPH" list="dlBrand" placeholder="cth: UBS / custom">
-<div class="grid3"><div><label>Kadar</label><select id="mKadar"></select></div><div><label>Berat per unit (gr)</label><input id="mBerat" type="number" step="0.01" min="0" placeholder="per pcs"></div><div><label>Kode item (auto)</label><input id="mKodeIn"></div></div>
+<label>Brand perhiasan (opsional)</label><input id="mBrandPH" list="dlBrand" placeholder="cth: UBS / custom">
+<div id="boxMPDetail" style="display:none"><div class="grid3"><div><label>Kadar (opsional)</label><input id="mKadar" list="dlKadarPH" placeholder="cth: 24K"></div><div><label>Berat per unit (gr, opsional)</label><input id="mBerat" type="number" step="0.01" min="0" placeholder="per pcs"></div><div><label>Kode item (auto)</label><input id="mKodeIn"></div></div></div>
+<div style="margin:6px 0"><button type="button" class="chip" id="btnMPDetail" onclick="toggleMPDetail()">➕ Tambah Detail Barang</button></div>
 <p class="muted">Perhiasan berlaku aturan 1× masuk 1× keluar. Qty perhiasan otomatis dipecah menjadi unit berkode sendiri.</p></div>
 <div class="grid2"><div><label>Harga beli Rp (opsional)</label><input id="mHarga" type="number" min="0"></div>
 <div><label>Catatan</label><input id="mNoteIn" placeholder="cth: stok awal / kiriman pusat"></div></div>
@@ -548,6 +549,8 @@ async function forcePinChange(f){toast("🔐 PIN default harus diganti dulu","wa
  if(cloudOK){try{await cloud.collection("users").doc(f.id||("U#"+san(f.nama))).set({pin:f.pin,at:f.at},{merge:true})}catch(e){}}
  DB.users=DB.users.map(x=>String(x.nama).toUpperCase()===String(f.nama).toUpperCase()?f:x);save();renderUsers();toast("PIN baru tersimpan ✨","ok")}
 function keluar(){localStorage.removeItem("g24_user");location.reload()}
+function toggleMPDetail(){const d=$("boxMPDetail");const b=$("btnMPDetail");if(!d)return;
+ if(d.style.display==="none"){d.style.display="block";b.textContent="➖ Sembunyikan Detail"}else{d.style.display="none";b.textContent="➕ Tambah Detail Barang"}}
 function togglePin(){const e=$("inPin");if(e)e.type=e.type==="password"?"text":"password"}
 function addLog(aksi,detail){const l={id:uid("L"),by:curUser?curUser.nama:"-",aksi:aksi,detail:detail,at:new Date().toISOString()};
  DB.logs.unshift(l);DB.logs=DB.logs.slice(0,300);
@@ -707,7 +710,9 @@ function simpanMasuk(){
    qty:q1,berat:g*q1,sumber:"PUSAT",harga:harga,from:{loc:"PUSAT_EXT",sumber:"PUSAT"},to:{loc:lok,sumber:"PUSAT"},note:note})
   .then(function(ok){busy("btnMasuk",false);if(ok){$("mNoteIn").value="";afterSave("mQtyIn","tblMasuk");toast("Barang masuk tersimpan ✨")}});
   return}
- const jp=$("mJenisPH").value,kd=$("mKadar").value,bp=num($("mBerat").value);if(!(bp>0)){toast("Isi berat per unit");return}
+ const jp=$("mJenisPH").value;const detailOn=$("boxMPDetail")&&$("boxMPDetail").style.display!=="none";
+ const kd=detailOn?String($("mKadar").value).trim().toUpperCase():"";const bp=detailOn?num($("mBerat").value):0;
+ if(detailOn&&!(bp>0)){toast("Isi berat per unit");return}
  const mb=String($("mBrandPH").value||"").trim().toUpperCase()||"-";const mbD=mb==="-"?"":mb+" ";
  const base=san($("mKodeIn").value||("PH"+Date.now().toString(36).toUpperCase()));
  if(!busy("btnMasuk",true))return;
@@ -1110,9 +1115,12 @@ function paintAll(){if(!$("chipsJual"))return;
   if(JUAL_T==="BUYBACK_MASUK"&&J_JENIS==="PERHIASAN"){jm.innerHTML='<option value="BRANKAS">BRANKAS (wajib — buyback perhiasan mengendap)</option>';jm.value="BRANKAS"}
   else{jm.innerHTML='<option value="ETALASE">ETALASE (Depan)</option><option value="BAZAR">BAZAR</option>';if(jm.value!=="ETALASE"&&jm.value!=="BAZAR")jm.value="ETALASE"}}
  $("boxML").style.display=M_JENIS==="LM"?"block":"none";$("boxMP").style.display=M_JENIS==="LM"?"none":"block";
- fillSel("jBrand",brands());fillSel("mBrand",brands());fillSel("jJenisPH",phJenis());fillSel("mJenisPH",phJenis());fillSel("jKadar",kadars());fillSel("mKadar",kadars());
+ fillSel("jBrand",brands());fillSel("mBrand",brands());fillSel("jJenisPH",phJenis());fillSel("jKadar",kadars());fillSel("mKadar",kadars());
  fillSel("jGram",grams($("jBrand").value));fillSel("mGram",grams($("mBrand").value));
  const dl=$("dlBrand");if(dl)dl.innerHTML=brands().map(function(b){return '<option value="'+esc(b)+'">'}).join("");
+ // Barang Masuk jenis perhiasan combo (sinkron dengan master)
+ const mJP=$("mJenisPH");if(mJP){const cur=mJP.value;const phjList=DB.master.filter(m=>m.t==="PHJ").map(m=>m.jenis);mJP.innerHTML=phjList.map(function(j){return '<option value="'+esc(j)+'">'+esc(j)+'</option>'}).join("");if(phjList.indexOf(cur)>=0)mJP.value=cur;else if(phjList.length)mJP.value=phjList[0]}
+ const dlKP2=$("dlKadarPH");if(dlKP2)dlKP2.innerHTML=[...new Set([...DEF_KADAR,...DB.master.filter(m=>m.t==="PHK").map(m=>m.kadar)])].map(function(k){return '<option value="'+esc(k)+'">'}).join("");
  // Master selects
  const msB=$("msBrand");if(msB){const cur=msB.value;msB.innerHTML=brands().map(function(b){return '<option value="'+esc(b)+'">'+esc(b)+'</option>'}).join("");if(brands().indexOf(cur)>=0)msB.value=cur;else msB.value="ANTAM"}
  const msJ=$("msJenis");if(msJ){const cur=msJ.value;const phjList=DB.master.filter(m=>m.t==="PHJ").map(m=>m.jenis);msJ.innerHTML=phjList.map(function(j){return '<option value="'+esc(j)+'">'+esc(j)+'</option>'}).join("");if(phjList.indexOf(cur)>=0)msJ.value=cur;else if(phjList.length)msJ.value=phjList[0]}
