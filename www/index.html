@@ -55,7 +55,9 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 .tbl tr:nth-child(even) td{background:#FFFAF2}
 .page{display:none}.page.on{display:block;animation:fade .2s}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
-.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--ink);color:#FEF3E2;padding:10px 16px;border-radius:999px;font-size:13px;z-index:50;display:none;max-width:92vw;text-align:center}
+.toast{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);background:rgba(42,26,14,.97);color:#FEF3E2;padding:26px 30px;border-radius:22px;font-size:19px;font-weight:800;z-index:60;display:none;max-width:88vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);border:3px solid var(--amber);line-height:1.6}
+.card-hi{border:2.5px solid var(--burnt)!important;background:#FFF7EA}
+.tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:#FBE3C3;border:1px solid var(--burnt);margin-left:6px;white-space:nowrap}
 .badge{font-size:10px;padding:3px 8px;border-radius:999px;background:#FBE3C3;display:inline-block}
 .blogo{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;border-radius:8px;color:#fff;font-size:11px;font-weight:800;padding:0 6px;vertical-align:middle}
 .muted{color:var(--muted);font-size:12px}
@@ -70,7 +72,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
  .rail button i{font-size:22px}
  .wrap{padding:10px}
  .stat{padding:14px}.stat b{font-size:20px}
- .toast{bottom:120px}
+ .toast{font-size:17px;padding:20px 22px;top:40%}
  table.tbl{font-size:11px}
 }
 #printArea{display:none}
@@ -129,16 +131,31 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 
 <div id="pg-mutasi" class="page">
 <h2 class="sec">🔄 Mutasi — Pindah Lokasi</h2>
-<div class="card"><p class="muted">Perpindahan barang antar lokasi. Stok dihitung otomatis dari saldo.</p>
-<div class="chips" id="chipsMut"></div>
-<div class="grid2"><div><label>Dari lokasi</label><select id="muFrom" onchange="setFrom();refreshPick()"></select></div>
-<div><label>Ke lokasi</label><select id="muTo"></select></div></div>
-<label>Barang (stok tersedia di lokasi asal)</label><select id="muPick" onchange="autoMut()"></select>
-<div class="autostat" id="mAuto">Status: —</div>
-<div class="grid2"><div><label>Qty (pcs)</label><input id="muQty" type="number" min="1" value="1"></div>
-<div><label>Keterangan</label><select id="muKet"><option value="SALDO PAGI">SALDO PAGI</option><option value="SALDO SUSULAN">SALDO SUSULAN</option></select></div></div>
-<label>Catatan</label><input id="muNote" placeholder="cth: display pagi">
-<div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMutasi()">💾 Simpan Mutasi</button></div>
+<div class="card"><h3 style="margin:0">📤 Brankas → Display</h3><p class="muted">Keluarkan dari Brankas ke Etalase/Bazar.</p>
+<div class="grid2"><div><label>Ke lokasi</label><select id="muToA"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
+<div><label>Qty (pcs)</label><input id="muQtyA" type="number" min="1" value="1"></div></div>
+<label>Barang (stok di Brankas)</label><select id="muPickA" onchange="autoMutA()"></select>
+<div class="autostat" id="mAutoA">Status: —</div>
+<div class="grid2"><div><label>Keterangan</label><select id="muKetA"><option value="SALDO PAGI">SALDO PAGI</option><option value="SALDO SUSULAN">SALDO SUSULAN</option></select></div>
+<div><label>Catatan</label><input id="muNoteA" placeholder="cth: display pagi"></div></div>
+<div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMutasiA()">💾 Simpan Mutasi</button></div>
+<div class="card card-hi" style="margin-top:10px"><h3 style="margin:0">📥 Display → Brankas — Setor Sisa</h3>
+<p class="muted">Kembalikan sisa display ke Brankas. <b>Wajib kosongkan display LOGAM MULIA sebelum Tutup Hari.</b></p>
+<p class="muted" id="setorHint">—</p>
+<div class="grid2"><div><label>Dari lokasi</label><select id="muFromB" onchange="refreshPick()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
+<div><label>Qty (pcs)</label><input id="muQtyB" type="number" min="1" value="1"></div></div>
+<label>Barang (stok di lokasi asal)</label><select id="muPickB" onchange="autoMutB()"></select>
+<div class="autostat" id="mAutoB">Status: —</div>
+<label>Catatan</label><input id="muNoteB" placeholder="cth: setor sisa sore">
+<div style="height:10px"></div><button class="btn btn-dark" onclick="simpanMutasiB()">📥 Setor ke Brankas</button></div>
+<div class="card" style="margin-top:10px"><h3 style="margin:0">🔁 Etalase ↔ Bazar</h3><p class="muted">Pindah antar display.</p>
+<div class="grid2"><div><label>Dari lokasi</label><select id="muFromC" onchange="refreshPick()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
+<div><label>Ke lokasi</label><select id="muToC"><option value="BAZAR">BAZAR</option><option value="ETALASE">ETALASE</option></select></div></div>
+<label>Barang</label><select id="muPickC" onchange="autoMutC()"></select>
+<div class="autostat" id="mAutoC">Status: —</div>
+<div class="grid2"><div><label>Qty (pcs)</label><input id="muQtyC" type="number" min="1" value="1"></div>
+<div><label>Catatan</label><input id="muNoteC"></div></div>
+<div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMutasiC()">💾 Simpan Mutasi</button></div>
 <h2 class="sec">📋 Mutasi terakhir</h2><div class="card"><div style="overflow:auto"><table class="tbl" id="tblMutasi"></table></div></div>
 </div>
 
@@ -155,10 +172,11 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 </div>
 <div id="boxJualMasuk" style="display:none">
 <div class="chips" id="chipsJenisJ"></div>
-<div class="grid2"><div><label>Lokasi masuk</label><select id="jMasukLok"><option value="ETALASE">ETALASE (Depan)</option><option value="BAZAR">BAZAR</option><option value="BRANKAS">BRANKAS</option></select></div>
+<div class="grid2"><div><label>Lokasi masuk</label><select id="jMasukLok"><option value="ETALASE">ETALASE (Depan)</option><option value="BAZAR">BAZAR</option></select></div>
 <div><label>Qty (pcs)</label><input id="jQtyIn" type="number" min="1" value="1"></div></div>
 <div id="boxJL"><label>Brand LOGAM MULIA (24K • 99.9999%)</label><select id="jBrand"></select><label>Gramasi</label><select id="jGram"></select></div>
 <div id="boxJP" style="display:none"><label>Jenis perhiasan</label><select id="jJenisPH"></select>
+<label>Brand perhiasan</label><input id="jBrandPH" list="dlBrand" placeholder="cth: UBS / custom">
 <div class="grid3"><div><label>Kadar</label><select id="jKadar"></select></div><div><label>Berat per unit (gr)</label><input id="jBerat" type="number" step="0.01" min="0"></div><div><label>Kode item</label><input id="jKode" placeholder="PH-..."></div></div></div>
 <div class="grid2"><div><label id="lbPemilikJ">Pemilik</label><input id="jPemilik" placeholder="Nama pemilik"></div>
 <div><label>Catatan</label><input id="jNoteIn"></div></div>
@@ -174,6 +192,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <p class="muted">Tujuan barang masuk: <b>BRANKAS</b> (satu-satunya).</p>
 <div id="boxML"><label>Brand LOGAM MULIA</label><select id="mBrand"></select><label>Gramasi</label><select id="mGram"></select></div>
 <div id="boxMP" style="display:none"><label>Jenis perhiasan</label><select id="mJenisPH"></select>
+<label>Brand perhiasan</label><input id="mBrandPH" list="dlBrand" placeholder="cth: UBS / custom">
 <div class="grid3"><div><label>Kadar</label><select id="mKadar"></select></div><div><label>Berat per unit (gr)</label><input id="mBerat" type="number" step="0.01" min="0" placeholder="per pcs"></div><div><label>Kode item (auto)</label><input id="mKodeIn"></div></div>
 <p class="muted">Perhiasan berlaku aturan 1× masuk 1× keluar. Qty perhiasan otomatis dipecah menjadi unit berkode sendiri.</p></div>
 <div class="grid2"><div><label>Harga beli Rp (opsional)</label><input id="mHarga" type="number" min="0"></div>
@@ -252,6 +271,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 </div>
 </div>
 
+<datalist id="dlBrand"></datalist>
 <div class="toast" id="toast"></div>
 <div id="printArea"></div>
 
@@ -273,7 +293,7 @@ const ARUS_COLS=[0.1,0.25,0.5,1,2,3,5,10,25,50,100];
 let DB={movements:[],sessions:[],logs:[],users:[],master:[],outbox:[],confirming:[]};
 let SERVER_MOV=[],SERVER_BAL={},SNAP_SEQ=0;
 let cloud=null,cloudOK=false,curUser=null,PENDN=0;
-let MU_MODE="KELUAR",MU_FROM="BRANKAS",MU_TO="ETALASE",JUAL_T="PENJUALAN",J_JENIS="LM",M_JENIS="LM",CUR_STOK="BRANKAS";
+let JUAL_T="PENJUALAN",J_JENIS="LM",M_JENIS="LM",CUR_STOK="BRANKAS";
 const $=id=>document.getElementById(id);
 
 /* ---------- UTIL ---------- */
@@ -289,7 +309,10 @@ function san(s){return String(s==null?"":s).trim().toUpperCase().replace(/[^A-Z0
 function isExt(loc){return !loc||loc==="PUSAT_EXT"||loc==="EXT"}
 function bkey(sku,sumber,loc){return sku+"@"+san(sumber)+"@"+loc}
 function bb(b){const m={ANTAM:["A","#B8860B"],UBS:["U","#1D4ED8"],G24:["24","#D4621A"]}[String(b).toUpperCase()]||["•","#999"];return `<span class="blogo" style="background:${m[1]}">${m[0]}</span>`}
-function skuLabel(b){if(!b)return "—";if(b.jenis==="LM")return bb(b.brand)+" "+esc(b.brand)+" "+b.gram+" gr";return "💍 "+esc(b.jenisPH||"")+" "+esc(b.kadar||"")+" "+(b.gram||0)+"gr • "+esc(b.kode||"")}
+function skuLabel(b){if(!b)return "—";if(b.jenis==="LM")return bb(b.brand)+" "+esc(b.brand)+" "+b.gram+" gr";const br=(b.brand&&b.brand!=="-")?esc(b.brand)+" ":"";return "💍 "+br+esc(b.jenisPH||"")+" "+esc(b.kadar||"")+" "+(b.gram||0)+"gr • "+esc(b.kode||"")}
+function isBuybackPH(b){return !!b&&b.jenis==="PERHIASAN"&&String(b.sumber||"").toUpperCase()==="BUYBACK"}
+function statusText(b){const s=String((b&&b.sumber)||"").toUpperCase();if(s==="BUYBACK")return " [BUYBACK]";if(s==="KONSINYASI")return " [KONSINYASI"+(b.pemilik?" • Pemilik: "+esc(b.pemilik):"")+"]";return ""}
+function statusTag(b){const s=String((b&&b.sumber)||"").toUpperCase();if(s==="BUYBACK")return ' <span class="tag">BUYBACK</span>';if(s==="KONSINYASI")return ' <span class="tag">KONSINYASI'+(b.pemilik?" • Pemilik: "+esc(b.pemilik):"")+'</span>';return ""}
 function dedup(arr,kf){const seen=new Set(),out=[];arr.slice().sort((a,b)=>String(b.at||b.ts||"").localeCompare(String(a.at||a.ts||""))).forEach(o=>{const k=kf(o);if(!seen.has(k)){seen.add(k);out.push(o)}});return out}
 
 /* ---------- STORAGE ---------- */
@@ -301,7 +324,7 @@ function seedAdminSafe(){if(!DB.users.find(x=>String(x.nama).toUpperCase()==="AD
    SERVER_BAL = saldo dari cloud (satu-satunya kebenaran).
    outbox (belum terkirim) + confirming (sudah dikirim, snapshot belum tiba)
    ditambahkan di atasnya. Tidak pernah replay log penuh, tidak ada limit(500). */
-function metaOf(mv,loc,sumber){return {sku:mv.sku,sumber:sumber,loc:loc,jenis:mv.jenis,brand:mv.brand||"—",gram:num(mv.gram),kadar:mv.kadar||"",jenisPH:mv.jenisPH||"",kode:mv.kode||"—",desc:mv.desc||"",nonResale:!!mv.nonResale,at:mv.ts}}
+function metaOf(mv,loc,sumber){return {sku:mv.sku,sumber:sumber,loc:loc,jenis:mv.jenis,brand:mv.brand||"—",gram:num(mv.gram),kadar:mv.kadar||"",jenisPH:mv.jenisPH||"",kode:mv.kode||"—",desc:mv.desc||"",pemilik:mv.pemilik||"",nonResale:!!mv.nonResale,at:mv.ts}}
 function effectsOf(mv){const out=[];const q=num(mv.qty),b=num(mv.berat);
  if(mv.from&&!isExt(mv.from.loc))out.push([bkey(mv.sku,mv.from.sumber,mv.from.loc),-q,-b,metaOf(mv,mv.from.loc,mv.from.sumber)]);
  if(mv.to&&!isExt(mv.to.loc))out.push([bkey(mv.sku,mv.to.sumber,mv.to.loc),q,b,metaOf(mv,mv.to.loc,mv.to.sumber)]);
@@ -448,6 +471,8 @@ async function bukaHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.t
 }catch(e){console.log(e);toast("⚠️ Gagal buka hari: "+((e&&e.message)||e))}}
 async function tutupHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.tanggal===t);
  if(!s||s.status!=="BUKA"){toast("Buka hari dulu");return}
+ const sisaD={ETALASE:0,BAZAR:0};Object.keys(DB.balances).forEach(function(k){const b=DB.balances[k];if(b.jenis==="LM"&&num(b.qty)>0&&(b.loc==="ETALASE"||b.loc==="BAZAR"))sisaD[b.loc]+=num(b.qty)});
+ if(sisaD.ETALASE+sisaD.BAZAR>0){toast("⛔ TIDAK BISA TUTUP HARI — LOGAM MULIA masih di display (Etalase "+sisaD.ETALASE+" pcs, Bazar "+sisaD.BAZAR+" pcs). Setor dulu via Display → Brankas.");go("mutasi");return}
  const sistem={},fisik={},selisih={};
  ["BRANKAS","ETALASE","BAZAR"].forEach(function(l){sistem[l]=totLoc(l)});
  for(let i=0;i<3;i++){const l=["BRANKAS","ETALASE","BAZAR"][i];
@@ -466,28 +491,51 @@ catch(e){console.log(e);toast("⚠️ Gagal tutup hari: "+((e&&e.message)||e))}}
 function fillSel(id,arr){const el=$(id);if(!el)return;const cur=el.value;el.innerHTML=arr.map(v=>'<option>'+esc(v)+'</option>').join("");if(arr.map(String).indexOf(String(cur))>=0)el.value=cur}
 function fillLoc(id,arr){const el=$(id);if(!el)return;const cur=el.value;el.innerHTML=arr.map(v=>'<option value="'+v+'">'+v+'</option>').join("");if(arr.indexOf(cur)>=0)el.value=cur}
 function pickOpts(loc){const e=balEntries(loc);if(!e.length)return '<option value="">(kosong)</option>';
- return e.map(b=>'<option value="'+esc(b._id)+'">'+skuLabel(b)+" • "+esc(b.sumber)+" • sisa "+num(b.qty)+'</option>').join("")}
+ return e.map(b=>'<option value="'+esc(b._id)+'">'+skuLabel(b)+" • "+esc(b.sumber)+statusText(b)+" • sisa "+num(b.qty)+'</option>').join("")}
 function curPick(id){const el=$(id);if(!el)return null;const b=DB.balances[el.value];return b?Object.assign({_id:el.value},b):null}
 
-/* ---------- MUTASI (from -> to lokasi) ---------- */
-function setFrom(){MU_FROM=$("muFrom").value}
-function simpanMutasi(){const b=curPick("muPick");if(!b){toast("Pilih barang");return}
- const to=$("muTo").value;if(to===MU_FROM){toast("Lokasi asal & tujuan sama");return}
- const q1=Math.round(num($("muQty").value,1));if(q1<1){toast("Qty minimal 1");return}
- if(q1>b.qty){toast("⛔ Sisa di "+MU_FROM+" hanya "+b.qty+" pcs");return}
- post({tipe:"MUTASI",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,
-  qty:q1,berat:num(b.berat)/Math.max(1,num(b.qty))*q1,sumber:b.sumber,
-  from:{loc:MU_FROM,sumber:b.sumber},to:{loc:to,sumber:b.sumber},ket:$("muKet").value,note:$("muNote").value.trim()})
- .then(function(ok){if(ok){$("muNote").value="";refreshPick();toast("Mutasi tersimpan ✨")}})}
-function autoMut(){const b=curPick("muPick");$("mAuto").innerHTML=b?("Status: "+skuLabel(b)+" • sumber <b>"+esc(b.sumber)+"</b> • sisa di "+MU_FROM+": <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"Status: —"}
+/* ---------- MUTASI (3 arah, card terpisah) ---------- */
+function mutQty(b,q1){return num(b.berat)/Math.max(1,num(b.qty))*q1}
+function simpanMutasiA(){const b=curPick("muPickA");if(!b){toast("Pilih barang di Brankas");return}
+ if(isBuybackPH(b)){toast("⛔ Perhiasan BUYBACK hanya mengendap di BRANKAS — tidak boleh keluar ke display");return}
+ const to=$("muToA").value;const q1=Math.round(num($("muQtyA").value,1));if(q1<1){toast("Qty minimal 1");return}
+ if(q1>b.qty){toast("⛔ Sisa Brankas hanya "+b.qty+" pcs");return}
+ post({tipe:"MUTASI",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,pemilik:b.pemilik||"",
+  qty:q1,berat:mutQty(b,q1),sumber:b.sumber,
+  from:{loc:"BRANKAS",sumber:b.sumber},to:{loc:to,sumber:b.sumber},ket:$("muKetA").value,note:$("muNoteA").value.trim()})
+ .then(function(ok){if(ok){$("muNoteA").value="";refreshPick();toast("Mutasi tersimpan ✨")}})}
+function simpanMutasiB(){const b=curPick("muPickB");if(!b){toast("Pilih barang di display");return}
+ const from=$("muFromB").value;const q1=Math.round(num($("muQtyB").value,1));if(q1<1){toast("Qty minimal 1");return}
+ if(q1>b.qty){toast("⛔ Sisa di "+from+" hanya "+b.qty+" pcs");return}
+ post({tipe:"MUTASI",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,pemilik:b.pemilik||"",
+  qty:q1,berat:mutQty(b,q1),sumber:b.sumber,
+  from:{loc:from,sumber:b.sumber},to:{loc:"BRANKAS",sumber:b.sumber},ket:"SETOR SISA",note:$("muNoteB").value.trim()})
+ .then(function(ok){if(ok){$("muNoteB").value="";refreshPick();paintSetor();toast("📥 Disetor ke Brankas ✨")}})}
+function simpanMutasiC(){const b=curPick("muPickC");if(!b){toast("Pilih barang");return}
+ if(isBuybackPH(b)){toast("⛔ Perhiasan BUYBACK hanya mengendap di BRANKAS");return}
+ const from=$("muFromC").value,to=$("muToC").value;if(to===from){toast("Lokasi asal & tujuan sama");return}
+ const q1=Math.round(num($("muQtyC").value,1));if(q1<1){toast("Qty minimal 1");return}
+ if(q1>b.qty){toast("⛔ Sisa di "+from+" hanya "+b.qty+" pcs");return}
+ post({tipe:"MUTASI",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,pemilik:b.pemilik||"",
+  qty:q1,berat:mutQty(b,q1),sumber:b.sumber,
+  from:{loc:from,sumber:b.sumber},to:{loc:to,sumber:b.sumber},note:$("muNoteC").value.trim()})
+ .then(function(ok){if(ok){$("muNoteC").value="";refreshPick();toast("Mutasi tersimpan ✨")}})}
+function autoMutA(){const b=curPick("muPickA");$("mAutoA").innerHTML=b?("Status: "+skuLabel(b)+statusTag(b)+" • sisa Brankas: <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"Status: —"}
+function autoMutB(){const b=curPick("muPickB");const f=$("muFromB").value;$("mAutoB").innerHTML=b?("Status: "+skuLabel(b)+statusTag(b)+" • sisa di "+f+": <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"Status: —"}
+function autoMutC(){const b=curPick("muPickC");const f=$("muFromC").value;$("mAutoC").innerHTML=b?("Status: "+skuLabel(b)+statusTag(b)+" • sisa di "+f+": <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"Status: —"}
+function paintSetor(){if(!$("setorHint"))return;const e=totLoc("ETALASE"),z=totLoc("BAZAR");let lmE=0,lmZ=0;
+ Object.keys(DB.balances).forEach(function(k){const b=DB.balances[k];if(b.jenis==="LM"&&num(b.qty)>0){if(b.loc==="ETALASE")lmE+=num(b.qty);if(b.loc==="BAZAR")lmZ+=num(b.qty)}});
+ const lm=lmE+lmZ;
+ $("setorHint").innerHTML="Display saat ini: Etalase <b>"+e.pcs+" pcs</b> • Bazar <b>"+z.pcs+" pcs</b> • LOGAM MULIA tersisa: <b>"+lm+" pcs</b>"+(lm>0?' — <b style="color:#B3261E">wajib disetor sebelum Tutup Hari</b>':" — ✅ display LM kosong, boleh Tutup Hari")}
 
 /* ---------- JUAL / BUYBACK / KONSINYASI ---------- */
 function simpanJual(){if(JUAL_T==="PENJUALAN"){
-  const b=curPick("jPick");if(!b){toast("Pilih barang yang ada di display/brankas");return}
+  const b=curPick("jPick");if(!b){toast("Pilih barang yang ada di display");return}
+  if(isBuybackPH(b)){toast("⛔ Perhiasan BUYBACK hanya mengendap di BRANKAS — tidak untuk dijual");return}
   const loc=DB.balances[b._id].loc;
   const q1=Math.round(num($("jQty").value,1));if(q1<1){toast("Qty minimal 1");return}
   if(q1>b.qty){toast("⛔ Sisa di "+loc+" hanya "+b.qty+" pcs");return}
-  post({tipe:"PENJUALAN",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,
+  post({tipe:"PENJUALAN",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,pemilik:b.pemilik||"",
    qty:q1,berat:num(b.berat)/Math.max(1,num(b.qty))*q1,sumber:b.sumber,
    from:{loc:loc,sumber:b.sumber},to:{loc:"TERJUAL",sumber:b.sumber},pembeli:$("jPembeli").value.trim(),note:$("jNote").value.trim()})
   .then(function(ok){if(ok){$("jPembeli").value="";$("jNote").value="";refreshPick();toast("Penjualan tercatat ✨")}});
@@ -504,16 +552,17 @@ function simpanJual(){if(JUAL_T==="PENJUALAN"){
   .then(function(ok){if(ok){$("jNoteIn").value="";toast("Tersimpan ✨")}});
   return}
  const jp=$("jJenisPH").value,kd=$("jKadar").value,bp=num($("jBerat").value);if(!(bp>0)){toast("Isi berat per unit");return}
+ const jb=String($("jBrandPH").value||"").trim().toUpperCase()||"-";const jbD=jb==="-"?"":jb+" ";
  const base=san($("jKode").value||("PH"+Date.now().toString(36).toUpperCase()));
  const run=async function(){let okAll=true;
   for(let i=0;i<q1;i++){const kode=q1===1?base:base+"-"+String(i+1);
-   const ok=await post({tipe:JUAL_T,jenis:"PERHIASAN",sku:"PH#"+kode,brand:"-",gram:bp,kadar:kd,jenisPH:jp,kode:kode,desc:jp+" "+kd+" "+bp+"gr • "+kode,
+   const ok=await post({tipe:JUAL_T,jenis:"PERHIASAN",sku:"PH#"+kode,brand:jb,gram:bp,kadar:kd,jenisPH:jp,kode:kode,desc:jbD+jp+" "+kd+" "+bp+"gr • "+kode,
     qty:1,berat:bp,sumber:big,from:{loc:"PUSAT_EXT",sumber:big},to:{loc:masukLok,sumber:big},
     pemilik:$("jPemilik").value.trim(),note:$("jNoteIn").value.trim(),nonResale:big==="BUYBACK"});
    if(!ok){okAll=false;break}}
   if(okAll){toast("Tersimpan ✨ ("+q1+" unit)")}else{toast("Sebagian unit gagal disimpan")}};
  run();$("jKode").value="PH-"+Date.now().toString(36).toUpperCase()}
-function autoJual(){const b=curPick("jPick");$("jAuto").innerHTML=b?(skuLabel(b)+" • sumber <b>"+esc(b.sumber)+"</b> • sisa <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"—"}
+function autoJual(){const b=curPick("jPick");$("jAuto").innerHTML=b?(skuLabel(b)+statusTag(b)+" • sisa <b>"+num(b.qty)+" pcs</b> / "+num(b.berat).toFixed(2)+" gr"):"—"}
 
 /* ---------- BARANG MASUK ---------- */
 function simpanMasuk(){
@@ -526,10 +575,11 @@ function simpanMasuk(){
   .then(function(ok){if(ok){$("mNoteIn").value="";toast("Barang masuk tersimpan ✨")}});
   return}
  const jp=$("mJenisPH").value,kd=$("mKadar").value,bp=num($("mBerat").value);if(!(bp>0)){toast("Isi berat per unit");return}
+ const mb=String($("mBrandPH").value||"").trim().toUpperCase()||"-";const mbD=mb==="-"?"":mb+" ";
  const base=san($("mKodeIn").value||("PH"+Date.now().toString(36).toUpperCase()));
  const run=async function(){let n=0;
   for(let i=0;i<q1;i++){const kode=q1===1?base:base+"-"+String(i+1);
-   const ok=await post({tipe:"MASUK_PUSAT",jenis:"PERHIASAN",sku:"PH#"+kode,brand:"-",gram:bp,kadar:kd,jenisPH:jp,kode:kode,desc:jp+" "+kd+" "+bp+"gr • "+kode,
+   const ok=await post({tipe:"MASUK_PUSAT",jenis:"PERHIASAN",sku:"PH#"+kode,brand:mb,gram:bp,kadar:kd,jenisPH:jp,kode:kode,desc:mbD+jp+" "+kd+" "+bp+"gr • "+kode,
     qty:1,berat:bp,sumber:"PUSAT",harga:harga,from:{loc:"PUSAT_EXT",sumber:"PUSAT"},to:{loc:lok,sumber:"PUSAT"},note:note});
    if(ok)n++}
   $("mKodeIn").value="PH-"+Date.now().toString(36).toUpperCase();toast("Masuk tersimpan ✨ ("+n+" unit)")};
@@ -539,11 +589,11 @@ function simpanMasuk(){
 function simpanRetur(){const b=curPick("rPick");if(!b){toast("Pilih barang di Brankas");return}
  const q1=Math.round(num($("rQty").value,1));if(q1<1){toast("Qty minimal 1");return}
  if(q1>b.qty){toast("⛔ Sisa Brankas hanya "+b.qty+" pcs");return}
- post({tipe:"RETUR_PUSAT",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,
+ post({tipe:"RETUR_PUSAT",jenis:b.jenis,sku:b.sku,brand:b.brand,gram:b.gram,kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,pemilik:b.pemilik||"",
   qty:q1,berat:num(b.berat)/Math.max(1,num(b.qty))*q1,sumber:b.sumber,
   from:{loc:"BRANKAS",sumber:b.sumber},to:{loc:"PUSAT_EXT",sumber:"PUSAT"},note:$("rNote").value.trim()})
  .then(function(ok){if(ok){$("rNote").value="";refreshPick();toast("Retur tersimpan ↩️")}})}
-function autoRetur(){const b=curPick("rPick");$("rAuto").innerHTML=b?(skuLabel(b)+" • sumber <b>"+esc(b.sumber)+"</b> • sisa Brankas <b>"+num(b.qty)+" pcs</b>"):"—";if(b)$("rAsal").value=b.sumber}
+function autoRetur(){const b=curPick("rPick");$("rAuto").innerHTML=b?(skuLabel(b)+statusTag(b)+" • sisa Brankas <b>"+num(b.qty)+" pcs</b>"):"—";if(b)$("rAsal").value=b.sumber}
 
 /* ---------- IMPOR EXCEL ---------- */
 function imporExcel(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();
@@ -575,7 +625,7 @@ function imporExcel(inp){const f=inp.files[0];if(!f)return;const r=new FileReade
 /* ---------- STOK ---------- */
 function renderStok(){$("chipsStok").innerHTML=LOCS.map(t=>'<button class="chip '+(CUR_STOK===t?"on":"")+'" onclick="CUR_STOK=\''+t+'\';renderStok()">'+t+'</button>').join("");
  let rows="";const e=balEntries(CUR_STOK);
- e.forEach(b=>{rows+='<tr><td>'+skuLabel(b)+'</td><td>'+esc(b.sumber)+'</td><td><b>'+num(b.qty)+'</b> pcs</td><td>'+num(b.berat).toFixed(2)+' gr</td></tr>'});
+ e.forEach(b=>{rows+='<tr><td>'+skuLabel(b)+statusTag(b)+'</td><td>'+esc(b.sumber)+(String(b.sumber).toUpperCase()==="KONSINYASI"&&b.pemilik?'<br><span class="muted">'+esc(b.pemilik)+'</span>':"")+'</td><td><b>'+num(b.qty)+'</b> pcs</td><td>'+num(b.berat).toFixed(2)+' gr</td></tr>'});
  const t=totLoc(CUR_STOK);
  $("stokSum").innerHTML="Total <b>"+CUR_STOK+"</b>: <b>"+t.pcs+" pcs</b> / "+t.gr.toFixed(2)+" gr • "+e.length+" baris saldo";
  $("tblStok").innerHTML='<tr><th>Barang</th><th>Sumber</th><th>Qty</th><th>Berat</th></tr>'+(rows||'<tr><td colspan="4" class="muted">Kosong</td></tr>')}
@@ -592,83 +642,121 @@ async function fetchMov(r){if(!cloudOK)return DB.movements.filter(m=>m.tanggal>=
  try{const s=await cloud.collection("movements").where("tanggal",">=",r.dari).where("tanggal","<=",r.sampai).orderBy("tanggal","desc").limit(4000).get();
   const a=[];s.forEach(function(d){a.push(Object.assign({id:d.id},d.data()))});return a}
  catch(e){toast("Tarik data laporan gagal — pakai cache lokal");return DB.movements.filter(m=>m.tanggal>=r.dari&&m.tanggal<=r.sampai)}}
-function arusData(rows){const z=function(){const o={};ARUS_COLS.forEach(c=>o[c]=0);return o};
- const awal=z(),tamb=z(),jual=z(),buy=z(),setor=z();
- rows.forEach(function(m){if(m.jenis!=="LM")return;const g=num(m.gram);if(ARUS_COLS.indexOf(g)<0)return;
-  if(m.tipe==="MUTASI"&&m.from&&m.from.loc==="BRANKAS"&&!isExt(m.to.loc)){if(m.ket==="SALDO PAGI")awal[g]+=num(m.qty);else tamb[g]+=num(m.qty)}
-  else if(m.tipe==="PENJUALAN")jual[g]+=num(m.qty);
-  else if(m.tipe==="BUYBACK_MASUK")buy[g]+=num(m.qty);
-  else if(m.tipe==="MUTASI"&&m.from&&!isExt(m.from.loc)&&m.to.loc==="BRANKAS")setor[g]+=num(m.qty)});
- const akhir={};ARUS_COLS.forEach(c=>akhir[c]=awal[c]+tamb[c]-jual[c]+buy[c]);
- return{cols:ARUS_COLS,rows:[{label:"Saldo Awal (Buka Pelayanan)",vals:awal,color:"#FFE699"},{label:"Barang Tambahan Dari Brankas",vals:tamb,color:"#fff"},{label:"Barang Terjual",vals:jual,color:"#fff"},{label:"Barang Buyback",vals:buy,color:"#fff"},{label:"Saldo akhir penjualan",vals:akhir,color:"#C6EFCE"},{label:"Barang setor ke Brankas",vals:setor,color:"#BDD7EE"}]}}
+function isDisplayLoc(l){return l==="ETALASE"||l==="BAZAR"}
+function arusBrands(rows){const s={};rows.forEach(function(m){if(m.jenis==="LM"&&m.brand)s[String(m.brand).toUpperCase()]=1});return Object.keys(s).sort()}
+function arusDataBrand(rows,brand){const z=function(){const o={};ARUS_COLS.forEach(c=>o[c]=0);return o};
+ const awal=z(),tamb=z(),jual=z(),buy=z(),kons=z(),setor=z();
+ rows.forEach(function(m){if(m.jenis!=="LM"||String(m.brand||"").toUpperCase()!==brand)return;const g=num(m.gram);if(ARUS_COLS.indexOf(g)<0)return;
+  if(m.tipe==="MUTASI"&&m.from&&m.from.loc==="BRANKAS"&&isDisplayLoc(m.to.loc)){if(m.ket==="SALDO PAGI")awal[g]+=num(m.qty);else tamb[g]+=num(m.qty)}
+  else if(m.tipe==="MASUK_PUSAT"&&m.to&&isDisplayLoc(m.to.loc))tamb[g]+=num(m.qty);
+  else if(m.tipe==="PENJUALAN"&&m.from&&isDisplayLoc(m.from.loc))jual[g]+=num(m.qty);
+  else if(m.tipe==="BUYBACK_MASUK"&&m.to&&isDisplayLoc(m.to.loc))buy[g]+=num(m.qty);
+  else if(m.tipe==="KONSINYASI_MASUK"&&m.to&&isDisplayLoc(m.to.loc))kons[g]+=num(m.qty);
+  else if(m.tipe==="MUTASI"&&m.from&&isDisplayLoc(m.from.loc)&&m.to.loc==="BRANKAS")setor[g]+=num(m.qty)});
+ const akhir={};ARUS_COLS.forEach(c=>akhir[c]=awal[c]+tamb[c]-jual[c]+buy[c]+kons[c]);
+ return{cols:ARUS_COLS,rows:[{label:"Saldo Awal (Buka Pelayanan)",vals:awal,color:"#FFE699"},{label:"Barang Tambahan Dari Brankas",vals:tamb,color:"#fff"},{label:"Barang Terjual",vals:jual,color:"#fff"},{label:"Barang Buyback",vals:buy,color:"#fff"},{label:"Barang Konsinyasi",vals:kons,color:"#fff"},{label:"Saldo Akhir Display (Awal+Tambahan−Terjual+Buyback+Konsinyasi)",vals:akhir,color:"#C6EFCE"},{label:"Barang Disetor ke Brankas",vals:setor,color:"#BDD7EE"}]}}
 async function lapData(){const r=rangePeriode(),j=$("rJenis").value,flt=await fetchMov(r);
- if(j==="penjualan")return{rows:flt.filter(m=>m.tipe==="PENJUALAN"),r:r};
- if(j==="masuk")return{rows:flt.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0),r:r};
+ if(j==="penjualan"){const rows=flt.filter(m=>m.tipe==="PENJUALAN").map(m=>[m.tanggal,m.desc,m.brand||"-",num(m.gram),m.jenis==="LM"?(m.kadar||"24K"):(m.kadar||"-"),m.kode||"-",num(m.qty),num(m.berat).toFixed(2),m.pembeli||"-",m.sumber||"-",m.by||"-"]);
+  return{title:"LAPORAN PENJUALAN",cols:["Tanggal","Barang Terjual","Brand","Gramasi (gr)","Kadar","Kode Barang","Qty (pcs)","Berat (gr)","Pembeli","Status","User"],rows:rows,r:r,wide:true}}
+ if(j==="masuk"){const rows=flt.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0).map(m=>[m.tanggal,m.tipe,m.desc,m.brand||"-",num(m.gram),m.kadar||"-",m.jenis||"-",m.kode||"-",num(m.qty),num(m.berat).toFixed(2),num(m.harga||0),m.sumber||"-",(m.to&&m.to.loc)||"-",m.pemilik||"-",m.by||"-",m.note||"-"]);
+  return{title:"LAPORAN BARANG MASUK",cols:["Tanggal","Tipe","Barang","Brand","Gramasi (gr)","Kadar","Jenis","Kode","Qty (pcs)","Berat (gr)","Harga (Rp)","Status","Tujuan","Pemilik","User","Catatan"],rows:rows,r:r,wide:true}}
  if(j==="mbrand"){const b=($("rBrand")||{}).value||"ALL";
-  return{rows:flt.filter(m=>b==="ALL"?true:(b==="PERHIASAN"?m.jenis==="PERHIASAN":(m.jenis==="LM"&&String(m.brand).toUpperCase()===b))),r:r}}
- if(j==="stok"){const rows=Object.keys(DB.balances).map(id=>Object.assign({_id:id},DB.balances[id])).filter(b=>num(b.qty)>0).sort((a,b)=>String(a.sku).localeCompare(String(b.sku))).map(b=>({tanggal:todayStr(),tipe:"SALDO",desc:skuLabel(b)+" (ksn)",sumber:b.sumber,lok:b.loc,qty:num(b.qty),berat:num(b.berat),harga:0,by:"-"}));
-  return{rows:rows,r:{dari:"SALDO",sampai:todayStr(),label:"SALDO"}}}
+  const rows=flt.filter(m=>b==="ALL"?true:(b==="PERHIASAN"?m.jenis==="PERHIASAN":(m.jenis==="LM"&&String(m.brand).toUpperCase()===b))).map(m=>[m.tanggal,m.tipe,m.desc,m.brand||"-",num(m.gram),m.kadar||"-",m.kode||"-",num(m.qty),num(m.berat).toFixed(2),fromTo(m),m.sumber||"-",m.by||"-"]);
+  return{title:"MUTASI PER BRAND"+(b==="ALL"?" (SEMUA)":" ("+b+")"),cols:["Tanggal","Tipe","Barang","Brand","Gramasi (gr)","Kadar","Kode","Qty (pcs)","Berat (gr)","Asal → Tujuan","Status","User"],rows:rows,r:r,wide:true}}
+ if(j==="stok"){
+  const g={};
+  flt.forEach(function(m){const key=m.sku+"@"+san(m.sumber||"PUSAT");const o=g[key]||(g[key]={sku:m.sku,sumber:m.sumber||"PUSAT",jenis:m.jenis,brand:m.brand,gram:num(m.gram),kadar:m.kadar,jenisPH:m.jenisPH,kode:m.kode,desc:m.desc,tgl:"",mq:0,mb:0,jq:0,jb:0});
+   if(["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0){o.mq+=num(m.qty);o.mb+=num(m.berat);if(!o.tgl||m.tanggal<o.tgl)o.tgl=m.tanggal}
+   if(m.tipe==="PENJUALAN"){o.jq+=num(m.qty);o.jb+=num(m.berat)}});
+  Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];const key=b.sku+"@"+san(b.sumber||"PUSAT");if(!g[key])g[key]={sku:b.sku,sumber:b.sumber,jenis:b.jenis,brand:b.brand,gram:num(b.gram),kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,desc:b.desc,tgl:"",mq:0,mb:0,jq:0,jb:0}});
+  const rows=Object.keys(g).map(function(k){const o=g[k];let sq=0,sb=0;const pos=[];
+   Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];if(b.sku+"@"+san(b.sumber||"PUSAT")===k&&num(b.qty)>0){sq+=num(b.qty);sb+=num(b.berat);pos.push(b.loc+":"+num(b.qty))}});
+   const nm=o.jenis==="LM"?((o.brand||"")+" "+num(o.gram)+"gr"):((o.jenisPH||"")+" "+(o.kadar||"")+" "+num(o.gram)+"gr • "+(o.kode||""));
+   return[nm,o.brand||"-",num(o.gram),o.jenis==="LM"?(o.kadar||"24K"):(o.kadar||"-"),o.kode||"-",o.tgl||"-",o.mq,o.mb.toFixed(2),o.jq,o.jb.toFixed(2),sq,sb.toFixed(2),pos.join(" ")||"-",o.sumber]})
+   .sort(function(a,b){return String(a[0]).localeCompare(String(b[0]))});
+  return{title:"LAPORAN STOK",cols:["Barang","Brand","Gramasi (gr)","Kadar","Kode","Tgl Masuk","Masuk (pcs)","Masuk (gr)","Terjual (pcs)","Terjual (gr)","Sisa (pcs)","Sisa (gr)","Posisi","Status"],rows:rows,r:r,wide:true}}
  if(j==="kategori"){const g={};flt.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0).forEach(m=>{g[m.sumber]=g[m.sumber]||{pcs:0,gr:0};g[m.sumber].pcs+=num(m.qty);g[m.sumber].gr+=num(m.berat)});
-  return{rows:Object.keys(g).map(k=>({tanggal:r.dari+"→"+r.sampai,tipe:"REKAP",desc:"Masuk dari "+k,sumber:k,lok:"-",qty:g[k].pcs,berat:g[k].gr,harga:0,by:"-"})),r:r}}
- if(j==="jenis"){const g={};flt.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0).forEach(m=>{g[m.jenis]=g[m.jenis]||{pcs:0,gr:0};g[m.jenis].pcs+=num(m.qty);g[m.jenis].gr+=num(m.berat)});
-  return{rows:Object.keys(g).map(k=>({tanggal:r.dari+"→"+r.sampai,tipe:"REKAP",desc:"Masuk jenis "+k,sumber:"-",lok:"-",qty:g[k].pcs,berat:g[k].gr,harga:0,by:"-"})),r:r}}
- if(j==="sisa_lm"){const rows=Object.keys(DB.balances).map(id=>DB.balances[id]).filter(b=>b.jenis==="LM"&&num(b.qty)>0&&isResaleLoc(b.loc)).sort((a,b)=>num(a.gram)-num(b.gram)).map(b=>({tanggal:todayStr(),tipe:"SISA",desc:bb(b.brand)+" "+b.brand+" "+b.gram+"gr (ksn)",sumber:b.sumber,lok:b.loc,qty:num(b.qty),berat:num(b.berat),harga:0,by:"-"}));
-  return{rows:rows,r:{dari:"HARI INI",sampai:todayStr(),label:"SISA"}}}
- return{rows:DB.sessions.filter(s=>s.tanggal>=r.dari&&s.tanggal<=r.sampai).map(s=>({tanggal:s.tanggal,tipe:s.status,desc:"Sistem "+(s.sistem?Object.keys(s.sistem).map(k=>k+":"+s.sistem[k].pcs).join(" "):"-")+" • selisih "+(s.selisih?Object.keys(s.selisih).map(k=>k+" "+s.selisih[k]).join(" "):"-"),sumber:"-",lok:"-",qty:0,berat:0,harga:0,by:s.by||s.tutupOleh||"-"})),r:r}}
+  return{title:"REKAP PER SUMBER",cols:["Periode","Sumber (Status)","Masuk (pcs)","Masuk (gr)"],rows:Object.keys(g).map(k=>[r.dari+" → "+r.sampai,k,g[k].pcs,g[k].gr.toFixed(2)]),r:r,wide:false}}
+ if(j==="jenis"){const g={};flt.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0).forEach(m=>{const k=m.jenis+"@"+(m.sumber||"-");g[k]=g[k]||{jenis:m.jenis,sumber:m.sumber||"-",pcs:0,gr:0};g[k].pcs+=num(m.qty);g[k].gr+=num(m.berat)});
+  return{title:"REKAP PER JENIS",cols:["Periode","Jenis","Status","Masuk (pcs)","Masuk (gr)"],rows:Object.keys(g).map(k=>[r.dari+" → "+r.sampai,g[k].jenis,g[k].sumber,g[k].pcs,g[k].gr.toFixed(2)]),r:r,wide:false}}
+ if(j==="sisa_lm"){
+  const g={};
+  flt.forEach(function(m){if(m.jenis!=="LM")return;const key=String(m.brand||"").toUpperCase()+"#"+num(m.gram)+"@"+(m.sumber||"PUSAT");const o=g[key]||(g[key]={brand:m.brand,gram:num(m.gram),sumber:m.sumber||"PUSAT",tgl:"",mq:0,mb:0,jq:0,jb:0});
+   if(["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0){o.mq+=num(m.qty);o.mb+=num(m.berat);if(!o.tgl||m.tanggal<o.tgl)o.tgl=m.tanggal}
+   if(m.tipe==="PENJUALAN"){o.jq+=num(m.qty);o.jb+=num(m.berat)}});
+  Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];if(b.jenis!=="LM")return;const key=String(b.brand||"").toUpperCase()+"#"+num(b.gram)+"@"+(b.sumber||"PUSAT");if(!g[key])g[key]={brand:b.brand,gram:num(b.gram),sumber:b.sumber,tgl:"",mq:0,mb:0,jq:0,jb:0}});
+  const rows=Object.keys(g).map(function(k){const o=g[k];let sq=0,sb=0;const pos=[];
+   Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];if(b.jenis==="LM"&&String(b.brand||"").toUpperCase()+"#"+num(b.gram)+"@"+(b.sumber||"PUSAT")===k&&num(b.qty)>0){sq+=num(b.qty);sb+=num(b.berat);pos.push(b.loc+":"+num(b.qty))}});
+   return[o.brand,num(o.gram),o.tgl||"-",o.mq,o.mb.toFixed(2),o.jq,o.jb.toFixed(2),sq,sb.toFixed(2),pos.join(" ")||"-",o.sumber]})
+   .sort(function(a,b){return String(a[0]).localeCompare(String(b[0]))||num(a[1])-num(b[1])});
+  return{title:"SISA STOK LOGAM MULIA",cols:["Brand","Gramasi (gr)","Tgl Masuk","Masuk (pcs)","Masuk (gr)","Terjual (pcs)","Terjual (gr)","Sisa (pcs)","Sisa (gr)","Posisi","Status"],rows:rows,r:r,wide:true}}
+ return{title:"SELISIH & TUTUP HARI",cols:["Tanggal","Status","Sistem","Selisih","User"],rows:DB.sessions.filter(s=>s.tanggal>=r.dari&&s.tanggal<=r.sampai).map(s=>[s.tanggal,s.status,s.sistem?Object.keys(s.sistem).map(k=>k+":"+s.sistem[k].pcs).join(" "):"-",s.selisih?Object.keys(s.selisih).map(k=>k+" "+s.selisih[k]).join(" "):"-",s.tutupOleh||s.bukaOleh||"-"]),r:r,wide:false}}
 function isResaleLoc(l){return l==="BRANKAS"||l==="ETALASE"||l==="BAZAR"}
 function arusHead(cols){return '<tr><th rowspan="2">Uraian</th><th colspan="'+cols.length+'" style="text-align:center">DENOMINASI</th></tr><tr>'+cols.map(c=>'<th style="background:#FFE699">'+c+' GR</th>').join("")+'</tr>'}
-function renderArusTbl(r,rows){const d=arusData(rows);
- $("lapOut").innerHTML='<p class="muted">ARUS GUDANG • '+r.dari+' → '+r.sampai+' (LOGAM MULIA, pcs)</p><div style="overflow:auto"><table class="tbl">'+arusHead(d.cols)+
- d.rows.map(x=>'<tr style="background:'+x.color+'"><td><b>'+x.label+'</b></td>'+d.cols.map(c=>'<td>'+(x.vals[c]||"")+'</td>').join("")+'</tr>').join("")+'</table></div><p class="muted">Rumus: Saldo Akhir = Saldo Awal + Tambahan − Terjual + Buyback</p>'}
+function renderArusPerBrand(r,rows){const bs=arusBrands(rows);
+ if(!bs.length){$("lapOut").innerHTML='<p class="muted">ARUS GUDANG • '+r.dari+' → '+r.sampai+' • Tidak ada LOGAM MULIA pada periode ini</p>';return}
+ $("lapOut").innerHTML='<p class="muted">ARUS GUDANG PER BRAND • '+r.dari+' → '+r.sampai+' (pcs)</p>'+bs.map(function(b){const d=arusDataBrand(rows,b);
+  return '<h3 style="margin:12px 2px 6px">🏷️ '+esc(b)+'</h3><div style="overflow:auto"><table class="tbl">'+arusHead(d.cols)+d.rows.map(x=>'<tr style="background:'+x.color+'"><td><b>'+x.label+'</b></td>'+d.cols.map(c=>'<td>'+(x.vals[c]||"")+'</td>').join("")+'</tr>').join("")+'</table></div>'}).join("")+
+ '<p class="muted">Rumus Saldo Akhir = Saldo Awal + Tambahan − Terjual + Buyback + Konsinyasi. Hanya alur display yang dihitung; buyback perhiasan yang mengendap di Brankas tidak masuk arus display.</p>'}
 async function renderLaporan(){const j=$("rJenis").value;$("boxBrandF").style.display=j==="mbrand"?"block":"none";
  const r=rangePeriode();
- if(j==="arus"){const rows=await fetchMov(r);renderArusTbl(r,rows);return}
+ if(j==="arus"){const rows=await fetchMov(r);renderArusPerBrand(r,rows);return}
  $("lapOut").innerHTML='<p class="muted">Memuat…</p>';
- const d=await lapData();const rows=d.rows;let tp=0,tg=0;
- rows.forEach(m=>{tp+=num(m.qty);tg+=num(m.berat)});
- $("lapOut").innerHTML='<p class="muted">'+j.toUpperCase()+' • '+d.r.dari+' → '+d.r.sampai+' • '+rows.length+' baris • Total '+tp+'pcs '+tg.toFixed(2)+'gr</p>'+
-  '<div style="overflow:auto"><table class="tbl"><tr><th>Tanggal</th><th>Transaksi</th><th>Asal→Tujuan</th><th>Qty/Berat</th><th>Ket</th></tr>'+
-  (rows.slice(0,300).map(m=>'<tr><td>'+esc(m.tanggal)+'</td><td><b>'+esc(m.tipe)+'</b><br><span class="muted">'+esc(m.desc)+'</span></td><td>'+esc(fromTo(m))+'</td><td>'+num(m.qty)+'pcs<br>'+num(m.berat).toFixed(2)+'gr</td><td>'+esc(m.pembeli||m.pemilik&&m.pemilik!=="-"?"👤"+m.pemilik:m.note||"")+'</td></tr>').join("")||'<tr><td colspan="5" class="muted">Tidak ada data periode ini</td></tr>')+'</table></div>'}
+ const d=await lapData();const rows=d.rows;
+ $("lapOut").innerHTML='<p class="muted">'+esc(d.title)+' • '+d.r.dari+' → '+d.r.sampai+' • '+rows.length+' baris</p>'+
+ '<div style="overflow:auto"><table class="tbl"><tr>'+d.cols.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr>'+
+ (rows.slice(0,300).map(function(x){return '<tr>'+x.map(function(c){return '<td>'+esc(c)+'</td>'}).join("")+'</tr>'}).join("")||'<tr><td colspan="'+d.cols.length+'" class="muted">Tidak ada data periode ini</td></tr>')+'</table></div>'}
 function fromTo(m){const f=m.from?m.from.loc:"-",t=m.to?m.to.loc:"-";const s=m.from?m.from.sumber:m.sumber;return f+" → "+t+" ("+s+")"}
-function ekspor(t){const j=$("rJenis").value;
- if(typeof XLSX==="undefined"){toast("Butuh internet sekali untuk SheetJS");return}
+function ekspor(t){if(typeof XLSX==="undefined"){toast("Butuh internet sekali untuk SheetJS");return}
+ const j=$("rJenis").value;
  const go=async function(){const r=rangePeriode();
-  if(j==="arus"){const rows=await fetchMov(r);const d=arusData(rows);const data=d.rows.map(x=>{const o={Uraian:x.label};d.cols.forEach(c=>o[c+" GR"]=x.vals[c]);return o});
-   const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Arus");
+  if(j==="arus"){const rows=await fetchMov(r);const bs=arusBrands(rows);const wb=XLSX.utils.book_new();
+   bs.forEach(function(b){const d=arusDataBrand(rows,b);const aoa=[["ARUS GUDANG — "+b],["Uraian"].concat(d.cols.map(c=>c+" GR"))].concat(d.rows.map(x=>[x.label].concat(d.cols.map(c=>x.vals[c]))));const ws=XLSX.utils.aoa_to_sheet(aoa);XLSX.utils.book_append_sheet(wb,ws,b.slice(0,28))});
    XLSX.writeFile(wb,"G24Kedaton_ARUS_"+r.dari+"_"+r.sampai+"."+t);addLog("EXPORT","ARUS "+t.toUpperCase());return}
-  const d=await lapData();const data=d.rows.map(m=>({Tanggal:m.tanggal,Tipe:m.tipe,Deskripsi:m.desc,AsalTo:fromTo(m),Sumber:m.sumber,Lokasi:m.lok,Qty:num(m.qty),Berat_gr:num(m.berat).toFixed(2),Harga:num(m.harga),Pembeli:m.pembeli||"",Pemilik:m.pemilik||"",User:m.by}));
-  const ws=XLSX.utils.json_to_sheet(data);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Laporan");
+  const d=await lapData();const ws=XLSX.utils.aoa_to_sheet([d.cols].concat(d.rows));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Laporan");
   XLSX.writeFile(wb,"G24Kedaton_"+j.toUpperCase()+"_"+d.r.dari+"_"+d.r.sampai+"."+t);addLog("EXPORT",t.toUpperCase()+" "+d.rows.length+" baris")};
  go()}
 function eksporPDF(){if(typeof window.jspdf==="undefined"){toast("PDF butuh internet — pakai A4");cetakA4();return}
- const go=async function(){const{jsPDF}=window.jspdf;const d=new jsPDF({orientation:"portrait",format:"a4"});const j=$("rJenis").value,r=rangePeriode();
-  try{d.addImage("./koplogo.png","PNG",12,8,38,12)}catch(e){}
-  d.setFontSize(12);d.text("GUDANG STOK G24 KEDATON",54,14);d.setFontSize(9);d.text(j.toUpperCase()+" • "+r.dari+" s/d "+r.sampai,54,19);
-  if(j==="arus"){const rows=await fetchMov(r);const a=arusData(rows);
-   d.autoTable({startY:26,head:[[{content:"Uraian",rowSpan:2},{content:"DENOMINASI",colSpan:a.cols.length,styles:{halign:"center"}}],a.cols.map(c=>c+" GR")],body:a.rows.map(x=>[x.label].concat(a.cols.map(c=>x.vals[c]))),styles:{fontSize:6,lineWidth:.4,lineColor:[40,26,14]},headStyles:{fillColor:[255,230,153],textColor:[40,26,14],lineWidth:.4,lineColor:[40,26,14]}});
-   d.setFontSize(8);d.text("Diprint oleh "+(curUser?curUser.nama:"-")+" • "+new Date().toLocaleString("id-ID"),14,292);
-   d.save("G24Kedaton_ARUS.pdf");addLog("EXPORT","ARUS PDF");return}
-  const dd=await lapData();const rows=dd.rows;
-  d.autoTable({startY:26,head:[["No","Tgl","Transaksi","Asal→Tujuan","Qty","Berat","Pembeli/Ket"]],
-   body:rows.slice(0,400).map((m,i)=>[i+1,m.tanggal,m.tipe+" "+m.desc,fromTo(m),num(m.qty)+"pcs",num(m.berat).toFixed(2)+"gr",m.pembeli||m.pemilik||m.note||""]),
-   styles:{fontSize:7,lineWidth:.4,lineColor:[40,26,14]},headStyles:{fillColor:[212,98,26],lineWidth:.4,lineColor:[40,26,14]}});
-  if(rows.length>400)d.text("(ditampilkan 400 dari "+rows.length+" baris — pakai Export XLSX untuk lengkap)",14,286);
-  d.setFontSize(8);d.text("Diprint oleh "+(curUser?curUser.nama:"-")+" • "+new Date().toLocaleString("id-ID"),14,292);
-  d.save("G24Kedaton_"+j.toUpperCase()+".pdf");addLog("EXPORT","PDF "+rows.length+" baris")};
+ const go=async function(){const{jsPDF}=window.jspdf;const j=$("rJenis").value,r=rangePeriode();
+  const by=curUser?curUser.nama:"-",now=new Date().toLocaleString("id-ID");
+  const TBL={styles:{fontSize:7,cellPadding:1.5,lineWidth:.4,lineColor:[40,26,14],valign:"middle"},headStyles:{fillColor:[212,98,26],textColor:255,fontStyle:"bold",lineWidth:.4,lineColor:[40,26,14]},alternateRowStyles:{fillColor:[255,250,242]},margin:{top:32,left:8,right:8}};
+  const kop=function(d,title,sub){try{d.addImage("./koplogo.png","PNG",12,8,38,12)}catch(e){}
+   d.setFont("helvetica","bold");d.setFontSize(13);d.text("GUDANG STOK G24 KEDATON",54,14);
+   d.setFont("helvetica","normal");d.setFontSize(10);d.text(title,54,20);
+   d.setFontSize(9);d.setTextColor(90);d.text(sub,14,27);d.setTextColor(0)};
+  const kaki=function(d){const y=d.internal.pageSize.getHeight()-10;d.setFontSize(8);d.setTextColor(90);d.text("Diprint oleh "+by+" • "+now,14,y);d.setTextColor(0)};
+  if(j==="arus"){const rows=await fetchMov(r);const bs=arusBrands(rows);const d=new jsPDF({orientation:"portrait",format:"a4"});
+   kop(d,"ARUS GUDANG PER BRAND",r.dari+" s/d "+r.sampai+" • satuan pcs");let y=33;
+   if(!bs.length){d.setFontSize(10);d.text("Tidak ada LOGAM MULIA pada periode ini",14,y)}
+   bs.forEach(function(b){const a=arusDataBrand(rows,b);
+    if(y>240){d.addPage();y=20}
+    d.setFont("helvetica","bold");d.setFontSize(11);d.text("BRAND: "+b,14,y);d.setFont("helvetica","normal");y+=3;
+    d.autoTable(Object.assign({startY:y,head:[[{content:"Uraian",rowSpan:2},{content:"DENOMINASI (GR)",colSpan:a.cols.length,styles:{halign:"center"}}],a.cols.map(c=>String(c))],body:a.rows.map(x=>[x.label].concat(a.cols.map(c=>x.vals[c]||"")))},TBL));
+    y=d.lastAutoTable.finalY+9});
+   d.setFontSize(8);d.text("Rumus Saldo Akhir = Saldo Awal + Tambahan − Terjual + Buyback + Konsinyasi",14,y);
+   kaki(d);d.save("G24Kedaton_ARUS.pdf");addLog("EXPORT","ARUS PDF");return}
+  const dd=await lapData();const d=new jsPDF({orientation:dd.wide?"landscape":"portrait",format:"a4"});
+  kop(d,dd.title,dd.r.dari+" s/d "+dd.r.sampai+" • "+dd.rows.length+" baris");
+  const show=dd.rows.slice(0,500);
+  d.autoTable(Object.assign({startY:33,head:[["No"].concat(dd.cols)],body:show.map(function(x,i){return [i+1].concat(x)})},TBL));
+  if(dd.rows.length>500){d.setFontSize(8);d.text("(ditampilkan 500 dari "+dd.rows.length+" baris — pakai Export XLSX untuk lengkap)",14,d.lastAutoTable.finalY+7)}
+  kaki(d);d.save("G24Kedaton_"+j.toUpperCase()+".pdf");addLog("EXPORT","PDF "+dd.rows.length+" baris")};
  go()}
 function cetakA4(){const j=$("rJenis").value,r=rangePeriode();
  const go=async function(){const nm=curUser?esc(curUser.nama):"-";
   const foot='<div class="p-foot"><div class="sign">Dibuat<br><br><br>( '+nm+' )</div><div class="sign">Diperiksa<br><br><br>( .......... )</div><div class="sign">Mengetahui<br><br><br>( .......... )</div></div>';
-  if(j==="arus"){const rows=await fetchMov(r);const a=arusData(rows);
-   $("printArea").innerHTML='<div class="p-head"><img src="./koplogo.png"><div><b>GUDANG STOK G24 KEDATON</b><br>ARUS GUDANG • '+r.dari+' → '+r.sampai+'</div></div>'+
-    '<table><tr><th rowspan="2">Uraian</th><th colspan="'+a.cols.length+'" style="text-align:center">DENOMINASI</th></tr><tr>'+a.cols.map(c=>'<th>'+c+' GR</th>').join("")+'</tr>'+
-    a.rows.map(x=>'<tr><td><b>'+x.label+'</b></td>'+a.cols.map(c=>'<td>'+(x.vals[c]||"")+'</td>').join("")+'</tr>').join("")+'</table>'+
-    '<p>Rumus: Saldo Akhir = Saldo Awal + Tambahan − Terjual + Buyback</p><p>Diprint oleh <b>'+nm+'</b> pada '+new Date().toLocaleString("id-ID")+'</p>'+foot;
+  const kop='<div class="p-head"><img src="./koplogo.png"><div><b>GUDANG STOK G24 KEDATON</b><br>';
+  if(j==="arus"){const rows=await fetchMov(r);const bs=arusBrands(rows);
+   $("printArea").innerHTML=kop+'ARUS GUDANG PER BRAND • '+r.dari+' → '+r.sampai+'</div></div>'+
+    (bs.length?bs.map(function(b){const a=arusDataBrand(rows,b);
+     return '<h3>BRAND: '+esc(b)+'</h3><table><tr><th rowspan="2">Uraian</th><th colspan="'+a.cols.length+'" style="text-align:center">DENOMINASI</th></tr><tr>'+a.cols.map(c=>'<th>'+c+' GR</th>').join("")+'</tr>'+
+     a.rows.map(x=>'<tr><td><b>'+x.label+'</b></td>'+a.cols.map(c=>'<td>'+(x.vals[c]||"")+'</td>').join("")+'</tr>').join("")+'</table>'}).join(""):'<p>Tidak ada LOGAM MULIA pada periode ini</p>')+
+    '<p>Rumus Saldo Akhir = Saldo Awal + Tambahan − Terjual + Buyback + Konsinyasi</p><p>Diprint oleh <b>'+nm+'</b> pada '+new Date().toLocaleString("id-ID")+'</p>'+foot;
    addLog("CETAK","arus");window.print();return}
-  const d=await lapData();const rows=d.rows;
-  $("printArea").innerHTML='<div class="p-head"><img src="./koplogo.png"><div><b>GUDANG STOK G24 KEDATON</b><br>'+j.toUpperCase()+' • '+d.r.dari+' → '+d.r.sampai+' • '+rows.length+' baris</div></div>'+
-   '<table><tr><th>No</th><th>Tanggal</th><th>Transaksi</th><th>Asal→Tujuan</th><th>Qty</th><th>Berat</th><th>Pembeli/Ket</th></tr>'+
-   rows.slice(0,400).map((m,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(m.tanggal)+'</td><td><b>'+esc(m.tipe)+'</b> '+esc(m.desc)+'</td><td>'+esc(fromTo(m))+'</td><td>'+num(m.qty)+'pcs</td><td>'+num(m.berat).toFixed(2)+'gr</td><td>'+esc(m.pembeli||m.pemilik||m.note||"")+'</td></tr>').join("")+'</table>'+
+  const d=await lapData();
+  $("printArea").innerHTML=kop+esc(d.title)+' • '+d.r.dari+' → '+d.r.sampai+' • '+d.rows.length+' baris</div></div>'+
+   '<table style="font-size:10px"><tr><th>No</th>'+d.cols.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr>'+
+   d.rows.slice(0,500).map(function(x,i){return '<tr><td>'+(i+1)+'</td>'+x.map(function(c){return '<td>'+esc(c)+'</td>'}).join("")+'</tr>'}).join("")+'</table>'+
    '<p>Diprint oleh <b>'+nm+'</b> pada '+new Date().toLocaleString("id-ID")+'</p>'+foot;
   addLog("CETAK",j);window.print()};
  go()}
@@ -726,11 +814,11 @@ async function resetSemua(){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
 
 /* ---------- RENDER ---------- */
 function renderAllTables(){renderMutasi();renderJual();renderMasuk();renderRetur()}
-function renderMutasi(){const rows=DB.movements.filter(m=>m.tipe==="MUTASI").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+bb(m.brand)+" "+esc(m.desc)+'</td><td>'+esc(fromTo(m))+'<br><span class="muted">'+esc(m.ket||"")+'</span></td><td>'+num(m.qty)+'pcs<br>'+num(m.berat).toFixed(2)+'gr</td></tr>').join("");
+function renderMutasi(){const rows=DB.movements.filter(m=>m.tipe==="MUTASI").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+bb(m.brand)+" "+esc(m.desc)+statusTag(m)+'</td><td>'+esc(fromTo(m))+'<br><span class="muted">'+esc(m.ket||"")+'</span></td><td>'+num(m.qty)+'pcs<br>'+num(m.berat).toFixed(2)+'gr</td></tr>').join("");
  $("tblMutasi").innerHTML='<tr><th>Tgl/User</th><th>Barang</th><th>Rute</th><th>Qty</th></tr>'+(rows||'<tr><td colspan="4" class="muted">Belum ada mutasi</td></tr>')}
-function renderJual(){const rows=DB.movements.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0).slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+(m.jenis==="LM"?bb(m.brand):"💍")+' <b>'+esc(m.tipe)+'</b><br><span class="muted">'+esc(m.desc)+'</span></td><td>'+esc(fromTo(m))+'</td><td>'+num(m.qty)+'pcs '+num(m.berat).toFixed(2)+'gr</td><td>'+esc(m.pembeli||m.pemilik||"")+'</td></tr>').join("");
+function renderJual(){const rows=DB.movements.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0).slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+(m.jenis==="LM"?bb(m.brand):"💍")+' <b>'+esc(m.tipe)+'</b><br><span class="muted">'+esc(m.desc)+'</span>'+statusTag(m)+'</td><td>'+esc(fromTo(m))+'</td><td>'+num(m.qty)+'pcs '+num(m.berat).toFixed(2)+'gr</td><td>'+esc(m.pembeli||m.pemilik||"")+'</td></tr>').join("");
  $("tblJual").innerHTML='<tr><th>Tgl/User</th><th>Transaksi</th><th>Rute</th><th>Qty</th><th>Pembeli/Pemilik</th></tr>'+(rows||'<tr><td colspan="5" class="muted">Belum ada transaksi</td></tr>')}
-function renderMasuk(){const rows=DB.movements.filter(m=>m.tipe==="MASUK_PUSAT").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+(m.jenis==="LM"?bb(m.brand):"💍")+' <b>'+esc(m.kode)+'</b><br><span class="muted">'+esc(m.desc)+'</span></td><td>'+num(m.qty)+'pcs '+num(m.berat).toFixed(2)+'gr</td></tr>').join("");
+function renderMasuk(){const rows=DB.movements.filter(m=>m.tipe==="MASUK_PUSAT").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+(m.jenis==="LM"?bb(m.brand):"💍")+' <b>'+esc(m.kode)+'</b><br><span class="muted">'+esc(m.desc)+'</span>'+statusTag(m)+'</td><td>'+num(m.qty)+'pcs '+num(m.berat).toFixed(2)+'gr</td></tr>').join("");
  $("tblMasuk").innerHTML='<tr><th>Tgl/User</th><th>Kode/Barang</th><th>Qty</th></tr>'+(rows||'<tr><td colspan="3" class="muted">Belum ada barang masuk</td></tr>')}
 function renderRetur(){const rows=DB.movements.filter(m=>m.tipe==="RETUR_PUSAT").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+esc(m.kode)+'<br><span class="muted">'+esc(m.desc)+'</span></td><td>'+esc(m.sumber)+' • '+num(m.qty)+'pcs</td></tr>').join("");
  $("tblRetur").innerHTML='<tr><th>Tgl/User</th><th>Barang</th><th>Alur</th></tr>'+(rows||'<tr><td colspan="3" class="muted">Belum ada retur</td></tr>')}
@@ -745,14 +833,14 @@ function refresh(){$("tglHari").textContent=todayStr();$("stUser").textContent=c
  $("stBazar").textContent=z.pcs+" pcs";$("stBazarGr").textContent=z.gr.toFixed(2)+" gr";
  const s=sesiHari();$("stHari").textContent=s?((s.status==="BUKA"?"☀️ BUKA":"🌙 TUTUP")+" • "+s.tanggal):"Belum buka";
  $("stOutbox").textContent=PENDN;
- $("lockWarn").style.display=hariBuka()?"none":"block"}
-function refreshPick(){if(!$("muPick"))return;
- fillLoc("muFrom",LOCS.slice(0,3));fillLoc("muTo",LOCS.slice(0,3));fillLoc("jLok",["BRANKAS","ETALASE","BAZAR"]);
- const mf=$("muFrom").value;$("muPick").innerHTML=pickOpts(mf);
- const jl=$("jLok").value;$("jPick").innerHTML=pickOpts(jl);
+ $("lockWarn").style.display=hariBuka()?"none":"block";paintSetor()}
+function refreshPick(){if(!$("muPickA"))return;
+ $("muPickA").innerHTML=pickOpts("BRANKAS");
+ const fb=$("muFromB").value||"ETALASE";$("muPickB").innerHTML=pickOpts(fb);
+ const fc=$("muFromC").value||"ETALASE";$("muPickC").innerHTML=pickOpts(fc);
+ fillLoc("jLok",["ETALASE","BAZAR"]);const jl=$("jLok").value;$("jPick").innerHTML=pickOpts(jl);
  $("rPick").innerHTML=pickOpts("BRANKAS")}
-function paintAll(){if(!$("chipsMut"))return;
- $("chipsMut").innerHTML=[["KELUAR","📤 Brankas → Display"],["MASUK","📥 Display → Brankas"],["PINDAH","🔁 Etalase ↔ Bazar"]].map(t=>'<button class="chip '+(MU_MODE===t[0]?"on":"")+'" onclick="setMutMode(\''+t[0]+'\')">'+t[1]+'</button>').join("");
+function paintAll(){if(!$("chipsJual"))return;
  $("chipsJual").innerHTML=[["PENJUALAN","💸 Penjualan"],["BUYBACK_MASUK","♻️ Buyback"],["KONSINYASI_MASUK","🤝 Konsinyasi"]].map(t=>'<button class="chip '+(JUAL_T===t[0]?"on":"")+'" onclick="JUAL_T=\''+t[0]+'\';paintAll()">'+t[1]+'</button>').join("");
  $("chipsJenisJ").innerHTML=[["LM","LOGAM MULIA"],["PERHIASAN","💍 Perhiasan"]].map(t=>'<button class="chip '+(J_JENIS===t[0]?"on":"")+'" onclick="J_JENIS=\''+t[0]+'\';paintAll()">'+t[1]+'</button>').join("");
  $("chipsJenisM").innerHTML=[["LM","LOGAM MULIA"],["PERHIASAN","💍 Perhiasan"]].map(t=>'<button class="chip '+(M_JENIS===t[0]?"on":"")+'" onclick="M_JENIS=\''+t[0]+'\';paintAll()">'+t[1]+'</button>').join("");
@@ -761,18 +849,16 @@ function paintAll(){if(!$("chipsMut"))return;
  $("boxJualMasuk").style.display=keluar?"none":"block";
  $("lbPemilikJ").textContent=JUAL_T==="KONSINYASI_MASUK"?"Pemilik (wajib)":"Pemilik (opsional)";
  if(!keluar){$("boxJL").style.display=J_JENIS==="LM"?"block":"none";$("boxJP").style.display=J_JENIS==="LM"?"none":"block";
-  const jm=$("jMasukLok");jm.value=(JUAL_T==="BUYBACK_MASUK")?"ETALASE":(jm.value==="BRANKAS"?"ETALASE":jm.value)}
+  const jm=$("jMasukLok");
+  if(JUAL_T==="BUYBACK_MASUK"&&J_JENIS==="PERHIASAN"){jm.innerHTML='<option value="BRANKAS">BRANKAS (wajib — buyback perhiasan mengendap)</option>';jm.value="BRANKAS"}
+  else{jm.innerHTML='<option value="ETALASE">ETALASE (Depan)</option><option value="BAZAR">BAZAR</option>';if(jm.value!=="ETALASE"&&jm.value!=="BAZAR")jm.value="ETALASE"}}
  $("boxML").style.display=M_JENIS==="LM"?"block":"none";$("boxMP").style.display=M_JENIS==="LM"?"none":"block";
  fillSel("jBrand",brands());fillSel("mBrand",brands());fillSel("jJenisPH",phJenis());fillSel("mJenisPH",phJenis());fillSel("jKadar",kadars());fillSel("mKadar",kadars());
  fillSel("jGram",grams($("jBrand").value));fillSel("mGram",grams($("mBrand").value));
+ const dl=$("dlBrand");if(dl)dl.innerHTML=brands().map(function(b){return '<option value="'+esc(b)+'">'}).join("");
  if(!$("jKode").value)$("jKode").value="PH-"+Date.now().toString(36).toUpperCase();
  if(!$("mKodeIn").value)$("mKodeIn").value="PH-"+Date.now().toString(36).toUpperCase();
- refreshPick();autoMut();autoJual();autoRetur()}
-function setMutMode(m){MU_MODE=m;
- if(m==="KELUAR"){MU_FROM="BRANKAS";MU_TO="ETALASE"}
- else if(m==="MASUK"){MU_FROM="ETALASE";MU_TO="BRANKAS"}
- else{MU_FROM="ETALASE";MU_TO="BAZAR"}
- $("muFrom").value=MU_FROM;$("muTo").value=MU_TO;paintAll();refreshPick()}
+ refreshPick();autoMutA();autoMutB();autoMutC();autoJual();autoRetur();paintSetor()}
 /* ---------- NAV/BOOT ---------- */
 function pgMap(p){return{dash:"pg-dash",mutasi:"pg-mutasi",jual:"pg-jual",masuk:"pg-masuk",retur:"pg-retur",stok:"pg-stok",lap:"pg-lap",master:"pg-master",user:"pg-user",more:"pg-more",login:"pg-login"}[p]}
 function buildRail(){$("rail").innerHTML=NAV.map(n=>'<button data-pg="'+n[0]+'" onclick="go(\''+n[0]+'\')"><i>'+n[1]+'</i><span>'+n[2]+'</span></button>').join("")}
@@ -782,6 +868,7 @@ function go(p){if(!curUser&&p!=="login")p="login";
  if(p==="lap"){if(!$("rHari").value)$("rHari").value=todayStr();paintPeriode()}
  if(p==="stok")renderStok();if(p==="more")renderMore();if(p==="master")renderMaster();if(p==="user")renderUsers();
  if(p==="mutasi"||p==="jual"||p==="retur"||p==="masuk")refreshPick();
+ if(p==="mutasi")paintSetor();
  window.scrollTo({top:0,behavior:"smooth"})}
 function enter(){$("stUser").textContent=curUser.nama;buildRail();recomputeBalances();paintAll();refresh();go("dash")}
 load();seedAdminSafe();buildRail();
