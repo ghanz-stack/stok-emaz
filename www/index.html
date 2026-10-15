@@ -247,7 +247,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div style="overflow:auto;max-height:320px;margin-top:8px"><table class="tbl" id="tblLog"></table></div>
 <div class="btn-row" style="margin-top:8px"><button class="btn btn-ghost" onclick="backupJSON()">💾 Backup JSON</button><button class="btn btn-ghost" onclick="keluar()">Keluar</button></div></div>
 <div class="card" style="margin-top:10px"><h3 style="margin:0">🗑️ Reset Data</h3>
-<p class="muted">Hapus SEMUA data (saldo, transaksi, sesi, log, backup, master) dan hanya menyisakan user ADMIN. Khusus ADMIN.</p>
+<p class="muted">Reset <b>data operasional</b> saja: saldo, transaksi, sesi, dan log (user selain ADMIN ikut dihapus). <b>Tidak</b> menghapus backup, pengaturan, master produk, maupun database/Firebase. Khusus ADMIN.</p>
 <button class="btn btn-danger" style="margin-top:8px" onclick="resetSemua()">🗑️ Reset Semua Data</button></div>
 </div>
 </div>
@@ -692,10 +692,10 @@ async function unduhBackupCloud(){if(!cloudOK){toast("Cloud belum tersambung");r
  const a=[];s.forEach(d=>a.push(Object.assign({id:d.id},d.data())));
  const b=new Blob([JSON.stringify(a,null,2)],{type:"application/json"});const x=document.createElement("a");x.href=URL.createObjectURL(b);x.download="backup-cloud-g24kedaton.json";x.click();addLog("BACKUP_UNDUH",a.length+" snapshot");toast("☁️ Backup cloud diunduh")}
 async function resetSemua(){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
- if(!confirm("HAPUS SEMUA DATA?\nSaldo, transaksi, sesi, log, backup, master akan dihapus permanen."))return;
- if(!confirm("Konfirmasi terakhir: lanjutkan hapus semua?"))return;
- toast("🗑️ Menghapus data…");
- if(cloudOK){const cols=["movements","balances","sessions","logs","backups","master"];
+ if(!confirm("RESET DATA OPERASIONAL?\nDihapus: saldo, transaksi, sesi, log.\nDIPERTAHANKAN: backup, pengaturan, master, serta database/Firebase."))return;
+ if(!confirm("Konfirmasi terakhir: lanjutkan reset data operasional?"))return;
+ toast("🗑️ Menghapus data operasional…");
+ if(cloudOK){const cols=["movements","balances","sessions","logs"];
   for(let c=0;c<cols.length;c++){for(let guard=0;guard<20;guard++){
    let s;try{s=await cloud.collection(cols[c]).limit(400).get()}catch(e){break}
    if(s.empty)break;const batch=cloud.batch();s.forEach(d=>batch.delete(d.ref));
@@ -704,13 +704,12 @@ async function resetSemua(){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
    us.forEach(function(d){if(String((d.data()||{}).nama||"").toUpperCase()!=="ADMIN"){ub.delete(d.ref);any=true}});if(any)await ub.commit()}
   catch(e){}
   try{await cloud.collection("users").doc("U#ADMIN").set({id:"U#ADMIN",nama:"ADMIN",pin:"ADMIN",at:new Date().toISOString()},{merge:true})}catch(e){}
-  try{await cloud.collection("settings").doc("meta").set({seeded:0,resetAt:new Date().toISOString()},{merge:true})}catch(e){}}
- DB.movements=[];DB.outbox=[];DB.confirming=[];DB.sessions=[];DB.logs=[];DB.master=[];SERVER_MOV=[];SERVER_BAL={};
+  }
+ DB.movements=[];DB.outbox=[];DB.confirming=[];DB.sessions=[];DB.logs=[];SERVER_MOV=[];SERVER_BAL={};
  DB.users=DB.users.filter(u=>String(u.nama).toUpperCase()==="ADMIN");
  if(!DB.users.length)DB.users=[{id:"U#ADMIN",nama:"ADMIN",pin:"ADMIN",at:todayStr()}];
  try{localStorage.removeItem(LS_KEY)}catch(e){}
- recomputeBalances();save();toast("🗑️ Semua data dihapus — tersisa ADMIN");
- if(cloudOK)seedMaster().catch(function(){});
+ recomputeBalances();save();toast("🗑️ Data operasional direset — backup, pengaturan & master tetap");
  setTimeout(function(){location.reload()},1500)}
 
 /* ---------- RENDER ---------- */
