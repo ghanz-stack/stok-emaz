@@ -966,20 +966,25 @@ function cetakA4(){const j=$("rJenis").value,r=rangePeriode();
  const go=async function(){const nm=curUser?esc(curUser.nama):"-";const lg=await logo64();
   const kop='<div class="p-head"><img src="'+(lg||"./koplogo.png")+'"><div><b>GUDANG STOK G24 KEDATON</b><br>';
   if(j==="arus"){const rows=await fetchMov(r);const bs=arusBrands(rows);
-   $("printArea").innerHTML=kop+'ARUS GUDANG PER BRAND • '+r.dari+' → '+r.sampai+'</div></div>'+
+   $("printArea").innerHTML=kop+'ARUS GUDANG PER BRAND '+r.dari+' \u2192 '+r.sampai+'</div></div>'+
     (bs.length?bs.map(function(b){const a=arusDataBrand(rows,b);
      return '<h3>BRAND: '+esc(b)+'</h3><table><tr><th rowspan="2">Uraian</th><th colspan="'+a.cols.length+'" style="text-align:center">DENOMINASI</th></tr><tr>'+a.cols.map(c=>'<th>'+c+' GR</th>').join("")+'</tr>'+
      a.rows.map(x=>'<tr><td><b>'+x.label+'</b></td>'+a.cols.map(c=>'<td>'+(x.vals[c]||"")+'</td>').join("")+'</tr>').join("")+'</table>'}).join(""):'<p>Tidak ada LOGAM MULIA pada periode ini</p>')+
     '<p>Diprint oleh <b>'+nm+'</b> pada '+new Date().toLocaleString("id-ID")+'</p>';
-   addLog("CETAK","arus");window.print();return}
+   addLog("CETAK","arus");await waitForImagesInPrintArea();window.print();return}
   const d=await lapData();
-  $("printArea").innerHTML=kop+esc(d.title)+' • '+d.r.dari+' → '+d.r.sampai+' • '+d.rows.length+' baris</div></div>'+
+  $("printArea").innerHTML=kop+esc(d.title)+' \u2192 '+d.r.dari+' \u2192 '+d.r.sampai+' \u2022 '+d.rows.length+' baris</div></div>'+
    '<table><tr>'+d.cols.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr>'+
    d.rows.slice(0,500).map(function(x){return '<tr>'+x.map(function(c){return '<td>'+esc(c)+'</td>'}).join("")+'</tr>'}).join("")+
    (d.total?'<tr>'+d.total.map(c=>'<td><b>'+esc(c)+'</b></td>').join("")+'</tr>':"")+'</table>'+
    '<p>Diprint oleh <b>'+nm+'</b> pada '+new Date().toLocaleString("id-ID")+'</p>';
-  addLog("CETAK",j);window.print()};
+  addLog("CETAK",j);await waitForImagesInPrintArea();window.print()};
  go()}
+function waitForImagesInPrintArea(){return new Promise(function(resolve){const pa=$("printArea");if(!pa){resolve();return}
+ const imgs=pa.querySelectorAll("img");if(!imgs.length){resolve();return}
+ let pending=imgs.length;function check(){pending--;if(pending<=0)resolve()}
+ imgs.forEach(function(img){if(img.complete)check();else{img.onload=check;img.onerror=check}})
+ if(pending===0)resolve()})}
 
 /* ---------- MORE / BACKUP / RESET ---------- */
 function curTema(){try{const v=localStorage.getItem("g24_tema");return v==null?"krem":v}catch(e){return"krem"}}
@@ -1102,7 +1107,7 @@ function go(p){if(!curUser&&p!=="login")p="login";
  if(p==="mutasi")paintSetor();
  window.scrollTo({top:0,behavior:"smooth"})}
 function enter(){$("stUser").textContent=curUser.nama;buildRail();recomputeBalances();paintAll();refresh();renderAllTables();go("dash")}
-load();seedAdminSafe();try{document.body.dataset.theme=curTema()}catch(e){}buildRail();
+load();seedAdminSafe();try{document.body.dataset.theme=curTema()}catch(e){}buildRail();logo64();
 if($("jBrand"))$("jBrand").addEventListener("change",paintAll);
 if($("mBrand"))$("mBrand").addEventListener("change",paintAll);
 try{document.querySelectorAll('input[type="number"]').forEach(function(e){try{e.setAttribute("inputmode",e.step&&String(e.step).indexOf(".")>=0?"decimal":"numeric")}catch(_){}})}catch(_){}
