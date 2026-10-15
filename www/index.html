@@ -654,7 +654,7 @@ function arusDataBrand(rows,brand){const z=function(){const o={};ARUS_COLS.forEa
   else if(m.tipe==="KONSINYASI_MASUK"&&m.to&&isDisplayLoc(m.to.loc))kons[g]+=num(m.qty);
   else if(m.tipe==="MUTASI"&&m.from&&isDisplayLoc(m.from.loc)&&m.to.loc==="BRANKAS")setor[g]+=num(m.qty)});
  const akhir={};ARUS_COLS.forEach(c=>akhir[c]=awal[c]+tamb[c]-jual[c]+buy[c]+kons[c]);
- return{cols:ARUS_COLS,rows:[{label:"Saldo Awal (Buka Pelayanan)",vals:awal,color:"#FFE699"},{label:"Barang Tambahan Dari Brankas",vals:tamb,color:"#fff"},{label:"Barang Terjual",vals:jual,color:"#fff"},{label:"Barang Buyback",vals:buy,color:"#fff"},{label:"Barang Konsinyasi",vals:kons,color:"#fff"},{label:"Saldo Akhir Display (Awal+Tambahan−Terjual+Buyback+Konsinyasi)",vals:akhir,color:"#C6EFCE"},{label:"Barang Disetor ke Brankas",vals:setor,color:"#BDD7EE"}]}}
+ return{cols:ARUS_COLS,rows:[{label:"Saldo Awal (Buka Pelayanan)",vals:awal,color:"#FFE699"},{label:"Barang Tambahan Dari Brankas",vals:tamb,color:"#fff"},{label:"Barang Terjual",vals:jual,color:"#fff"},{label:"Barang Buyback",vals:buy,color:"#fff"},{label:"Barang Konsinyasi",vals:kons,color:"#fff"},{label:"Saldo Akhir Display",vals:akhir,color:"#C6EFCE"},{label:"Barang Disetor ke Brankas",vals:setor,color:"#BDD7EE"}]}}
 async function lapData(){const r=rangePeriode(),j=$("rJenis").value,flt=await fetchMov(r);
  if(j==="penjualan"){const rows=flt.filter(m=>m.tipe==="PENJUALAN").map(m=>[m.tanggal,m.desc,m.brand||"-",num(m.gram),m.jenis==="LM"?(m.kadar||"24K"):(m.kadar||"-"),m.kode||"-",num(m.qty),num(m.berat).toFixed(2),m.pembeli||"-",m.sumber||"-",m.by||"-"]);
   return{title:"LAPORAN PENJUALAN",cols:["Tanggal","Barang Terjual","Brand","Gramasi (gr)","Kadar","Kode Barang","Qty (pcs)","Berat (gr)","Pembeli","Status","User"],rows:rows,r:r,wide:true}}
@@ -697,7 +697,7 @@ function renderArusPerBrand(r,rows){const bs=arusBrands(rows);
  if(!bs.length){$("lapOut").innerHTML='<p class="muted">ARUS GUDANG • '+r.dari+' → '+r.sampai+' • Tidak ada LOGAM MULIA pada periode ini</p>';return}
  $("lapOut").innerHTML='<p class="muted">ARUS GUDANG PER BRAND • '+r.dari+' → '+r.sampai+' (pcs)</p>'+bs.map(function(b){const d=arusDataBrand(rows,b);
   return '<h3 style="margin:12px 2px 6px">🏷️ '+esc(b)+'</h3><div style="overflow:auto"><table class="tbl">'+arusHead(d.cols)+d.rows.map(x=>'<tr style="background:'+x.color+'"><td><b>'+x.label+'</b></td>'+d.cols.map(c=>'<td>'+(x.vals[c]||"")+'</td>').join("")+'</tr>').join("")+'</table></div>'}).join("")+
- '<p class="muted">Rumus Saldo Akhir = Saldo Awal + Tambahan − Terjual + Buyback + Konsinyasi. Hanya alur display yang dihitung; buyback perhiasan yang mengendap di Brankas tidak masuk arus display.</p>'}
+ '<p class="muted">Hanya alur display yang dihitung; buyback perhiasan yang mengendap di Brankas tidak masuk arus display.</p>'}
 async function renderLaporan(){const j=$("rJenis").value;$("boxBrandF").style.display=j==="mbrand"?"block":"none";
  const r=rangePeriode();
  if(j==="arus"){const rows=await fetchMov(r);renderArusPerBrand(r,rows);return}
@@ -733,7 +733,6 @@ function eksporPDF(){if(typeof window.jspdf==="undefined"){toast("PDF butuh inte
     d.setFont("helvetica","bold");d.setFontSize(11);d.text("BRAND: "+b,14,y);d.setFont("helvetica","normal");y+=3;
     d.autoTable(Object.assign({startY:y,head:[[{content:"Uraian",rowSpan:2},{content:"DENOMINASI (GR)",colSpan:a.cols.length,styles:{halign:"center"}}],a.cols.map(c=>String(c))],body:a.rows.map(x=>[x.label].concat(a.cols.map(c=>x.vals[c]||"")))},TBL));
     y=d.lastAutoTable.finalY+9});
-   d.setFontSize(8);d.text("Rumus Saldo Akhir = Saldo Awal + Tambahan − Terjual + Buyback + Konsinyasi",14,y);
    kaki(d);d.save("G24Kedaton_ARUS.pdf");addLog("EXPORT","ARUS PDF");return}
   const dd=await lapData();const d=new jsPDF({orientation:dd.wide?"landscape":"portrait",format:"a4"});
   kop(d,dd.title,dd.r.dari+" s/d "+dd.r.sampai+" • "+dd.rows.length+" baris");
@@ -751,7 +750,7 @@ function cetakA4(){const j=$("rJenis").value,r=rangePeriode();
     (bs.length?bs.map(function(b){const a=arusDataBrand(rows,b);
      return '<h3>BRAND: '+esc(b)+'</h3><table><tr><th rowspan="2">Uraian</th><th colspan="'+a.cols.length+'" style="text-align:center">DENOMINASI</th></tr><tr>'+a.cols.map(c=>'<th>'+c+' GR</th>').join("")+'</tr>'+
      a.rows.map(x=>'<tr><td><b>'+x.label+'</b></td>'+a.cols.map(c=>'<td>'+(x.vals[c]||"")+'</td>').join("")+'</tr>').join("")+'</table>'}).join(""):'<p>Tidak ada LOGAM MULIA pada periode ini</p>')+
-    '<p>Rumus Saldo Akhir = Saldo Awal + Tambahan − Terjual + Buyback + Konsinyasi</p><p>Diprint oleh <b>'+nm+'</b> pada '+new Date().toLocaleString("id-ID")+'</p>'+foot;
+    '<p>Diprint oleh <b>'+nm+'</b> pada '+new Date().toLocaleString("id-ID")+'</p>'+foot;
    addLog("CETAK","arus");window.print();return}
   const d=await lapData();
   $("printArea").innerHTML=kop+esc(d.title)+' • '+d.r.dari+' → '+d.r.sampai+' • '+d.rows.length+' baris</div></div>'+
