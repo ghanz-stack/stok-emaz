@@ -700,6 +700,10 @@ async function resetSemua(){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
    let s;try{s=await cloud.collection(cols[c]).limit(400).get()}catch(e){break}
    if(s.empty)break;const batch=cloud.batch();s.forEach(d=>batch.delete(d.ref));
    try{await batch.commit()}catch(e){toast("Gagal hapus "+cols[c]+" — Publish rules dengan izin delete");break}}}
+  try{const us=await cloud.collection("users").limit(400).get();const ub=cloud.batch();let any=false;
+   us.forEach(function(d){if(String((d.data()||{}).nama||"").toUpperCase()!=="ADMIN"){ub.delete(d.ref);any=true}});if(any)await ub.commit()}
+  catch(e){}
+  try{await cloud.collection("users").doc("U#ADMIN").set({id:"U#ADMIN",nama:"ADMIN",pin:"ADMIN",at:new Date().toISOString()},{merge:true})}catch(e){}
   try{await cloud.collection("settings").doc("meta").set({seeded:0,resetAt:new Date().toISOString()},{merge:true})}catch(e){}}
  DB.movements=[];DB.outbox=[];DB.confirming=[];DB.sessions=[];DB.logs=[];DB.master=[];SERVER_MOV=[];SERVER_BAL={};
  DB.users=DB.users.filter(u=>String(u.nama).toUpperCase()==="ADMIN");
