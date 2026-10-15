@@ -345,11 +345,11 @@ function promptModal(title,label,opts){return new Promise(function(res){let done
  const o=opts||{};
  openModal({title:title,body:'<label>'+esc(label)+'</label><input id="modalInp" type="'+(o.pw?"password":"text")+'"'+(o.numeric?' inputmode="numeric"':"")+' placeholder="'+esc(o.ph||"")+'"'+(o.value?' value="'+esc(o.value)+'"':"")+'">',actions:[{label:"Batal",onClick:function(){fin(null)}},{label:o.ok||"OK",primary:1,onClick:function(){const v=$("modalInp").value;if(o.required&&!String(v).trim()){toast("Wajib diisi","err");return}fin(v)}}]});
  $("modalWrap").onclick=function(e){if(e.target===$("modalWrap")){fin(null);closeModal()}};
- setTimeout(function(){const i=$("modalInp");if(i)i.focus()},60)})}
+ setTimeout(function(){try{const i=$("modalInp");if(i&&i.focus)i.focus()}catch(e){}},60)})}
 function resetModal(){return new Promise(function(res){let done=false;const fin=function(v){if(!done){done=true;res(v)}};
  openModal({title:"🗑️ Reset Data Operasional",body:'<p style="font-size:15px;line-height:1.7">Tindakan ini <b>menghapus</b> saldo, transaksi, sesi & log.<br>Backup, pengaturan, master & database <b>tetap</b>.<br><br>Ketik <b>RESET</b> untuk melanjutkan:</p><input id="modalInp" placeholder="RESET" autocomplete="off">',actions:[{label:"Batal",onClick:function(){fin(false)}},{label:"Ya, Reset",primary:1,keep:true,onClick:function(){if(String($("modalInp").value).trim()==="RESET"){closeModal();fin(true)}else toast("Ketik RESET untuk melanjutkan","err")}}]});
  $("modalWrap").onclick=function(e){if(e.target===$("modalWrap")){fin(false);closeModal()}};
- setTimeout(function(){const i=$("modalInp");if(i)i.focus()},60)})}
+ setTimeout(function(){try{const i=$("modalInp");if(i&&i.focus)i.focus()}catch(e){}},60)})}
 function uid(p){return (p||"ID")+"-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase()}
 function todayStr(d){return (d||new Date()).toLocaleDateString("sv-SE")}
 function fmtRp(n){return "Rp "+(Number(n)||0).toLocaleString("id-ID")}
@@ -481,11 +481,28 @@ function renderMaster(){let h='<tr><th>Master</th><th>Aksi</th></tr>';
 
 /* ---------- AUTH ---------- */
 function isAdmin(){return curUser&&String(curUser.nama).toUpperCase()==="ADMIN"}
-function doLogin(){const u=$("inUser").value.trim(),pw=$("inPin").value.trim();if(!u||!pw){toast("Isi nama + PIN");return}
- const f=DB.users.find(x=>String(x.nama).toUpperCase()===u.toUpperCase()&&x.pin===pw&&!x.deleted);
+const PIN_SALT="g24kedaton-salt-v1";
+function cyrb53(str,seed){let h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(let i=0;i<str.length;i++){const ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return(4294967296*(2097151&h2)+(h1>>>0)).toString(36)}
+async function hashPin(pin){const s=PIN_SALT+"::"+pin;
+ try{if(window.crypto&&crypto.subtle){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return "$s256$"+Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("")}}catch(e){}
+ return "$cyr$"+cyrb53(s,7)}
+async function pinMatch(stored,input){if(stored==null)return false;
+ if(String(stored).charAt(0)!=="$")return stored===input;
+ try{return (await hashPin(input))===stored}catch(e){return false}}
+async function doLogin(){const u=$("inUser").value.trim(),pw=$("inPin").value.trim();if(!u||!pw){toast("Isi nama + PIN");return}
+ const f=DB.users.find(x=>String(x.nama).toUpperCase()===u.toUpperCase()&&!x.deleted);
  if(!f){toast("⛔ User belum terdaftar / PIN salah");return}
- curUser={nama:f.nama,at:new Date().toISOString()};localStorage.setItem("g24_user",JSON.stringify(curUser));
- addLog("LOGIN","Masuk sebagai "+f.nama);save();enter()}
+ if(!(await pinMatch(f.pin,pw))){toast("⛔ User belum terdaftar / PIN salah");return}
+ if(String(f.pin).charAt(0)!=="$"){f.pin=await hashPin(pw);f.at=new Date().toISOString();if(cloudOK){try{await cloud.collection("users").doc(f.id||("U#"+san(f.nama))).set({pin:f.pin,at:f.at},{merge:true})}catch(e){}}save()}
+ curUser={nama:f.nama,at:new Date().toISOString()};try{localStorage.setItem("g24_user",JSON.stringify(curUser))}catch(e){}
+ addLog("LOGIN","Masuk sebagai "+f.nama);save();enter();
+ if(String(f.nama).toUpperCase()==="ADMIN"&&pw.toUpperCase()==="ADMIN")forcePinChange(f)}
+async function forcePinChange(f){toast("🔐 PIN default harus diganti dulu","warn");
+ const v=await promptModal("Wajib Ganti PIN","Buat PIN baru (jangan pakai ADMIN):",{numeric:true,required:true,ph:"PIN baru"});
+ if(v===null||!String(v).trim()||String(v).trim().toUpperCase()==="ADMIN"){toast("Ganti PIN dibatalkan — Anda dikeluarkan","err");setTimeout(keluar,1200);return}
+ f.pin=await hashPin(String(v).trim());f.at=new Date().toISOString();
+ if(cloudOK){try{await cloud.collection("users").doc(f.id||("U#"+san(f.nama))).set({pin:f.pin,at:f.at},{merge:true})}catch(e){}}
+ DB.users=DB.users.map(x=>String(x.nama).toUpperCase()===String(f.nama).toUpperCase()?f:x);save();renderUsers();toast("PIN baru tersimpan ✨","ok")}
 function keluar(){localStorage.removeItem("g24_user");location.reload()}
 function togglePin(){const e=$("inPin");if(e)e.type=e.type==="password"?"text":"password"}
 function addLog(aksi,detail){const l={id:uid("L"),by:curUser?curUser.nama:"-",aksi:aksi,detail:detail,at:new Date().toISOString()};
@@ -494,13 +511,13 @@ function addLog(aksi,detail){const l={id:uid("L"),by:curUser?curUser.nama:"-",ak
  save()}
 async function tambahUser(){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
  const v=$("newUser").value.trim(),pw=$("newPin").value.trim();if(!v||!pw){toast("Isi nama + PIN");return}
- const id="U#"+san(v);const u={id:id,nama:v,pin:pw,at:new Date().toISOString()};
+ const id="U#"+san(v);const u={id:id,nama:v,pin:await hashPin(pw),at:new Date().toISOString()};
  DB.users=DB.users.filter(x=>String(x.nama).toUpperCase()!==v.toUpperCase());DB.users.push(u);
  if(cloudOK){try{await cloud.collection("users").doc(id).set(u)}catch(e){}}
  addLog("USER","Daftarkan "+v+" oleh ADMIN");save();renderUsers();$("newUser").value="";$("newPin").value="";toast("User ditambah")}
 async function editUser(nm){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
  const v=await promptModal("Ubah PIN","PIN baru untuk "+nm,{numeric:true,required:true,ph:"PIN baru"});if(v===null)return;if(!v.trim()){toast("PIN tidak valid","err");return}
- const u=DB.users.find(x=>x.nama===nm);if(!u)return;u.pin=v.trim();u.at=new Date().toISOString();
+ const u=DB.users.find(x=>x.nama===nm);if(!u)return;u.pin=await hashPin(v.trim());u.at=new Date().toISOString();
  if(cloudOK)try{await cloud.collection("users").doc(u.id||("U#"+san(nm))).set(u)}catch(e){}
  addLog("USER_EDIT","PIN "+nm+" diubah");save();renderUsers();toast("PIN diubah")}
 async function delUser(nm){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
