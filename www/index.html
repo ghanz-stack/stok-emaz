@@ -17,19 +17,21 @@
 <style>
 :root{--bg:#FEF3E2;--card:#FFFDF8;--ink:#2A1A0E;--muted:#7A6350;--amber:#F4AE52;--burnt:#D4621A;--line:#F0DFC8;--radius:18px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0 214px 30px 0}
-@media(min-width:681px){#bannerHari{padding-right:216px}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0 236px 30px 0}
+@media(min-width:681px){#bannerHari{padding-right:238px}}
 .dot{width:8px;height:8px;border-radius:50%;background:#E5B25F;flex:0 0 8px}.dot.on{background:#3FA34D}
-.rail-live{display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px;color:#E8C79B;padding:0 4px 12px;text-align:center}
-.rail-live #syncLbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-nav.rail{position:fixed;right:0;top:0;bottom:0;width:202px;z-index:30;display:flex;flex-direction:column;background:#2A1A0E;padding:16px 12px 12px 12px;overflow-y:auto;box-shadow:-12px 0 30px rgba(42,26,14,.18)}
-.rail-brand{display:flex;align-items:center;gap:10px;padding:2px 6px 14px}
+.stat-hari{text-align:center;padding:12px 14px}
+.stat-hari small{font-size:11px;color:var(--muted);letter-spacing:1px}
+.stat-hari b{display:block;font-size:20px;margin:2px 0}
+.stat-hari em{font-style:normal;font-size:12px;color:var(--muted)}
+nav.rail{position:fixed;right:0;top:0;bottom:0;width:224px;z-index:30;display:flex;flex-direction:column;background:#2A1A0E;padding:14px 12px 10px 12px;overflow-y:auto;box-shadow:-12px 0 30px rgba(42,26,14,.18)}
+.rail-brand{display:flex;align-items:center;gap:10px;padding:2px 6px 10px}
 .rail-brand img{width:40px;height:40px;border-radius:13px;object-fit:cover;border:1px solid rgba(254,243,226,.45)}
 .rail-brand b{display:block;font-size:13px;color:#FEF3E2;line-height:1.25}
 .rail-brand span{font-size:10px;color:#E8C79B}
-#railMenu{display:flex;flex-direction:column;gap:4px}
-.rail button{border:0;background:none;color:#EAD9C2;display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;padding:11px 12px;border-radius:13px;cursor:pointer;width:100%;text-align:left}
-.rail button i{font-style:normal;font-size:20px;width:26px;text-align:center;flex:0 0 26px}
+#railMenu{display:flex;flex-direction:column;gap:3px}
+.rail button{border:0;background:none;color:#EAD9C2;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600;padding:8px 12px;border-radius:13px;cursor:pointer;width:100%;text-align:left}
+.rail button i{font-style:normal;font-size:21px;width:26px;text-align:center;flex:0 0 26px}
 .rail button:hover{background:rgba(254,243,226,.12)}
 .rail button.on{background:#D4621A;color:#fff;font-weight:800;box-shadow:0 6px 16px rgba(212,98,26,.45)}
 .rail-foot{margin-top:auto;padding-top:12px;border-top:1px solid rgba(234,217,194,.25)}
@@ -125,7 +127,6 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 
 <nav class="rail" id="rail" aria-label="Menu utama">
 <div class="rail-brand"><img src="./logo-app.jpg" alt="G24"><div><b>G24 Kedaton</b><span>Gudang Stok</span></div></div>
-<div class="rail-live"><span class="dot" id="dotNet"></span><span id="syncLbl">Lokal</span></div>
 <div id="railMenu"></div>
 <div class="rail-foot"><button onclick="keluar()" aria-label="Keluar"><i>🚪</i><span>Keluar</span></button></div>
 </nav>
@@ -140,9 +141,9 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 <p class="muted" id="loginInfo" style="margin-top:10px"></p></form></div></div>
 
 <div id="pg-dash" class="page">
-<h2 class="sec">📊 Dashboard <span class="badge" id="tglHari"></span></h2>
-<div class="card"><div class="kv"><span>Status hari</span><b id="stHari">—</b></div>
-<div class="kv"><span>Pengguna</span><b id="stUser">—</b></div>
+<h2 class="sec" style="display:flex;align-items:center;gap:8px">📊 Dashboard <span class="badge" id="tglHari"></span><span style="margin-left:auto;display:flex;align-items:center;gap:6px"><span class="dot" id="dotNet"></span><span class="badge" id="syncLbl">Lokal</span></span></h2>
+<div class="card stat-hari"><small>STATUS HARI</small><b id="stHari2">—</b><em id="stHariTgl">—</em></div>
+<div class="card" style="margin-top:10px"><div class="kv"><span>Pengguna</span><b id="stUser">—</b></div>
 <div class="kv"><span>Antrean belum terkirim</span><b id="stOutbox">0</b></div>
 <div style="margin-top:10px"><button id="btnHari" class="btn btn-burnt" onclick="hariToggle()">☀️ Buka Hari</button></div></div>
 <h2 class="sec">💰 Stok Brankas (per sumber)</h2>
@@ -367,6 +368,7 @@ function resetModal(){return new Promise(function(res){let done=false;const fin=
  setTimeout(function(){try{const i=$("modalInp");if(i&&i.focus)i.focus()}catch(e){}},60)})}
 function uid(p){return (p||"ID")+"-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase()}
 function todayStr(d){return (d||new Date()).toLocaleDateString("sv-SE")}
+function hariIni(){try{return new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}catch(e){return todayStr()}}
 function fmtRp(n){return "Rp "+(Number(n)||0).toLocaleString("id-ID")}
 function num(v,d){const n=Number(v);return isFinite(n)?n:(d||0)}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
@@ -1050,7 +1052,8 @@ function refresh(){$("tglHari").textContent=todayStr();$("stUser").textContent=c
  const e=totLoc("ETALASE"),z=totLoc("BAZAR");
  $("stEtalase").textContent=e.pcs+" pcs";$("stEtalaseGr").textContent=e.gr.toFixed(2)+" gr";
  $("stBazar").textContent=z.pcs+" pcs";$("stBazarGr").textContent=z.gr.toFixed(2)+" gr";
- const s=sesiHari();$("stHari").textContent=s?((s.status==="BUKA"?"☀️ BUKA":"🌙 TUTUP")+" • "+s.tanggal):"Belum buka";
+ const s=sesiHari();const sh=$("stHari2");if(sh)sh.textContent=s?((s.status==="BUKA"?"☀️ BUKA":"🌙 TUTUP")):"Belum buka";
+ const sht=$("stHariTgl");if(sht)sht.textContent=hariIni()+(s?" • "+s.tanggal:"");
  $("stOutbox").textContent=PENDN;
  const bh=$("btnHari");if(bh){const open=hariBuka();bh.textContent=open?"🌙 Tutup Hari":"☀️ Buka Hari";bh.className="btn "+(open?"btn-dark":"btn-burnt")}
  const sl=$("syncLbl");if(sl){if(cloudOK)sl.textContent="Live ☁️"+(PENDN?" • "+PENDN+" antre":"");else if(sl.textContent==="Lokal"||sl.textContent.indexOf("antre")>=0)sl.textContent="Offline"+(PENDN?" • "+PENDN+" antre":"")}
