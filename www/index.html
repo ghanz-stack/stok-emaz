@@ -669,6 +669,14 @@ function simpanRetur(){const b=curPick("rPick");if(!b){toast("Pilih barang di Br
   from:{loc:"BRANKAS",sumber:b.sumber},to:{loc:"PUSAT_EXT",sumber:"PUSAT"},note:$("rNote").value.trim()})
  .then(function(ok){busy("btnRetur",false);if(ok){$("rNote").value="";refreshPick();afterSave("rQty","tblRetur");toast("Retur tersimpan ↩️")}})}
 function autoRetur(){const b=curPick("rPick");setMax("rQty",b?b.qty:0);$("rAuto").innerHTML=b?(skuLabel(b)+statusTag(b)+" • sisa Brankas <b>"+num(b.qty)+" pcs</b>"):"—";if(b)$("rAsal").value=b.sumber}
+async function koreksi(id){if(!isAdmin()){toast("⛔ Khusus ADMIN","err");return}
+ const m=DB.movements.find(x=>x.id===id);if(!m){toast("Data tidak ditemukan","err");return}
+ if(m.tipe==="KOREKSI"){toast("Koreksi tidak bisa dikoreksi lagi","warn");return}
+ const reason=await promptModal("↩️ Koreksi Transaksi",(m.tipe+" • "+(m.desc||"")+" • "+num(m.qty)+"pcs — alasan wajib diisi:"),{required:true,ph:"cth: salah input qty"});
+ if(reason===null)return;
+ const rev={tipe:"KOREKSI",koreksiOf:m.tipe,voidOf:m.id,jenis:m.jenis,sku:m.sku,brand:m.brand,gram:m.gram,kadar:m.kadar,jenisPH:m.jenisPH,kode:m.kode,desc:(m.desc||"")+" (koreksi)",pemilik:m.pemilik||"",qty:num(m.qty),berat:num(m.berat),harga:num(m.harga||0),sumber:m.sumber,from:m.to,to:m.from,ket:"KOREKSI",note:"KOREKSI: "+String(reason).trim()};
+ const ok=await post(rev);
+ if(ok){addLog("KOREKSI",m.tipe+" "+(m.desc||"")+" ("+num(m.qty)+"pcs) — "+String(reason).trim());renderAllTables();toast("Koreksi tercatat ✨","ok")}}
 
 /* ---------- IMPOR EXCEL ---------- */
 function imporExcel(inp){const f=inp.files[0];if(!f)return;
@@ -732,15 +740,22 @@ function arusDataBrand(rows,brand){const gs={};rows.forEach(function(m){if(m.jen
  const awal=z(),tamb=z(),jual=z(),buy=z(),kons=z(),setor=z();
  rows.forEach(function(m){if(m.jenis!=="LM"||String(m.brand||"").toUpperCase()!==brand)return;const g=num(m.gram);if(!(g>0))return;
   const toLoc=m.to&&m.to.loc,fromLoc=m.from&&m.from.loc;
-  if(m.tipe==="MUTASI"&&fromLoc==="BRANKAS"&&isDisplayLoc(toLoc)){if(m.ket==="SALDO PAGI")awal[g]+=num(m.qty);else tamb[g]+=num(m.qty)}
+  const isMut=m.tipe==="MUTASI"||m.tipe==="KOREKSI";
+  if(isMut&&fromLoc==="BRANKAS"&&isDisplayLoc(toLoc)){if(m.ket==="SALDO PAGI")awal[g]+=num(m.qty);else tamb[g]+=num(m.qty)}
   else if(m.tipe==="MASUK_PUSAT"&&isDisplayLoc(toLoc))tamb[g]+=num(m.qty);
   else if(m.tipe==="PENJUALAN"&&isDisplayLoc(fromLoc))jual[g]+=num(m.qty);
   else if(m.tipe==="BUYBACK_MASUK"&&isDisplayLoc(toLoc))buy[g]+=num(m.qty);
   else if(m.tipe==="KONSINYASI_MASUK"&&isDisplayLoc(toLoc))kons[g]+=num(m.qty);
-  else if(m.tipe==="MUTASI"&&isDisplayLoc(fromLoc)&&toLoc==="BRANKAS")setor[g]+=num(m.qty)});
+  else if(m.tipe==="KOREKSI"&&fromLoc==="TERJUAL"&&isDisplayLoc(toLoc))jual[g]-=num(m.qty);
+  else if(isMut&&isDisplayLoc(fromLoc)&&toLoc==="BRANKAS")setor[g]+=num(m.qty)});
  const akhir={};COLS.forEach(c=>akhir[c]=awal[c]+tamb[c]-jual[c]+buy[c]+kons[c]);
  return{cols:COLS,rows:[{label:"Saldo Awal (Buka Pelayanan)",vals:awal,color:"#FFE699"},{label:"Barang Tambahan Dari Brankas",vals:tamb,color:"#fff"},{label:"Barang Terjual",vals:jual,color:"#fff"},{label:"Barang Buyback",vals:buy,color:"#fff"},{label:"Barang Konsinyasi",vals:kons,color:"#fff"},{label:"Saldo akhir penjualan",vals:akhir,color:"#C6EFCE"},{label:"Barang Disetor ke Brankas",vals:setor,color:"#BDD7EE"}]}}
 function r2(n){return Math.round(num(n)*100)/100}
+function koreksiAdj(m){if(!m||m.tipe!=="KOREKSI")return null;const k=m.koreksiOf,q=Math.round(num(m.qty)),b=r2(m.berat);
+ if(k==="PENJUALAN")return[0,0,-q,-b,0,0];
+ if(k==="RETUR_PUSAT")return[0,0,0,0,-q,-b];
+ if(["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(k)>=0)return[-q,-b,0,0,0,0];
+ return[0,0,0,0,0,0]}
 function finalizeLap(title,cols,rows,r,wide){
  const C=["No"].concat(cols);
  const R=rows.map(function(x,i){return [i+1].concat(x)});
@@ -752,7 +767,8 @@ function grupStok(){const g={};
  DB.movements.forEach(function(m){const key=(m.sku||"")+"@"+san(m.sumber||"PUSAT");const o=g[key]||(g[key]={mq:0,jq:0,rq:0});
   if(["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0)o.mq+=Math.round(num(m.qty));
   if(m.tipe==="PENJUALAN")o.jq+=Math.round(num(m.qty));
-  if(m.tipe==="RETUR_PUSAT")o.rq+=Math.round(num(m.qty))});
+  if(m.tipe==="RETUR_PUSAT")o.rq+=Math.round(num(m.qty));
+  const ka2=koreksiAdj(m);if(ka2){o.mq+=ka2[0];o.jq+=ka2[2];o.rq+=ka2[4]}});
  Object.keys(g).forEach(function(k){const o=g[k];o.sisa=o.mq-o.jq-o.rq;const on=[];
   Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];if(b.loc!=="TERJUAL"&&(b.sku||"")+"@"+san(b.sumber||"PUSAT")===k&&num(b.qty)>0)on.push(b.loc+" ("+Math.round(num(b.qty))+")")});
   o.pos=on.length?on.join(", ")+(o.jq>0?", Terjual ("+o.jq+")":"")+(o.rq>0?", Retur ("+o.rq+")":""):(o.jq>0?"Terjual":(o.rq>0?"Retur":"-"))});
@@ -777,7 +793,8 @@ async function lapData(){const r=rangePeriode(),j=$("rJenis").value,all=DB.movem
   all.forEach(function(m){const key=m.sku+"@"+san(m.sumber||"PUSAT");const o=g[key]||(g[key]={sku:m.sku,sumber:m.sumber||"PUSAT",jenis:m.jenis,brand:m.brand,gram:num(m.gram),kadar:m.kadar,jenisPH:m.jenisPH,kode:m.kode,tgl:"",mq:0,jq:0,rq:0});
    if(["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0){o.mq+=Math.round(num(m.qty));if(!o.tgl||m.tanggal<o.tgl)o.tgl=m.tanggal}
    if(m.tipe==="PENJUALAN")o.jq+=Math.round(num(m.qty));
-   if(m.tipe==="RETUR_PUSAT")o.rq+=Math.round(num(m.qty))});
+   if(m.tipe==="RETUR_PUSAT")o.rq+=Math.round(num(m.qty));
+   const ka0=koreksiAdj(m);if(ka0){o.mq+=ka0[0];o.jq+=ka0[2];o.rq+=ka0[4]}});
   Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];const key=b.sku+"@"+san(b.sumber||"PUSAT");if(!g[key])g[key]={sku:b.sku,sumber:b.sumber,jenis:b.jenis,brand:b.brand,gram:num(b.gram),kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,tgl:"",mq:0,jq:0,rq:0}});
   const rows=Object.keys(g).map(function(k){const o=g[k];const sq=o.mq-o.jq-o.rq;const on=[];let tq=0;
    Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];if(b.loc!=="TERJUAL"&&b.sku+"@"+san(b.sumber||"PUSAT")===k&&num(b.qty)>0)on.push({loc:b.loc,qty:Math.round(num(b.qty))})});
@@ -797,7 +814,8 @@ async function lapData(){const r=rangePeriode(),j=$("rJenis").value,all=DB.movem
   all.forEach(function(m){if(m.jenis!=="LM")return;const key=String(m.brand||"").toUpperCase()+"#"+num(m.gram)+"@"+(m.sumber||"PUSAT");const o=g[key]||(g[key]={brand:m.brand,gram:num(m.gram),sumber:m.sumber||"PUSAT",tgl:"",mq:0,mb:0,jq:0,jb:0,rq:0,rb:0});
    if(["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0){o.mq+=Math.round(num(m.qty));o.mb+=r2(m.berat);if(!o.tgl||m.tanggal<o.tgl)o.tgl=m.tanggal}
    if(m.tipe==="PENJUALAN"){o.jq+=Math.round(num(m.qty));o.jb+=r2(m.berat)}
-   if(m.tipe==="RETUR_PUSAT"){o.rq+=Math.round(num(m.qty));o.rb+=r2(m.berat)}});
+   if(m.tipe==="RETUR_PUSAT"){o.rq+=Math.round(num(m.qty));o.rb+=r2(m.berat)}
+   const ka3=koreksiAdj(m);if(ka3){o.mq+=ka3[0];o.mb=Math.round((o.mb+ka3[1])*100)/100;o.jq+=ka3[2];o.jb=Math.round((o.jb+ka3[3])*100)/100;o.rq+=ka3[4];o.rb=Math.round((o.rb+ka3[5])*100)/100}});
   Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];if(b.jenis!=="LM")return;const key=String(b.brand||"").toUpperCase()+"#"+num(b.gram)+"@"+(b.sumber||"PUSAT");if(!g[key])g[key]={brand:b.brand,gram:num(b.gram),sumber:b.sumber,tgl:"",mq:0,mb:0,jq:0,jb:0,rq:0,rb:0}});
   const rows=Object.keys(g).map(function(k){const o=g[k];const sq=o.mq-o.jq-o.rq,sb=Math.round((o.mb-o.jb-o.rb)*100)/100;const pos=[];
    Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];if(b.loc!=="TERJUAL"&&b.jenis==="LM"&&String(b.brand||"").toUpperCase()+"#"+num(b.gram)+"@"+(b.sumber||"PUSAT")===k&&num(b.qty)>0)pos.push(b.loc+" ("+Math.round(num(b.qty))+")")});
@@ -966,14 +984,15 @@ async function resetSemua(){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
 
 /* ---------- RENDER ---------- */
 function renderAllTables(){renderMutasi();renderJual();renderMasuk();renderRetur()}
-function renderMutasi(){const rows=DB.movements.filter(m=>m.tipe==="MUTASI").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+bb(m.brand)+" "+esc(m.desc)+statusTag(m)+'</td><td>'+esc(fromTo(m))+'<br><span class="muted">'+esc(m.ket||"")+'</span></td><td>'+num(m.qty)+'pcs<br>'+num(m.berat).toFixed(2)+'gr</td></tr>').join("");
- $("tblMutasi").innerHTML='<tr><th>Tgl/User</th><th>Barang</th><th>Rute</th><th>Qty</th></tr>'+(rows||'<tr><td colspan="4" class="muted">Belum ada mutasi</td></tr>')}
-function renderJual(){const rows=DB.movements.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0).slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+(m.jenis==="LM"?bb(m.brand):"💍")+' <b>'+esc(m.tipe)+'</b><br><span class="muted">'+esc(m.desc)+'</span>'+statusTag(m)+'</td><td>'+esc(fromTo(m))+'</td><td>'+num(m.qty)+'pcs '+num(m.berat).toFixed(2)+'gr</td><td>'+esc(m.pembeli||m.pemilik||"")+'</td></tr>').join("");
- $("tblJual").innerHTML='<tr><th>Tgl/User</th><th>Transaksi</th><th>Rute</th><th>Qty</th><th>Pembeli/Pemilik</th></tr>'+(rows||'<tr><td colspan="5" class="muted">Belum ada transaksi</td></tr>')}
-function renderMasuk(){const rows=DB.movements.filter(m=>m.tipe==="MASUK_PUSAT").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+(m.jenis==="LM"?bb(m.brand):"💍")+' <b>'+esc(m.kode)+'</b><br><span class="muted">'+esc(m.desc)+'</span>'+statusTag(m)+'</td><td>'+num(m.qty)+'pcs '+num(m.berat).toFixed(2)+'gr</td></tr>').join("");
- $("tblMasuk").innerHTML='<tr><th>Tgl/User</th><th>Kode/Barang</th><th>Qty</th></tr>'+(rows||'<tr><td colspan="3" class="muted">Belum ada barang masuk</td></tr>')}
-function renderRetur(){const rows=DB.movements.filter(m=>m.tipe==="RETUR_PUSAT").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+esc(m.kode)+'<br><span class="muted">'+esc(m.desc)+'</span></td><td>'+esc(m.sumber)+' • '+num(m.qty)+'pcs</td></tr>').join("");
- $("tblRetur").innerHTML='<tr><th>Tgl/User</th><th>Barang</th><th>Alur</th></tr>'+(rows||'<tr><td colspan="3" class="muted">Belum ada retur</td></tr>')}
+function korBtn(m){return '<button class="chip" onclick="koreksi(\''+esc(m.id)+'\')">↩️ Koreksi</button>'}
+function renderMutasi(){const adm=isAdmin();const rows=DB.movements.filter(m=>m.tipe==="MUTASI"||m.tipe==="KOREKSI").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+bb(m.brand)+" "+esc(m.desc)+(m.tipe==="KOREKSI"?' <span class="tag">KOREKSI</span>':"")+statusTag(m)+'</td><td>'+esc(fromTo(m))+'<br><span class="muted">'+esc(m.ket||"")+'</span></td><td>'+num(m.qty)+'pcs<br>'+num(m.berat).toFixed(2)+'gr</td>'+(adm?'<td>'+korBtn(m)+'</td>':"")+'</tr>').join("");
+ $("tblMutasi").innerHTML='<tr><th>Tgl/User</th><th>Barang</th><th>Rute</th><th>Qty</th>'+(adm?'<th>Aksi</th>':"")+'</tr>'+(rows||'<tr><td colspan="'+(adm?5:4)+'" class="muted">Belum ada mutasi</td></tr>')}
+function renderJual(){const adm=isAdmin();const rows=DB.movements.filter(m=>["PENJUALAN","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0).slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+(m.jenis==="LM"?bb(m.brand):"💍")+' <b>'+esc(m.tipe)+'</b><br><span class="muted">'+esc(m.desc)+'</span>'+statusTag(m)+'</td><td>'+esc(fromTo(m))+'</td><td>'+num(m.qty)+'pcs '+num(m.berat).toFixed(2)+'gr</td><td>'+esc(m.pembeli||m.pemilik||"")+'</td>'+(adm?'<td>'+korBtn(m)+'</td>':"")+'</tr>').join("");
+ $("tblJual").innerHTML='<tr><th>Tgl/User</th><th>Transaksi</th><th>Rute</th><th>Qty</th><th>Pembeli/Pemilik</th>'+(adm?'<th>Aksi</th>':"")+'</tr>'+(rows||'<tr><td colspan="'+(adm?6:5)+'" class="muted">Belum ada transaksi</td></tr>')}
+function renderMasuk(){const adm=isAdmin();const rows=DB.movements.filter(m=>m.tipe==="MASUK_PUSAT").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+(m.jenis==="LM"?bb(m.brand):"💍")+' <b>'+esc(m.kode)+'</b><br><span class="muted">'+esc(m.desc)+'</span>'+statusTag(m)+'</td><td>'+num(m.qty)+'pcs '+num(m.berat).toFixed(2)+'gr</td>'+(adm?'<td>'+korBtn(m)+'</td>':"")+'</tr>').join("");
+ $("tblMasuk").innerHTML='<tr><th>Tgl/User</th><th>Kode/Barang</th><th>Qty</th>'+(adm?'<th>Aksi</th>':"")+'</tr>'+(rows||'<tr><td colspan="'+(adm?4:3)+'" class="muted">Belum ada barang masuk</td></tr>')}
+function renderRetur(){const adm=isAdmin();const rows=DB.movements.filter(m=>m.tipe==="RETUR_PUSAT").slice(0,40).map(m=>'<tr><td>'+esc(m.tanggal)+'<br><span class="muted">'+esc(m.by)+'</span></td><td>'+esc(m.kode)+'<br><span class="muted">'+esc(m.desc)+'</span>'+statusTag(m)+'</td><td>'+esc(m.sumber)+' • '+num(m.qty)+'pcs</td>'+(adm?'<td>'+korBtn(m)+'</td>':"")+'</tr>').join("");
+ $("tblRetur").innerHTML='<tr><th>Tgl/User</th><th>Barang</th><th>Alur</th>'+(adm?'<th>Aksi</th>':"")+'</tr>'+(rows||'<tr><td colspan="'+(adm?4:3)+'" class="muted">Belum ada retur</td></tr>')}
 function refresh(){$("tglHari").textContent=todayStr();$("stUser").textContent=curUser?curUser.nama:"-";
  const p=totSumber("BRANKAS","PUSAT"),b=totSumber("BRANKAS","BUYBACK"),k=totSumber("BRANKAS","KONSINYASI");
  $("brPusat").textContent=p.pcs+" pcs";$("brPusatGr").textContent=p.gr.toFixed(2)+" gr";
@@ -1030,7 +1049,7 @@ function go(p){if(!curUser&&p!=="login")p="login";
  if(p==="mutasi"||p==="jual"||p==="retur"||p==="masuk")refreshPick();
  if(p==="mutasi")paintSetor();
  window.scrollTo({top:0,behavior:"smooth"})}
-function enter(){$("stUser").textContent=curUser.nama;const bo=$("btnOut");if(bo)bo.style.display="inline-block";buildRail();recomputeBalances();paintAll();refresh();go("dash")}
+function enter(){$("stUser").textContent=curUser.nama;const bo=$("btnOut");if(bo)bo.style.display="inline-block";buildRail();recomputeBalances();paintAll();refresh();renderAllTables();go("dash")}
 load();seedAdminSafe();buildRail();
 if($("jBrand"))$("jBrand").addEventListener("change",paintAll);
 if($("mBrand"))$("mBrand").addEventListener("change",paintAll);
