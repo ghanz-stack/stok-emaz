@@ -17,7 +17,8 @@
 <style>
 :root{--bg:#FEF3E2;--card:#FFFDF8;--ink:#2A1A0E;--muted:#7A6350;--amber:#F4AE52;--burnt:#D4621A;--line:#F0DFC8;--radius:18px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0 92px 30px 0}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0 214px 30px 0}
+@media(min-width:681px){.top-in{padding-right:216px}#bannerHari{padding-right:216px}}
 header.top{position:sticky;top:0;z-index:20;background:rgba(254,243,226,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .top-in{max-width:980px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:10px}
 .logo{width:38px;height:38px;border-radius:12px;object-fit:cover;background:#fff;border:1px solid var(--line)}
@@ -25,10 +26,17 @@ header.top{position:sticky;top:0;z-index:20;background:rgba(254,243,226,.93);bac
 .pill{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:11px}
 .dot{width:8px;height:8px;border-radius:50%;background:#E5B25F}.dot.on{background:#3FA34D}
 .sync{padding:5px 10px;border-radius:999px;background:#fff;border:1px solid var(--line);white-space:nowrap}
-nav.rail{position:fixed;right:8px;left:auto;top:50%;transform:translateY(-50%);z-index:30;background:var(--ink);border-radius:20px;padding:7px 6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 10px 26px rgba(42,26,14,.35);max-height:96vh;overflow-y:auto}
-.rail button{border:0;background:none;color:#EAD9C2;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10px;padding:6px 5px;border-radius:13px;cursor:pointer;min-width:62px}
-.rail button i{font-style:normal;font-size:23px}
-.rail button.on{background:var(--amber);color:var(--ink);font-weight:800}
+nav.rail{position:fixed;right:0;top:0;bottom:0;width:202px;z-index:30;display:flex;flex-direction:column;background:linear-gradient(to right,#E9C79B 0%,#7A4E26 13%,#2A1A0E 32%,#211309 100%);padding:16px 12px 12px 24px;overflow-y:auto;box-shadow:-12px 0 30px rgba(42,26,14,.18)}
+.rail-brand{display:flex;align-items:center;gap:10px;padding:2px 6px 14px}
+.rail-brand img{width:40px;height:40px;border-radius:13px;object-fit:cover;border:1px solid rgba(254,243,226,.45)}
+.rail-brand b{display:block;font-size:13px;color:#FEF3E2;line-height:1.25}
+.rail-brand span{font-size:10px;color:#E8C79B}
+#railMenu{display:flex;flex-direction:column;gap:4px}
+.rail button{border:0;background:none;color:#EAD9C2;display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;padding:11px 12px;border-radius:13px;cursor:pointer;width:100%;text-align:left}
+.rail button i{font-style:normal;font-size:20px;width:26px;text-align:center;flex:0 0 26px}
+.rail button:hover{background:rgba(254,243,226,.12)}
+.rail button.on{background:linear-gradient(135deg,#F4AE52,#D4621A);color:#fff;font-weight:800;box-shadow:0 6px 16px rgba(212,98,26,.45)}
+.rail-foot{margin-top:auto;padding-top:12px;border-top:1px solid rgba(234,217,194,.25)}
 .wrap{max-width:980px;margin:0 auto;padding:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:0 6px 18px rgba(212,98,26,.10)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -83,10 +91,16 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 .autostat{background:#FBE3C3;border:1px dashed var(--burnt);border-radius:12px;padding:8px 10px;font-size:12px;margin-top:8px}
 .warn{background:#FFF3CD;border:1px solid #F0C36D;border-radius:12px;padding:10px;font-size:12px}
 @media(max-width:680px){
- body{padding:0 70px 20px 0}
- nav.rail{left:auto;right:0;top:0;bottom:0;transform:none;border-radius:0;padding:8px 4px;flex-direction:column;gap:4px;overflow-x:hidden;overflow-y:auto;max-height:100vh;width:62px}
- .rail button{min-width:0;width:100%;font-size:8px;padding:6px 2px}
- .rail button i{font-size:20px}
+ body{padding:0 68px 16px 0}
+ nav.rail{width:60px;padding:12px 6px 10px 10px}
+ .rail-brand{justify-content:center;padding:0 0 10px}
+ .rail-brand div{display:none}
+ .rail-brand img{width:34px;height:34px}
+ .rail button span{display:none}
+ .rail button{justify-content:center;padding:10px 0}
+ .rail button i{font-size:21px}
+ .rail-foot button span{display:none}
+ .top-in{padding-right:66px}
  .wrap{padding:10px}
  .stat{padding:14px}.stat b{font-size:20px}
  .toast{bottom:24px;font-size:14px}.toast.center{top:40%;font-size:17px}
@@ -115,7 +129,11 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 </div></header>
 <div id="bannerHari" style="display:none" role="alert"></div>
 
-<nav class="rail" id="rail"></nav>
+<nav class="rail" id="rail" aria-label="Menu utama">
+<div class="rail-brand"><img src="./logo-app.jpg" alt="G24"><div><b>G24 Kedaton</b><span>Gudang Stok</span></div></div>
+<div id="railMenu"></div>
+<div class="rail-foot"><button onclick="keluar()" aria-label="Keluar"><i>🚪</i><span>Keluar</span></button></div>
+</nav>
 
 <div class="wrap">
 <div id="pg-login" class="page on"><div class="card login">
@@ -1065,7 +1083,7 @@ function paintAll(){if(!$("chipsJual"))return;
 /* ---------- NAV/BOOT ---------- */
 function pgMap(p){return{dash:"pg-dash",mutasi:"pg-mutasi",jual:"pg-jual",masuk:"pg-masuk",retur:"pg-retur",stok:"pg-stok",lap:"pg-lap",master:"pg-master",user:"pg-user",more:"pg-more",login:"pg-login"}[p]}
 function buildRail(){const items=NAV.filter(n=>n[0]!=="master"&&n[0]!=="user"||isAdmin());
- $("rail").innerHTML=items.map(n=>'<button data-pg="'+n[0]+'" onclick="go(\''+n[0]+'\')"><i>'+n[1]+'</i><span>'+n[2]+'</span></button>').join("")+'<button onclick="keluar()" aria-label="Keluar"><i>🚪</i><span>Keluar</span></button>'}
+ $("railMenu").innerHTML=items.map(n=>'<button data-pg="'+n[0]+'" onclick="go(\''+n[0]+'\')"><i>'+n[1]+'</i><span>'+n[2]+'</span></button>').join("")}
 function go(p){if(!curUser&&p!=="login")p="login";
  if(curUser&&!isAdmin()&&(p==="master"||p==="user")){toast("⛔ Khusus ADMIN","err");return}
  document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".rail button").forEach(x=>{x.classList.remove("on");x.removeAttribute("aria-current")});
