@@ -55,7 +55,15 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 .tbl tr:nth-child(even) td{background:#FFFAF2}
 .page{display:none}.page.on{display:block;animation:fade .2s}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
-.toast{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);background:rgba(42,26,14,.7);color:#FEF3E2;padding:26px 30px;border-radius:22px;font-size:19px;font-weight:800;z-index:60;display:none;max-width:88vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);border:3px solid var(--amber);line-height:1.6}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:rgba(42,26,14,.92);color:#FEF3E2;padding:12px 20px;border-radius:16px;font-size:15px;font-weight:700;z-index:60;display:none;max-width:90vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.3);border:2px solid var(--amber);line-height:1.5}
+.toast.ok{border-color:#3FA34D;background:rgba(31,90,45,.94)}
+.toast.warn{border-color:#E8A100;background:rgba(122,74,0,.94)}
+.toast.err{border-color:#E5484D;background:rgba(122,20,20,.93)}
+.toast.center{left:50%;top:44%;bottom:auto;transform:translate(-50%,-50%);padding:26px 30px;font-size:19px;font-weight:800;border-radius:22px;border-width:3px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+#modalWrap{position:fixed;inset:0;background:rgba(20,10,5,.55);z-index:70;display:none;align-items:center;justify-content:center;padding:16px}
+#modalWrap .modal{background:var(--card);border:1px solid var(--line);border-radius:20px;max-width:540px;width:100%;max-height:88vh;overflow:auto;padding:18px;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+#modalWrap .modal h3{margin:0 0 10px}
+#modalActs{margin-top:14px}
 .card-hi{border:2.5px solid var(--burnt)!important;background:#FFF7EA}
 .tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:#FBE3C3;border:1px solid var(--burnt);margin-left:6px;white-space:nowrap}
 button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible{outline:2.5px solid var(--burnt);outline-offset:2px}
@@ -80,7 +88,7 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
  .rail button i{font-size:22px}
  .wrap{padding:10px}
  .stat{padding:14px}.stat b{font-size:20px}
- .toast{font-size:17px;padding:20px 22px;top:40%}
+ .toast{bottom:124px;font-size:14px}.toast.center{top:40%;font-size:17px}
  table.tbl{font-size:11px}
 }
 #printArea{display:none}
@@ -284,6 +292,7 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 
 <div class="foot">© 2026 GHANZ-STACK(@ghnwldn). SEMUA HAK CIPTA DILINDUNGI UNDANG-UNDANG</div>
 <datalist id="dlBrand"></datalist>
+<div id="modalWrap"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h3 id="modalTitle"></h3><div id="modalBody"></div><div id="modalActs" class="btn-row"></div></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div id="printArea"></div>
 
@@ -314,7 +323,26 @@ async function logo64(){if(LOGO64!==undefined)return LOGO64;LOGO64=null;
  return LOGO64}
 
 /* ---------- UTIL ---------- */
-function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(t._x);t._x=setTimeout(()=>t.style.display="none",2800)}
+function toastType(m){const s=String(m||"");if(/^[⛔⚠️❌🛑]/.test(s))return"err";if(/^[🔒👀]/.test(s))return"warn";if(/^[✨✅☀️🌙⬆️⬇️📥💾🖨️☁️🔄📊🗑️]/.test(s))return"ok";return""}
+function toast(m,type){const t=$("toast");if(!t)return;const ty=type||toastType(m);t.textContent=m;t.className="toast"+(ty?" "+ty:"")+((ty==="err"||ty==="warn")?" center":"");t.style.display="block";clearTimeout(t._x);const ms=Math.min(2500+String(m).length*30,8000);t._x=setTimeout(()=>{t.style.display="none"},ms)}
+function toastCrit(m){openModal({title:"⚠️ Perhatian",body:'<p style="font-size:16px;line-height:1.7">'+esc(m)+'</p>',actions:[{label:"Mengerti",primary:1}]})}
+function openModal(o){$("modalWrap").onclick=null;$("modalTitle").textContent=(o&&o.title)||"";$("modalBody").innerHTML=(o&&o.body)||"";const A=$("modalActs");A.innerHTML="";
+ ((o&&o.actions)||[{label:"Tutup",primary:1}]).forEach(function(a){const b=document.createElement("button");b.className="btn "+(a.primary?"btn-burnt":"btn-ghost");b.textContent=a.label;b.setAttribute("type","button");b.onclick=function(){if(a.onClick)a.onClick();if(!a.keep)closeModal()};A.appendChild(b)});
+ $("modalWrap").style.display="flex";if(o&&o.onOpen)o.onOpen()}
+function closeModal(){try{$("modalWrap").style.display="none";$("modalWrap").onclick=null;$("modalBody").innerHTML=""}catch(e){}}
+function modalSetInput(id,v){const e=$(id);if(e)e.value=v}
+function confirmModal(msg,okLabel){return new Promise(function(res){let done=false;const fin=function(v){if(!done){done=true;res(v)}};
+ openModal({title:"Konfirmasi",body:'<p style="font-size:16px;line-height:1.7">'+esc(msg)+'</p>',actions:[{label:"Batal",onClick:function(){fin(false)}},{label:okLabel||"Ya, lanjutkan",primary:1,onClick:function(){fin(true)}}]});
+ $("modalWrap").onclick=function(e){if(e.target===$("modalWrap")){fin(false);closeModal()}}})}
+function promptModal(title,label,opts){return new Promise(function(res){let done=false;const fin=function(v){if(!done){done=true;res(v)}};
+ const o=opts||{};
+ openModal({title:title,body:'<label>'+esc(label)+'</label><input id="modalInp" type="'+(o.pw?"password":"text")+'"'+(o.numeric?' inputmode="numeric"':"")+' placeholder="'+esc(o.ph||"")+'"'+(o.value?' value="'+esc(o.value)+'"':"")+'">',actions:[{label:"Batal",onClick:function(){fin(null)}},{label:o.ok||"OK",primary:1,onClick:function(){const v=$("modalInp").value;if(o.required&&!String(v).trim()){toast("Wajib diisi","err");return}fin(v)}}]});
+ $("modalWrap").onclick=function(e){if(e.target===$("modalWrap")){fin(null);closeModal()}};
+ setTimeout(function(){const i=$("modalInp");if(i)i.focus()},60)})}
+function resetModal(){return new Promise(function(res){let done=false;const fin=function(v){if(!done){done=true;res(v)}};
+ openModal({title:"🗑️ Reset Data Operasional",body:'<p style="font-size:15px;line-height:1.7">Tindakan ini <b>menghapus</b> saldo, transaksi, sesi & log.<br>Backup, pengaturan, master & database <b>tetap</b>.<br><br>Ketik <b>RESET</b> untuk melanjutkan:</p><input id="modalInp" placeholder="RESET" autocomplete="off">',actions:[{label:"Batal",onClick:function(){fin(false)}},{label:"Ya, Reset",primary:1,keep:true,onClick:function(){if(String($("modalInp").value).trim()==="RESET"){closeModal();fin(true)}else toast("Ketik RESET untuk melanjutkan","err")}}]});
+ $("modalWrap").onclick=function(e){if(e.target===$("modalWrap")){fin(false);closeModal()}};
+ setTimeout(function(){const i=$("modalInp");if(i)i.focus()},60)})}
 function uid(p){return (p||"ID")+"-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase()}
 function todayStr(d){return (d||new Date()).toLocaleDateString("sv-SE")}
 function fmtRp(n){return "Rp "+(Number(n)||0).toLocaleString("id-ID")}
@@ -428,7 +456,7 @@ async function addMasterPH(){const j=String($("msJenis").value).trim().toUpperCa
  if(cloudOK){try{await cloud.collection("master").doc(masterIdPHJ(j)).set({t:"PHJ",jenis:j,at:new Date().toISOString()});
   await cloud.collection("master").doc(masterIdPHK(k)).set({t:"PHK",kadar:k,at:new Date().toISOString()})}catch(e){toast("Gagal simpan master")}}
  addLog("MASTER","PH "+j+" "+k);save();paintAll();renderMaster();toast("Master ditambah 🏷️")}
-async function delMaster(id){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}if(!confirm("Hapus master ini?"))return;
+async function delMaster(id){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}if(!(await confirmModal("Hapus master ini?","Ya, hapus")))return;
  if(cloudOK){try{await cloud.collection("master").doc(id).delete()}catch(e){toast("Gagal hapus master")}}
  DB.master=DB.master.filter(m=>m.id!==id);addLog("MASTER_HAPUS",id);save();paintAll();renderMaster();toast("Master dihapus")}
 function renderMaster(){let h='<tr><th>Master</th><th>Aksi</th></tr>';
@@ -464,13 +492,13 @@ async function tambahUser(){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
  if(cloudOK){try{await cloud.collection("users").doc(id).set(u)}catch(e){}}
  addLog("USER","Daftarkan "+v+" oleh ADMIN");save();renderUsers();$("newUser").value="";$("newPin").value="";toast("User ditambah")}
 async function editUser(nm){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
- const v=prompt("PIN baru untuk "+nm+":");if(v===null)return;if(!v.trim()){toast("PIN tidak valid");return}
+ const v=await promptModal("Ubah PIN","PIN baru untuk "+nm,{numeric:true,required:true,ph:"PIN baru"});if(v===null)return;if(!v.trim()){toast("PIN tidak valid","err");return}
  const u=DB.users.find(x=>x.nama===nm);if(!u)return;u.pin=v.trim();u.at=new Date().toISOString();
  if(cloudOK)try{await cloud.collection("users").doc(u.id||("U#"+san(nm))).set(u)}catch(e){}
  addLog("USER_EDIT","PIN "+nm+" diubah");save();renderUsers();toast("PIN diubah")}
 async function delUser(nm){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
  if(String(nm).toUpperCase()==="ADMIN"){toast("ADMIN tidak bisa dihapus");return}
- if(!confirm("Hapus user "+nm+"?"))return;
+ if(!(await confirmModal("Hapus user "+nm+"?","Ya, hapus")))return;
  const u=DB.users.find(x=>x.nama===nm);
  if(cloudOK&&u)try{await cloud.collection("users").doc(u.id||("U#"+san(nm))).delete()}catch(e){}
  DB.users=DB.users.filter(x=>x.nama!==nm);addLog("USER_HAPUS",nm);save();renderUsers();toast("User dihapus")}
@@ -489,23 +517,29 @@ async function bukaHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.t
  addLog("BUKA_HARI",t);save();refresh();toast("☀️ Hari dibuka");
  if(cloudOK)cloud.collection("sessions").doc(t).set(o,{merge:true}).catch(function(e){console.log("sessions set:",e);toast("⚠️ Hari dibuka lokal — cloud ditolak")});
 }catch(e){console.log(e);toast("⚠️ Gagal buka hari: "+((e&&e.message)||e))}}
+function opSelisih(){["BRANKAS","ETALASE","BAZAR"].forEach(function(l){const s=totLoc(l);const v=num(($("op_"+l)||{}).value,s.pcs);const d=$("ops_"+l);if(d){const sl=v-s.pcs;d.textContent=(sl>0?"+":"")+sl+" pcs";d.style.color=sl===0?"#3FA34D":"#B3261E"}})}
 async function tutupHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.tanggal===t);
- if(!s||s.status!=="BUKA"){toast("Buka hari dulu");return}
+ if(!s||s.status!=="BUKA"){toast("Buka hari dulu","warn");return}
  const sisaD={ETALASE:0,BAZAR:0};Object.keys(DB.balances).forEach(function(k){const b=DB.balances[k];if(num(b.qty)>0&&(b.loc==="ETALASE"||b.loc==="BAZAR"))sisaD[b.loc]+=num(b.qty)});
- if(sisaD.ETALASE+sisaD.BAZAR>0){toast("⛔ TIDAK BISA TUTUP HARI — masih ada barang di display (Etalase "+sisaD.ETALASE+" pcs, Bazar "+sisaD.BAZAR+" pcs) yang belum dimutasikan ke Brankas. Setor dulu via Mutasi Barang Ke Brankas.");go("mutasi");return}
- const sistem={},fisik={},selisih={};
- ["BRANKAS","ETALASE","BAZAR"].forEach(function(l){sistem[l]=totLoc(l)});
- for(let i=0;i<3;i++){const l=["BRANKAS","ETALASE","BAZAR"][i];
-  const v=prompt("Opname "+l+"\nSistem: "+sistem[l].pcs+" pcs / "+sistem[l].gr.toFixed(2)+" gr\nMasukkan jumlah FISIK (pcs):",String(sistem[l].pcs));
-  if(v===null)return;fisik[l]={pcs:num(v)};selisih[l]=num(v)-sistem[l].pcs}
+ if(sisaD.ETALASE+sisaD.BAZAR>0){toastCrit("TIDAK BISA TUTUP HARI — masih ada barang di display (Etalase "+sisaD.ETALASE+" pcs, Bazar "+sisaD.BAZAR+" pcs) yang belum dimutasikan ke Brankas. Setor dulu via Mutasi Barang Ke Brankas.");go("mutasi");return}
+ const sys={};["BRANKAS","ETALASE","BAZAR"].forEach(function(l){sys[l]=totLoc(l)});
+ openModal({title:"🌙 Opname Tutup Hari — "+t,body:'<p class="muted">Cek fisik per lokasi. Selisih dihitung live (pcs).</p><div style="overflow:auto"><table class="tbl"><tr><th>Lokasi</th><th>Sistem</th><th>Fisik (pcs)</th><th>Fisik (gr)</th><th>Selisih</th></tr>'+
+  ["BRANKAS","ETALASE","BAZAR"].map(l=>'<tr><td><b>'+l+'</b></td><td>'+sys[l].pcs+' pcs<br><span class="muted">'+sys[l].gr.toFixed(2)+' gr</span></td><td><input id="op_'+l+'" type="number" inputmode="numeric" value="'+sys[l].pcs+'" oninput="opSelisih()"></td><td><input id="opg_'+l+'" type="number" inputmode="decimal" step="0.01" placeholder="'+sys[l].gr.toFixed(2)+'"></td><td id="ops_'+l+'">0 pcs</td></tr>').join("")+'</table></div>',
+  actions:[{label:"Batal"},{label:"Simpan & Tutup Hari",primary:1,onClick:function(){const f={};["BRANKAS","ETALASE","BAZAR"].forEach(function(l){f[l]={pcs:num(($("op_"+l)||{}).value,sys[l].pcs),gr:num(($("opg_"+l)||{}).value,sys[l].gr)}});tutupHariDo(f)}}],
+  onOpen:opSelisih})}
+catch(e){console.log(e);toast("⚠️ Gagal tutup hari: "+((e&&e.message)||e),"err")}}
+async function tutupHariDo(fisik){try{const t=todayStr();const s=DB.sessions.find(x=>x.tanggal===t);
+ if(!s||s.status!=="BUKA"){toast("Buka hari dulu","warn");return}
+ const sistem={},selisih={};
+ ["BRANKAS","ETALASE","BAZAR"].forEach(function(l){sistem[l]=totLoc(l);selisih[l]=num(fisik[l].pcs)-sistem[l].pcs});
  const smp={id:s.id||t,tanggal:t,status:"TUTUP",bukaOleh:s.bukaOleh,bukaAt:s.bukaAt,tutupOleh:curUser?curUser.nama:"-",tutupAt:new Date().toISOString(),sistem:sistem,fisik:fisik,selisih:selisih,snapshot:DB.balances};
  DB.sessions=DB.sessions.map(x=>x.tanggal===t?smp:x);
  addLog("TUTUP_HARI",t+" • selisih "+JSON.stringify(selisih));save();refresh();
  if(cloudOK)cloud.collection("sessions").doc(t).set(noUndef(smp),{merge:true}).catch(function(e){console.log("sessions set:",e)});
  backupCloud(true);
  const tot=Object.keys(selisih).reduce((a,k)=>a+selisih[k],0);
- toast(tot===0?"🌙 Tutup hari • opname COCOK":"🌙 Tutup hari • selisih "+tot+" pcs")}
-catch(e){console.log(e);toast("⚠️ Gagal tutup hari: "+((e&&e.message)||e))}}
+ toast(tot===0?"🌙 Tutup hari • opname COCOK":"🌙 Tutup hari • selisih "+tot+" pcs","ok")}
+catch(e){console.log(e);toast("⚠️ Gagal tutup hari: "+((e&&e.message)||e),"err")}}
 
 /* ---------- PICKERS ---------- */
 function fillSel(id,arr){const el=$(id);if(!el)return;const cur=el.value;el.innerHTML=arr.map(v=>'<option>'+esc(v)+'</option>').join("");if(arr.map(String).indexOf(String(cur))>=0)el.value=cur}
@@ -877,7 +911,7 @@ async function renderBackups(){if(!$("listBackup"))return;if(!cloudOK){$("listBa
   s.forEach(function(d){const b=d.data();h+='<div class="kv"><span>'+esc(String(b.at).slice(0,16).replace("T"," "))+" • "+esc(b.by)+" • "+((b.data.movements||[]).length)+' mutasi</span><button class="chip" onclick="restoreBackup(\''+d.id+'\')">Restore</button></div>'});
   $("listBackup").innerHTML=h||'<span class="muted">Belum ada backup cloud</span>'}catch(e){$("listBackup").innerHTML='<span class="muted">⚠️ Tak bisa baca backup — Publish firestore.rules</span>'}}
 async function restoreBackup(id){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
- if(!confirm("Restore snapshot ini? Saldo & ledger cloud akan ditimpa."))return;
+ if(!(await confirmModal("Restore snapshot ini? Saldo & ledger cloud akan ditimpa.","Ya, restore")))return;
  const d=await cloud.collection("backups").doc(id).get();const b=d.data().data;
  toast("Restore hanya memuat ke layar — memuat ulang…");
  DB.movements=b.movements||[];DB.sessions=b.sessions||[];DB.logs=b.logs||[];DB.users=b.users||[];DB.master=b.master||[];save();
@@ -887,8 +921,7 @@ async function unduhBackupCloud(){if(!cloudOK){toast("Cloud belum tersambung");r
  const a=[];s.forEach(d=>a.push(Object.assign({id:d.id},d.data())));
  const b=new Blob([JSON.stringify(a,null,2)],{type:"application/json"});const x=document.createElement("a");x.href=URL.createObjectURL(b);x.download="backup-cloud-g24kedaton.json";x.click();addLog("BACKUP_UNDUH",a.length+" snapshot");toast("☁️ Backup cloud diunduh")}
 async function resetSemua(){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
- if(!confirm("RESET DATA OPERASIONAL?\nDihapus: saldo, transaksi, sesi, log.\nDIPERTAHANKAN: backup, pengaturan, master, serta database/Firebase."))return;
- if(!confirm("Konfirmasi terakhir: lanjutkan reset data operasional?"))return;
+ if(!(await resetModal()))return;
  toast("🗑️ Menghapus data operasional…");
  if(cloudOK){const cols=["movements","balances","sessions","logs"];
   for(let c=0;c<cols.length;c++){for(let guard=0;guard<20;guard++){
