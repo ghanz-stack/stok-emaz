@@ -283,6 +283,8 @@ function todayStr(d){return (d||new Date()).toLocaleDateString("sv-SE")}
 function fmtRp(n){return "Rp "+(Number(n)||0).toLocaleString("id-ID")}
 function num(v,d){const n=Number(v);return isFinite(n)?n:(d||0)}
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function clean(o){const r={};if(!o)return r;Object.keys(o).forEach(function(k){const v=o[k];if(v!==undefined)r[k]=(v===null?"":v)});return r}
+function noUndef(o){return JSON.parse(JSON.stringify(o,(k,v)=>v===undefined?"":v))}
 function san(s){return String(s==null?"":s).trim().toUpperCase().replace(/[^A-Z0-9\-_]/g,"_")}
 function isExt(loc){return !loc||loc==="PUSAT_EXT"||loc==="EXT"}
 function bkey(sku,sumber,loc){return sku+"@"+san(sumber)+"@"+loc}
@@ -299,7 +301,7 @@ function seedAdminSafe(){if(!DB.users.find(x=>String(x.nama).toUpperCase()==="AD
    SERVER_BAL = saldo dari cloud (satu-satunya kebenaran).
    outbox (belum terkirim) + confirming (sudah dikirim, snapshot belum tiba)
    ditambahkan di atasnya. Tidak pernah replay log penuh, tidak ada limit(500). */
-function metaOf(mv,loc,sumber){return {sku:mv.sku,sumber:sumber,loc:loc,jenis:mv.jenis,brand:mv.brand,gram:num(mv.gram),kadar:mv.kadar,jenisPH:mv.jenisPH,kode:mv.kode,desc:mv.desc,nonResale:!!mv.nonResale,at:mv.ts}}
+function metaOf(mv,loc,sumber){return {sku:mv.sku,sumber:sumber,loc:loc,jenis:mv.jenis,brand:mv.brand||"—",gram:num(mv.gram),kadar:mv.kadar||"",jenisPH:mv.jenisPH||"",kode:mv.kode||"—",desc:mv.desc||"",nonResale:!!mv.nonResale,at:mv.ts}}
 function effectsOf(mv){const out=[];const q=num(mv.qty),b=num(mv.berat);
  if(mv.from&&!isExt(mv.from.loc))out.push([bkey(mv.sku,mv.from.sumber,mv.from.loc),-q,-b,metaOf(mv,mv.from.loc,mv.from.sumber)]);
  if(mv.to&&!isExt(mv.to.loc))out.push([bkey(mv.sku,mv.to.sumber,mv.to.loc),q,b,metaOf(mv,mv.to.loc,mv.to.sumber)]);
@@ -341,8 +343,8 @@ async function txPost(mv){const eff=effectsOf(mv);
   for(let i=0;i<eff.length;i++){const k=eff[i][0];if(!refs[k]){refs[k]=cloud.collection("balances").doc(k);snaps[k]=await tx.get(refs[k])}}
   for(let i=0;i<eff.length;i++){const k=eff[i][0],dq=eff[i][1];const cur=snaps[k].exists?num(snaps[k].data().qty):0;if(cur+dq<0)throw new Error("Stok kurang di "+k)}
   for(let i=0;i<eff.length;i++){const k=eff[i][0],dq=eff[i][1],db=eff[i][2],meta=eff[i][3];const prev=snaps[k].exists?snaps[k].data():{};
-   tx.set(refs[k],Object.assign({},meta,{qty:num(prev.qty)+dq,berat:num(prev.berat)+db,at:new Date().toISOString()}),{merge:true})}
-  tx.set(mref,mv)})}
+   tx.set(refs[k],clean(Object.assign({},meta,{qty:num(prev.qty)+dq,berat:num(prev.berat)+db,at:new Date().toISOString()})),{merge:true})}
+  tx.set(mref,clean(mv))})}
 async function post(mv){
  if(!hariBuka()){toast("🔒 Buka Hari dulu sebelum mencatat transaksi");return false}
  mv.id=mv.id||uid("MV");mv.ts=new Date().toISOString();mv.tanggal=mv.tanggal||todayStr();mv.by=curUser?curUser.nama:"-";
@@ -454,7 +456,7 @@ async function tutupHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.
  const smp={id:s.id||t,tanggal:t,status:"TUTUP",bukaOleh:s.bukaOleh,bukaAt:s.bukaAt,tutupOleh:curUser?curUser.nama:"-",tutupAt:new Date().toISOString(),sistem:sistem,fisik:fisik,selisih:selisih,snapshot:DB.balances};
  DB.sessions=DB.sessions.map(x=>x.tanggal===t?smp:x);
  addLog("TUTUP_HARI",t+" • selisih "+JSON.stringify(selisih));save();refresh();
- if(cloudOK)cloud.collection("sessions").doc(t).set(smp,{merge:true}).catch(function(e){console.log("sessions set:",e)});
+ if(cloudOK)cloud.collection("sessions").doc(t).set(noUndef(smp),{merge:true}).catch(function(e){console.log("sessions set:",e)});
  backupCloud(true);
  const tot=Object.keys(selisih).reduce((a,k)=>a+selisih[k],0);
  toast(tot===0?"🌙 Tutup hari • opname COCOK":"🌙 Tutup hari • selisih "+tot+" pcs")}
@@ -684,7 +686,7 @@ async function pullManual(){if(!cloudOK){toast("Cloud belum tersambung");return}
  catch(e){toast("Gagal tarik — cek koneksi & Rules")}}
 async function hardRefresh(){toast("Membersihkan cache…");try{if("serviceWorker"in navigator){const r=await navigator.serviceWorker.getRegistrations();for(let i=0;i<r.length;i++)await r[i].unregister()}const ks=await caches.keys();for(let i=0;i<ks.length;i++)await caches.delete(ks[i])}catch(e){}location.reload()}
 async function backupCloud(silent){if(!cloudOK){if(!silent)toast("Cloud belum tersambung");return}
- const snap={by:curUser?curUser.nama:"-",at:new Date().toISOString(),tanggal:todayStr(),data:{balances:DB.balances,movements:DB.movements.slice(0,2000),sessions:DB.sessions,logs:DB.logs.slice(0,100),users:DB.users,master:DB.master}};
+ const snap=noUndef({by:curUser?curUser.nama:"-",at:new Date().toISOString(),tanggal:todayStr(),data:{balances:DB.balances,movements:DB.movements.slice(0,2000),sessions:DB.sessions,logs:DB.logs.slice(0,100),users:DB.users,master:DB.master}});
  try{await cloud.collection("backups").add(snap)}catch(e){if(!silent)toast("☁️ Backup gagal — Publish firestore.rules");return}
  if(!silent){addLog("BACKUP_CLOUD","Snapshot "+todayStr());renderBackups();toast("☁️ Backup cloud tersimpan")}}
 async function renderBackups(){if(!$("listBackup"))return;if(!cloudOK){$("listBackup").innerHTML='<span class="muted">Sambungkan Firebase dulu untuk backup cloud.</span>';return}
