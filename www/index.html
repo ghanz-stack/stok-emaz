@@ -248,6 +248,7 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 <div id="boxHarian" style="margin-top:8px"><label>Tanggal</label><input type="date" id="rHari" onchange="renderLaporan()"></div>
 <div class="grid2" id="boxRange" style="display:none;margin-top:8px"><div><label>Dari</label><input type="date" id="rDari" onchange="renderLaporan()"></div><div><label>Sampai</label><input type="date" id="rSampai" onchange="renderLaporan()"></div></div>
 <div id="boxBrandF" style="display:none;margin-top:8px"><label>Brand</label><select id="rBrand" onchange="renderLaporan()"><option value="ALL">Semua</option><option value="ANTAM">ANTAM</option><option value="UBS">UBS</option><option value="G24">G24</option><option value="PERHIASAN">Perhiasan</option></select></div>
+<div class="chips" style="margin-top:8px"><button class="chip" onclick="setPer('today')">Hari ini</button><button class="chip" onclick="setPer('yesterday')">Kemarin</button><button class="chip" onclick="setPer('week')">7 Hari</button><button class="chip" onclick="setPer('month')">Bulan ini</button><button class="chip" onclick="setPer('all')">Semua</button></div>
 <div style="height:10px"></div>
 <div class="btn-row"><button class="btn btn-dark" onclick="eksporExcel()">📊 Excel</button><button class="btn btn-burnt" onclick="eksporPDF()">📄 PDF</button><button class="btn btn-ghost" onclick="cetakA4()">🖨️ A4</button></div></div>
 <div class="card" style="margin-top:10px"><div id="lapOut"></div></div>
@@ -739,6 +740,14 @@ function renderStok(){$("chipsStok").innerHTML=LOCS.map(t=>'<button class="chip 
 
 /* ---------- LAPORAN ---------- */
 function paintPeriode(){const p=$("rPeriode").value;$("boxHarian").style.display=p==="harian"?"block":"none";$("boxRange").style.display=p==="custom"?"grid":"none";renderLaporan()}
+function setPer(p){const t=new Date();const f=function(d){return d.toLocaleDateString("sv-SE")};
+ if(p==="all"){$("rPeriode").value="semua"}
+ else{$("rPeriode").value="custom";
+  if(p==="today"){$("rDari").value=f(t);$("rSampai").value=f(t)}
+  else if(p==="yesterday"){const y=new Date(t.getTime()-86400000);$("rDari").value=f(y);$("rSampai").value=f(y)}
+  else if(p==="week"){const w=new Date(t.getTime()-6*86400000);$("rDari").value=f(w);$("rSampai").value=f(t)}
+  else if(p==="month"){$("rDari").value=f(t).slice(0,7)+"-01";$("rSampai").value=f(t)}}
+ paintPeriode()}
 function paintJenis(){$("boxBrandF").style.display=$("rJenis").value==="mbrand"?"block":"none";renderLaporan()}
 function rangePeriode(){const p=$("rPeriode").value;let dari,sampai,label=p.toUpperCase();
  if(p==="custom"){dari=$("rDari").value||todayStr();sampai=$("rSampai").value||todayStr()}
@@ -751,14 +760,16 @@ async function fetchMov(r){if(!cloudOK)return DB.movements.filter(m=>m.tanggal>=
  catch(e){toast("Tarik data laporan gagal — pakai cache lokal");return DB.movements.filter(m=>m.tanggal>=r.dari&&m.tanggal<=r.sampai)}}
 function isDisplayLoc(l){return l==="ETALASE"||l==="BAZAR"}
 function arusBrands(rows){const s={};rows.forEach(function(m){if(m.jenis==="LM"&&m.brand)s[String(m.brand).toUpperCase()]=1});return Object.keys(s).sort()}
-function arusDataBrand(rows,brand){const gs={};rows.forEach(function(m){if(m.jenis==="LM"&&String(m.brand||"").toUpperCase()===brand&&num(m.gram)>0)gs[num(m.gram)]=1});
+function arusDataBrand(rows,brand){const gs={};const lmRows=rows.filter(m=>m.jenis==="LM"&&String(m.brand||"").toUpperCase()===brand);
+ lmRows.forEach(function(m){if(num(m.gram)>0)gs[num(m.gram)]=1});
+ const first=lmRows.reduce((a,m)=>{const t=String(m.tanggal||"");if(!t)return a;return !a||t<a?t:a},"");
  const COLS=ARUS_COLS.concat(Object.keys(gs).map(Number).filter(g=>ARUS_COLS.indexOf(g)<0)).sort((a,b)=>a-b);
  const z=function(){const o={};COLS.forEach(c=>o[c]=0);return o};
  const awal=z(),tamb=z(),jual=z(),buy=z(),kons=z(),setor=z();
  rows.forEach(function(m){if(m.jenis!=="LM"||String(m.brand||"").toUpperCase()!==brand)return;const g=num(m.gram);if(!(g>0))return;
   const toLoc=m.to&&m.to.loc,fromLoc=m.from&&m.from.loc;
   const isMut=m.tipe==="MUTASI"||m.tipe==="KOREKSI";
-  if(isMut&&fromLoc==="BRANKAS"&&isDisplayLoc(toLoc)){if(m.ket==="SALDO PAGI")awal[g]+=num(m.qty);else tamb[g]+=num(m.qty)}
+  if(isMut&&fromLoc==="BRANKAS"&&isDisplayLoc(toLoc)){if(m.ket==="SALDO PAGI"&&String(m.tanggal||"")===first)awal[g]+=num(m.qty);else tamb[g]+=num(m.qty)}
   else if(m.tipe==="MASUK_PUSAT"&&isDisplayLoc(toLoc))tamb[g]+=num(m.qty);
   else if(m.tipe==="PENJUALAN"&&isDisplayLoc(fromLoc))jual[g]+=num(m.qty);
   else if(m.tipe==="BUYBACK_MASUK"&&isDisplayLoc(toLoc))buy[g]+=num(m.qty);
@@ -813,7 +824,7 @@ async function lapData(){const r=rangePeriode(),j=$("rJenis").value,all=DB.movem
    if(m.tipe==="RETUR_PUSAT")o.rq+=Math.round(num(m.qty));
    const ka0=koreksiAdj(m);if(ka0){o.mq+=ka0[0];o.jq+=ka0[2];o.rq+=ka0[4]}});
   Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];const key=b.sku+"@"+san(b.sumber||"PUSAT");if(!g[key])g[key]={sku:b.sku,sumber:b.sumber,jenis:b.jenis,brand:b.brand,gram:num(b.gram),kadar:b.kadar,jenisPH:b.jenisPH,kode:b.kode,tgl:"",mq:0,jq:0,rq:0}});
-  const rows=Object.keys(g).map(function(k){const o=g[k];const sq=o.mq-o.jq-o.rq;const on=[];let tq=0;
+  const rows=Object.keys(g).filter(k=>{const o=g[k];return !o.tgl||(o.tgl>=r.dari&&o.tgl<=r.sampai)}).map(function(k){const o=g[k];const sq=o.mq-o.jq-o.rq;const on=[];let tq=0;
    Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];if(b.loc!=="TERJUAL"&&b.sku+"@"+san(b.sumber||"PUSAT")===k&&num(b.qty)>0)on.push({loc:b.loc,qty:Math.round(num(b.qty))})});
    let pos;
    if(!on.length){const t=[];if(o.jq>0)t.push("Terjual");if(o.rq>0)t.push("Retur");pos=t.join(", ")||"-"}
@@ -821,7 +832,7 @@ async function lapData(){const r=rangePeriode(),j=$("rJenis").value,all=DB.movem
    const nm=o.jenis==="LM"?((o.brand||"")+" "+num(o.gram)+"gr"):((o.jenisPH||"")+" "+(o.kadar||"")+" "+num(o.gram)+"gr");
    return[nm,o.brand&&o.brand!=="-"?o.brand:"-",num(o.gram)+" gr",o.jenis==="LM"?(o.kadar||"24K"):(o.kadar||"-"),o.kode&&o.kode!=="-"?o.kode:"-",o.tgl||"",o.mq,o.jq,sq,pos,o.sumber]})
    .sort(function(a,b){return String(a[0]).localeCompare(String(b[0]))});
-  return finalizeLap("LAPORAN STOK",["Nama Barang","Brand","Gramasi","Kadar","Kode Barang","Tgl Masuk","Masuk (Pcs)","Terjual (Pcs)","Sisa (Pcs)","Lokasi / Posisi Stok","Status"],rows,{dari:"AWAL",sampai:todayStr(),label:"POSISI"},true)}
+  return finalizeLap("LAPORAN STOK",["Nama Barang","Brand","Gramasi","Kadar","Kode Barang","Tgl Masuk","Masuk (Pcs)","Terjual (Pcs)","Sisa (Pcs)","Lokasi / Posisi Stok","Status"],rows,r,true)}
  if(j==="kategori"){const g={};flt.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0).forEach(m=>{g[m.sumber]=g[m.sumber]||{pcs:0,gr:0};g[m.sumber].pcs+=Math.round(num(m.qty));g[m.sumber].gr+=r2(m.berat)});
   return finalizeLap("REKAP PER SUMBER",["Periode","Sumber (Status)","Masuk (pcs)","Masuk (gr)"],Object.keys(g).map(k=>[r.dari+" → "+r.sampai,k,g[k].pcs,g[k].gr]),r,false)}
  if(j==="jenis"){const g={};flt.filter(m=>["MASUK_PUSAT","BUYBACK_MASUK","KONSINYASI_MASUK"].indexOf(m.tipe)>=0).forEach(m=>{const k=m.jenis+"@"+(m.sumber||"-");g[k]=g[k]||{jenis:m.jenis,sumber:m.sumber||"-",pcs:0,gr:0};g[k].pcs+=Math.round(num(m.qty));g[k].gr+=r2(m.berat)});
@@ -834,12 +845,12 @@ async function lapData(){const r=rangePeriode(),j=$("rJenis").value,all=DB.movem
    if(m.tipe==="RETUR_PUSAT"){o.rq+=Math.round(num(m.qty));o.rb+=r2(m.berat)}
    const ka3=koreksiAdj(m);if(ka3){o.mq+=ka3[0];o.mb=Math.round((o.mb+ka3[1])*100)/100;o.jq+=ka3[2];o.jb=Math.round((o.jb+ka3[3])*100)/100;o.rq+=ka3[4];o.rb=Math.round((o.rb+ka3[5])*100)/100}});
   Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];if(b.jenis!=="LM")return;const key=String(b.brand||"").toUpperCase()+"#"+num(b.gram)+"@"+(b.sumber||"PUSAT");if(!g[key])g[key]={brand:b.brand,gram:num(b.gram),sumber:b.sumber,tgl:"",mq:0,mb:0,jq:0,jb:0,rq:0,rb:0}});
-  const rows=Object.keys(g).map(function(k){const o=g[k];const sq=o.mq-o.jq-o.rq,sb=Math.round((o.mb-o.jb-o.rb)*100)/100;const pos=[];
+  const rows=Object.keys(g).filter(k=>{const o=g[k];return !o.tgl||(o.tgl>=r.dari&&o.tgl<=r.sampai)}).map(function(k){const o=g[k];const sq=o.mq-o.jq-o.rq,sb=Math.round((o.mb-o.jb-o.rb)*100)/100;const pos=[];
    Object.keys(DB.balances).forEach(function(id){const b=DB.balances[id];if(b.loc!=="TERJUAL"&&b.jenis==="LM"&&String(b.brand||"").toUpperCase()+"#"+num(b.gram)+"@"+(b.sumber||"PUSAT")===k&&num(b.qty)>0)pos.push(b.loc+" ("+Math.round(num(b.qty))+")")});
    if(o.jq>0)pos.push("Terjual ("+o.jq+")");if(o.rq>0)pos.push("Retur ("+o.rq+")");
    return[o.brand,num(o.gram),o.tgl||"",o.mq,o.mb,o.jq,o.jb,sq,sb,pos.join(", ")||"-",o.sumber]})
    .sort(function(a,b){return String(a[0]).localeCompare(String(b[0]))||num(a[1])-num(b[1])});
-  return finalizeLap("SISA STOK LOGAM MULIA",["Brand","Gramasi (gr)","Tgl Masuk","Masuk (pcs)","Masuk (gr)","Terjual (pcs)","Terjual (gr)","Sisa (pcs)","Sisa (gr)","Posisi","Status"],rows,{dari:"AWAL",sampai:todayStr(),label:"POSISI"},true)}
+  return finalizeLap("SISA STOK LOGAM MULIA",["Brand","Gramasi (gr)","Tgl Masuk","Masuk (pcs)","Masuk (gr)","Terjual (pcs)","Terjual (gr)","Sisa (pcs)","Sisa (gr)","Posisi","Status"],rows,r,true)}
  return finalizeLap("SELISIH & TUTUP HARI",["Tanggal","Status","Sistem","Selisih","User"],DB.sessions.filter(s=>s.tanggal>=r.dari&&s.tanggal<=r.sampai).map(s=>[s.tanggal,s.status,s.sistem?Object.keys(s.sistem).map(k=>k+":"+s.sistem[k].pcs).join(" "):"-",s.selisih?Object.keys(s.selisih).map(k=>k+" "+s.selisih[k]).join(" "):"-",s.tutupOleh||s.bukaOleh||"-"]),r,false)}
 function isResaleLoc(l){return l==="BRANKAS"||l==="ETALASE"||l==="BAZAR"}
 function arusHead(cols){return '<tr><th rowspan="2">Uraian</th><th colspan="'+cols.length+'" style="text-align:center">DENOMINASI</th></tr><tr>'+cols.map(c=>'<th style="background:#FFE699">'+c+' GR</th>').join("")+'</tr>'}
@@ -908,7 +919,8 @@ function eksporPDF(){if(typeof window.jspdf==="undefined"){toast("PDF butuh inte
  const go=async function(){const{jsPDF}=window.jspdf;const j=$("rJenis").value,r=rangePeriode();
   const by=curUser?curUser.nama:"-",now=new Date().toLocaleString("id-ID");
   const lg=await logo64();
-  const TBL={styles:{fontSize:9,cellPadding:2,lineWidth:.5,lineColor:[40,26,14],textColor:[0,0,0],valign:"middle",halign:"center"},headStyles:{fillColor:[212,98,26],textColor:255,fontStyle:"bold",lineWidth:.5,lineColor:[40,26,14],halign:"center"},alternateRowStyles:{fillColor:[255,250,242]},margin:{top:32,left:8,right:8}};
+  const tblStyle=function(fs){return{styles:{fontSize:fs,cellPadding:1.5,lineWidth:.5,lineColor:[40,26,14],textColor:[0,0,0],valign:"middle",halign:"center"},headStyles:{fillColor:[212,98,26],textColor:255,fontStyle:"bold",lineWidth:.5,lineColor:[40,26,14],halign:"center"},alternateRowStyles:{fillColor:[255,250,242]},margin:{top:32,left:8,right:8}}};
+  const totStyle=function(n){return{didParseCell:function(c){if(c.section==="body"&&c.row.index===n){c.cell.styles.fontStyle="bold";c.cell.styles.fillColor=[251,227,195]}}}};
   const kop=function(d,title,sub){if(lg){try{d.addImage(lg,lg.indexOf("data:image/jpeg")===0?"JPEG":"PNG",12,8,38,12)}catch(e){}}
    d.setFont("helvetica","bold");d.setFontSize(13);d.text("GUDANG STOK G24 KEDATON",54,14);
    d.setFont("helvetica","normal");d.setFontSize(10);d.text(title,54,20);
@@ -920,13 +932,13 @@ function eksporPDF(){if(typeof window.jspdf==="undefined"){toast("PDF butuh inte
    bs.forEach(function(b){const a=arusDataBrand(rows,b);
     if(y>240){d.addPage();y=20}
     d.setFont("helvetica","bold");d.setFontSize(11);d.text("BRAND: "+b,14,y);d.setFont("helvetica","normal");y+=3;
-    d.autoTable(Object.assign({startY:y,head:[[{content:"Uraian",rowSpan:2},{content:"DENOMINASI (GR)",colSpan:a.cols.length,styles:{halign:"center"}}],a.cols.map(c=>String(c))],body:a.rows.map(x=>[x.label].concat(a.cols.map(c=>x.vals[c]||"")))},TBL));
+    d.autoTable(Object.assign({startY:y,head:[[{content:"Uraian",rowSpan:2},{content:"DENOMINASI (GR)",colSpan:a.cols.length,styles:{halign:"center"}}],a.cols.map(c=>String(c))],body:a.rows.map(x=>[x.label].concat(a.cols.map(c=>x.vals[c]||"")))},tblStyle(8)));
     y=d.lastAutoTable.finalY+9});
    kaki(d);d.save("G24Kedaton_ARUS.pdf");addLog("EXPORT","ARUS PDF");return}
-  const dd=await lapData();const d=new jsPDF({orientation:dd.wide?"landscape":"portrait",format:"a4"});
+  const dd=await lapData();const d=new jsPDF({orientation:"portrait",format:"a4"});
   kop(d,dd.title,dd.r.dari+" s/d "+dd.r.sampai+" • "+dd.rows.length+" baris");
   const show=dd.rows.slice(0,500).concat(dd.total?[dd.total]:[]);
-  d.autoTable(Object.assign({startY:33,head:[dd.cols],body:show},TBL));
+  d.autoTable(Object.assign({startY:33,head:[dd.cols],body:show},tblStyle(dd.cols.length>10?8:9),totStyle(show.length-1)));
   if(dd.rows.length>500){d.setFontSize(8);d.text("(ditampilkan 500 dari "+dd.rows.length+" baris — pakai Export XLSX untuk lengkap)",14,d.lastAutoTable.finalY+7)}
   kaki(d);d.save("G24Kedaton_"+j.toUpperCase()+".pdf");addLog("EXPORT","PDF "+dd.rows.length+" baris")};
  go()}
