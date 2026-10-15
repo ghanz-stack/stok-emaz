@@ -18,15 +18,11 @@
 :root{--bg:#FEF3E2;--card:#FFFDF8;--ink:#2A1A0E;--muted:#7A6350;--amber:#F4AE52;--burnt:#D4621A;--line:#F0DFC8;--radius:18px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0 214px 30px 0}
-@media(min-width:681px){.top-in{padding-right:216px}#bannerHari{padding-right:216px}}
-header.top{position:sticky;top:0;z-index:20;background:rgba(254,243,226,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.top-in{max-width:980px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:10px}
-.logo{width:38px;height:38px;border-radius:12px;object-fit:cover;background:#fff;border:1px solid var(--line)}
-.app-t b{font-size:14px}.app-t span{font-size:11px;color:var(--muted)}
-.pill{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:11px}
-.dot{width:8px;height:8px;border-radius:50%;background:#E5B25F}.dot.on{background:#3FA34D}
-.sync{padding:5px 10px;border-radius:999px;background:#fff;border:1px solid var(--line);white-space:nowrap}
-nav.rail{position:fixed;right:0;top:0;bottom:0;width:202px;z-index:30;display:flex;flex-direction:column;background:linear-gradient(to right,#E9C79B 0%,#7A4E26 13%,#2A1A0E 32%,#211309 100%);padding:16px 12px 12px 24px;overflow-y:auto;box-shadow:-12px 0 30px rgba(42,26,14,.18)}
+@media(min-width:681px){#bannerHari{padding-right:216px}}
+.dot{width:8px;height:8px;border-radius:50%;background:#E5B25F;flex:0 0 8px}.dot.on{background:#3FA34D}
+.rail-live{display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px;color:#E8C79B;padding:0 4px 12px;text-align:center}
+.rail-live #syncLbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+nav.rail{position:fixed;right:0;top:0;bottom:0;width:202px;z-index:30;display:flex;flex-direction:column;background:linear-gradient(to right,#F6E4C4 0%,#EDCDA0 7%,#D9AE7C 14%,#C08D55 21%,#A26C36 28%,#7F4E22 36%,#5D3415 45%,#45230D 55%,#35200C 66%,#2A180A 78%,#231307 89%,#1F1006 100%);padding:16px 12px 12px 24px;overflow-y:auto;box-shadow:-12px 0 30px rgba(42,26,14,.18)}
 .rail-brand{display:flex;align-items:center;gap:10px;padding:2px 6px 14px}
 .rail-brand img{width:40px;height:40px;border-radius:13px;object-fit:cover;border:1px solid rgba(254,243,226,.45)}
 .rail-brand b{display:block;font-size:13px;color:#FEF3E2;line-height:1.25}
@@ -72,7 +68,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 #modalWrap .modal{background:var(--card);border:1px solid var(--line);border-radius:20px;max-width:540px;width:100%;max-height:88vh;overflow:auto;padding:18px;box-shadow:0 24px 70px rgba(0,0,0,.45)}
 #modalWrap .modal h3{margin:0 0 10px}
 #modalActs{margin-top:14px}
-#bannerHari{background:#FFF3CD;border-bottom:1px solid #F0C36D;padding:9px 14px;font-size:13px;text-align:center;position:sticky;top:58px;z-index:15}
+#bannerHari{background:#FFF3CD;border-bottom:1px solid #F0C36D;padding:9px 14px;font-size:13px;text-align:center;position:sticky;top:0;z-index:15}
 .card-hi{border:2.5px solid var(--burnt)!important;background:#FFF7EA}
 .tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:#FBE3C3;border:1px solid var(--burnt);margin-left:6px;white-space:nowrap}
 button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible{outline:2.5px solid var(--burnt);outline-offset:2px}
@@ -100,7 +96,6 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
  .rail button{justify-content:center;padding:10px 0}
  .rail button i{font-size:21px}
  .rail-foot button span{display:none}
- .top-in{padding-right:66px}
  .wrap{padding:10px}
  .stat{padding:14px}.stat b{font-size:20px}
  .toast{bottom:24px;font-size:14px}.toast.center{top:40%;font-size:17px}
@@ -109,7 +104,7 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 #printArea{display:none}
 @page{size:A4 portrait;margin:14mm}
 @media print{
-  body{background:#fff;padding:0}header.top,nav.rail,.wrap,.toast{display:none!important}
+  body{background:#fff;padding:0}nav.rail,.wrap,.toast,#bannerHari{display:none!important}
   #printArea{display:block!important;color:#111;font-size:11.5px}
   #printArea .p-head{display:flex;gap:12px;align-items:center;justify-content:flex-start;text-align:left;border-bottom:2.5px solid #111;padding-bottom:8px}
   #printArea img{width:auto;height:auto;max-height:62px;max-width:230px;object-fit:contain}
@@ -122,15 +117,11 @@ button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visibl
 </style>
 </head>
 <body>
-<header class="top"><div class="top-in">
-<img class="logo" src="./logo-app.jpg" alt="logo">
-<div class="app-t"><b>GUDANG STOK G24 KEDATON</b><br><span>Brankas • Etalase • Bazar — realtime</span></div>
-<div class="pill"><span class="dot" id="dotNet"></span><span class="sync" id="syncLbl">Lokal</span></div>
-</div></header>
 <div id="bannerHari" style="display:none" role="alert"></div>
 
 <nav class="rail" id="rail" aria-label="Menu utama">
 <div class="rail-brand"><img src="./logo-app.jpg" alt="G24"><div><b>G24 Kedaton</b><span>Gudang Stok</span></div></div>
+<div class="rail-live"><span class="dot" id="dotNet"></span><span id="syncLbl">Lokal</span></div>
 <div id="railMenu"></div>
 <div class="rail-foot"><button onclick="keluar()" aria-label="Keluar"><i>🚪</i><span>Keluar</span></button></div>
 </nav>
