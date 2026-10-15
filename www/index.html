@@ -1115,7 +1115,7 @@ function paintAll(){if(!$("chipsJual"))return;
  const dl=$("dlBrand");if(dl)dl.innerHTML=brands().map(function(b){return '<option value="'+esc(b)+'">'}).join("");
  // Master selects
  const msB=$("msBrand");if(msB){const cur=msB.value;msB.innerHTML=brands().map(function(b){return '<option value="'+esc(b)+'">'+esc(b)+'</option>'}).join("");if(brands().indexOf(cur)>=0)msB.value=cur;else msB.value="ANTAM"}
- const msJ=$("msJenis");if(msJ){const cur=msJ.value;msJ.innerHTML=[...new Set([...DEF_PH,...DB.master.filter(m=>m.t==="PHJ").map(m=>m.jenis)])].map(function(j){return '<option value="'+esc(j)+'">'+esc(j)+'</option>'}).join("");if([...DEF_PH,...DB.master.filter(m=>m.t==="PHJ").map(m=>m.jenis)].indexOf(cur)>=0)msJ.value=cur;else msJ.value=DEF_PH[0]}
+ const msJ=$("msJenis");if(msJ){const cur=msJ.value;const phjList=DB.master.filter(m=>m.t==="PHJ").map(m=>m.jenis);msJ.innerHTML=phjList.map(function(j){return '<option value="'+esc(j)+'">'+esc(j)+'</option>'}).join("");if(phjList.indexOf(cur)>=0)msJ.value=cur;else if(phjList.length)msJ.value=phjList[0]}
  // Master datalists
   const dlGL=$("dlGramLM");if(dlGL)dlGL.innerHTML=[...new Set([...DEF_LM.ANTAM,...DEF_LM.UBS,...DEF_LM.G24,...DB.master.filter(m=>m.t==="LM").map(m=>num(m.gram))])].filter(g=>g>0).sort((a,b)=>a-b).map(function(g){return '<option value="'+g+'">'}).join("");
   const dlKP=$("dlKadarPH");if(dlKP)dlKP.innerHTML=[...new Set([...DEF_KADAR,...DB.master.filter(m=>m.t==="PHK").map(m=>m.kadar)])].map(function(k){return '<option value="'+esc(k)+'">'}).join("");
