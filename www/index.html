@@ -170,8 +170,8 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div id="pg-masuk" class="page">
 <h2 class="sec">📥 Barang Masuk — dari Pusat</h2>
 <div class="card"><div class="chips" id="chipsJenisM"></div>
-<div class="grid2"><div><label>Lokasi tujuan</label><select id="mLok"><option value="BRANKAS">BRANKAS</option><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
-<div><label>Qty (pcs)</label><input id="mQtyIn" type="number" min="1" value="1"></div></div>
+<label>Qty (pcs)</label><input id="mQtyIn" type="number" min="1" value="1">
+<p class="muted">Tujuan barang masuk: <b>BRANKAS</b> (satu-satunya).</p>
 <div id="boxML"><label>Brand LOGAM MULIA</label><select id="mBrand"></select><label>Gramasi</label><select id="mGram"></select></div>
 <div id="boxMP" style="display:none"><label>Jenis perhiasan</label><select id="mJenisPH"></select>
 <div class="grid3"><div><label>Kadar</label><select id="mKadar"></select></div><div><label>Berat per unit (gr)</label><input id="mBerat" type="number" step="0.01" min="0" placeholder="per pcs"></div><div><label>Kode item (auto)</label><input id="mKodeIn"></div></div>
@@ -321,14 +321,17 @@ function initCloud(){try{const c=window.FIREBASE_CONFIG;
  cloudOK=true;$("syncLbl").textContent="Live ☁️";$("dotNet").classList.add("on");
  cloud.collection("balances").onSnapshot(function(s){SNAP_SEQ++;SERVER_BAL={};s.forEach(function(d){SERVER_BAL[d.id]=Object.assign({_id:d.id},d.data())});DB.confirming=[];recomputeBalances();save();paintAll();refresh()},failCloud);
  cloud.collection("movements").orderBy("ts","desc").limit(800).onSnapshot(function(s){const a=[];s.forEach(function(d){a.push(Object.assign({id:d.id},d.data()))});SERVER_MOV=a;rebuildMovements();refresh();renderAllTables()},failCloud);
- cloud.collection("sessions").orderBy("tanggal","desc").limit(60).onSnapshot(function(s){const a=[];s.forEach(function(d){a.push(Object.assign({id:d.id},d.data()))});DB.sessions=a;save();refresh()},function(){});
+ cloud.collection("sessions").orderBy("tanggal","desc").limit(60).onSnapshot(function(s){const a=[];s.forEach(function(d){a.push(Object.assign({id:d.id},d.data()))});
+  const map={};a.forEach(function(x){map[x.tanggal]=x});DB.sessions.forEach(function(x){if(!map[x.tanggal])map[x.tanggal]=x});
+  DB.sessions=Object.keys(map).map(function(k){return map[k]}).sort(function(p,q){return String(q.tanggal).localeCompare(String(p.tanggal))});
+  save();refresh()},function(){});
  cloud.collection("logs").orderBy("at","desc").limit(200).onSnapshot(function(s){const a=[];s.forEach(function(d){a.push(Object.assign({id:d.id},d.data()))});DB.logs=a;save();renderMore()},function(){});
  cloud.collection("users").onSnapshot(function(s){const a=[];s.forEach(function(d){a.push(Object.assign({id:d.id},d.data()))});DB.users=dedup(a,function(o){return String(o.nama||"").toUpperCase()});seedAdminSafe();save();renderUsers()},function(){});
  cloud.collection("master").onSnapshot(function(s){const a=[];s.forEach(function(d){a.push(Object.assign({id:d.id},d.data()))});DB.master=a;save();paintAll();renderMaster()},function(){});
  cloud.collection("settings").doc("meta").get().then(function(d){if(!d.exists)seedMaster().catch(function(){})}).catch(function(){});
  flushOutbox();
  }catch(e){console.log(e)}}
-function failCloud(e){cloudOK=false;const s=$("syncLbl");if(s)s.textContent="Cloud ditolak ⚠️";const d=$("dotNet");if(d)d.classList.remove("on");console.log("Firestore:",e&&e.code);toast("⚠️ Cloud ditolak — Publish firestore.rules")}
+function failCloud(e,quiet){cloudOK=false;const s=$("syncLbl");if(s)s.textContent="Cloud ditolak ⚠️";const d=$("dotNet");if(d)d.classList.remove("on");console.log("Firestore:",e&&(e.code||e.message));if(!quiet)toast("⚠️ Cloud ditolak — Publish firestore.rules")}
 function rebuildMovements(){const map={};SERVER_MOV.concat(DB.confirming,DB.outbox).forEach(function(m){map[m.id]=m});DB.movements=Object.keys(map).map(k=>map[k]).sort((a,b)=>String(b.ts||"").localeCompare(String(a.ts||"")))}
 async function txPost(mv){const eff=effectsOf(mv);
  await cloud.runTransaction(async function(tx){
@@ -348,7 +351,11 @@ async function post(mv){
  if(!cloudOK){DB.outbox.push(mv);rebuildMovements();recomputeBalances();save();return true}
  const seq=SNAP_SEQ;
  try{await txPost(mv);if(SNAP_SEQ===seq)DB.confirming.push(mv);rebuildMovements();recomputeBalances();save();return true}
- catch(e){toast("⚠️ Ditolak: "+(e.message||e));return false}}
+ catch(e){const msg=String((e&&(e.code||e.message))||e);
+  if(/permission|unavailable|network|deadline|denied|failed-precondition/i.test(msg)){
+   if(!DB.outbox.find(x=>x.id===mv.id))DB.outbox.push(mv);
+   rebuildMovements();recomputeBalances();save();failCloud(e,true);toast("📥 Tersimpan lokal — akan dikirim otomatis saat cloud aktif");return true}
+  toast("⚠️ Ditolak: "+msg);return false}}
 async function flushOutbox(){if(!cloudOK||!DB.outbox.length)return;let ok=0,fail=0;
  const q=DB.outbox.slice();
  for(let i=0;i<q.length;i++){const mv=q[i],seq=SNAP_SEQ;
@@ -430,25 +437,28 @@ function renderUsers(){const us=DB.users.filter(u=>!u.deleted);
 /* ---------- SESSION ---------- */
 function sesiHari(){return DB.sessions.find(s=>s.tanggal===todayStr())}
 function hariBuka(){const s=sesiHari();return !!(s&&s.status==="BUKA")}
-async function bukaHari(){const t=todayStr();const s=DB.sessions.find(x=>x.tanggal===t);
+async function bukaHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.tanggal===t);
  if(s&&s.status==="BUKA"){toast("Hari ini sudah dibuka ☀️");return}
  const o={tanggal:t,status:"BUKA",bukaOleh:curUser?curUser.nama:"-",bukaAt:new Date().toISOString()};
  DB.sessions=DB.sessions.filter(x=>x.tanggal!==t);DB.sessions.unshift(o);
- if(cloudOK)try{await cloud.collection("sessions").doc(t).set(o,{merge:true})}catch(e){}
- addLog("BUKA_HARI",t);save();refresh();toast("☀️ Hari dibuka")}
-async function tutupHari(){const t=todayStr();const s=DB.sessions.find(x=>x.tanggal===t);
+ addLog("BUKA_HARI",t);save();refresh();toast("☀️ Hari dibuka");
+ if(cloudOK)cloud.collection("sessions").doc(t).set(o,{merge:true}).catch(function(e){console.log("sessions set:",e);toast("⚠️ Hari dibuka lokal — cloud ditolak")});
+}catch(e){console.log(e);toast("⚠️ Gagal buka hari: "+((e&&e.message)||e))}}
+async function tutupHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.tanggal===t);
  if(!s||s.status!=="BUKA"){toast("Buka hari dulu");return}
  const sistem={},fisik={},selisih={};
  ["BRANKAS","ETALASE","BAZAR"].forEach(function(l){sistem[l]=totLoc(l)});
  for(let i=0;i<3;i++){const l=["BRANKAS","ETALASE","BAZAR"][i];
   const v=prompt("Opname "+l+"\nSistem: "+sistem[l].pcs+" pcs / "+sistem[l].gr.toFixed(2)+" gr\nMasukkan jumlah FISIK (pcs):",String(sistem[l].pcs));
   if(v===null)return;fisik[l]={pcs:num(v)};selisih[l]=num(v)-sistem[l].pcs}
- const smp={id:s.id||t,tanggal:t,status:"TUTUP",bukaOleh:s.bukaOleh,bukaAt:s.bukaAt,tutupOleh:curUser.nama,tutupAt:new Date().toISOString(),sistem:sistem,fisik:fisik,selisih:selisih,snapshot:DB.balances};
+ const smp={id:s.id||t,tanggal:t,status:"TUTUP",bukaOleh:s.bukaOleh,bukaAt:s.bukaAt,tutupOleh:curUser?curUser.nama:"-",tutupAt:new Date().toISOString(),sistem:sistem,fisik:fisik,selisih:selisih,snapshot:DB.balances};
  DB.sessions=DB.sessions.map(x=>x.tanggal===t?smp:x);
- if(cloudOK)try{await cloud.collection("sessions").doc(t).set(smp,{merge:true})}catch(e){}
- addLog("TUTUP_HARI",t+" • selisih "+JSON.stringify(selisih));save();refresh();backupCloud(true);
+ addLog("TUTUP_HARI",t+" • selisih "+JSON.stringify(selisih));save();refresh();
+ if(cloudOK)cloud.collection("sessions").doc(t).set(smp,{merge:true}).catch(function(e){console.log("sessions set:",e)});
+ backupCloud(true);
  const tot=Object.keys(selisih).reduce((a,k)=>a+selisih[k],0);
  toast(tot===0?"🌙 Tutup hari • opname COCOK":"🌙 Tutup hari • selisih "+tot+" pcs")}
+catch(e){console.log(e);toast("⚠️ Gagal tutup hari: "+((e&&e.message)||e))}}
 
 /* ---------- PICKERS ---------- */
 function fillSel(id,arr){const el=$(id);if(!el)return;const cur=el.value;el.innerHTML=arr.map(v=>'<option>'+esc(v)+'</option>').join("");if(arr.map(String).indexOf(String(cur))>=0)el.value=cur}
@@ -506,7 +516,7 @@ function autoJual(){const b=curPick("jPick");$("jAuto").innerHTML=b?(skuLabel(b)
 /* ---------- BARANG MASUK ---------- */
 function simpanMasuk(){
  const q1=Math.round(num($("mQtyIn").value,1));if(q1<1){toast("Qty minimal 1");return}
- const lok=$("mLok").value,harga=num($("mHarga").value),note=$("mNoteIn").value.trim();
+ const lok="BRANKAS",harga=num($("mHarga").value),note=$("mNoteIn").value.trim();
  if(M_JENIS==="LM"){
   const br=san($("mBrand").value),g=num($("mGram").value);if(!(g>0)){toast("Pilih gramasi");return}
   post({tipe:"MASUK_PUSAT",jenis:"LM",sku:"LM#"+br+"#"+g,brand:br,gram:g,kadar:"24K",kode:"-",desc:br+" "+g+"gr",
