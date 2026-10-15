@@ -275,13 +275,21 @@ body[data-theme="krem"] .btn-dark{background:#222222}
 <div id="pg-master" class="page">
 <h2 class="sec">🏷️ Master Produk</h2>
 <div class="card"><p class="muted">Tersinkron ke cloud. Hapus = hapus dokumen (bukan disembunyikan).</p>
-<div class="grid2"><div><label>Brand</label><select id="msBrand"><option>ANTAM</option><option>UBS</option><option>G24</option></select></div>
-<div><label>Gramasi LM</label><input id="msGram" type="number" step="0.01" min="0" placeholder="cth: 1"></div></div>
+<div class="grid2"><div><label>Brand LM</label><select id="msBrand" list="dlBrandLM"></select></div>
+<div><label>Gramasi LM</label><input id="msGram" type="number" step="0.01" min="0" list="dlGramLM" placeholder="cth: 1"></div></div>
+<datalist id="dlBrandLM"></datalist>
+<datalist id="dlGramLM"></datalist>
 <div style="height:8px"></div><button class="btn btn-dark" onclick="addMasterLM()">+ Tambah Gramasi LM</button></div>
 <div class="card" style="margin-top:10px">
-<div class="grid2"><div><label>Jenis perhiasan</label><input id="msJenis" placeholder="cth: CINCIN"></div>
-<div><label>Kadar</label><input id="msKadar" placeholder="cth: 24K"></div></div>
-<div style="height:8px"></div><button class="btn btn-dark" onclick="addMasterPH()">+ Tambah Jenis &amp; Kadar</button></div>
+<div class="grid2"><div><label>Jenis Perhiasan</label><input id="msJenis" list="dlJenisPH" placeholder="cth: CINCIN"></div>
+<div><label>Kadar (opsional)</label><input id="msKadar" list="dlKadarPH" placeholder="cth: 24K"></div></div>
+<div class="grid2"><div><label>Brand Perhiasan (opsional)</label><input id="msBrandPH" list="dlBrandPH" placeholder="cth: UBS"></div>
+<div><label>Gramasi (opsional)</label><input id="msGramPH" type="number" step="0.01" min="0" list="dlGramPH" placeholder="cth: 5"></div></div>
+<datalist id="dlJenisPH"></datalist>
+<datalist id="dlKadarPH"></datalist>
+<datalist id="dlBrandPH"></datalist>
+<datalist id="dlGramPH"></datalist>
+<div style="height:8px"></div><button class="btn btn-dark" onclick="addMasterPH()">+ Tambah Jenis & Kadar</button></div>
 <h2 class="sec">📋 Daftar master</h2><div class="card"><p class="muted" id="masterSum">—</p><div class="scrollbox" style="max-height:320px"><table class="tbl" id="tblMaster"></table></div></div>
 </div>
 
@@ -479,11 +487,26 @@ async function addMasterLM(){const b=san($("msBrand").value),g=num($("msGram").v
  if(cloudOK){try{await cloud.collection("master").doc(masterIdLM(b,g)).set({t:"LM",brand:b,gram:g,at:new Date().toISOString()})}catch(e){toast("Gagal simpan master")}}
  else if(!DB.master.find(m=>m.id===masterIdLM(b,g)))DB.master.push({id:masterIdLM(b,g),t:"LM",brand:b,gram:g});
  addLog("MASTER","LM "+b+" "+g+"gr");save();paintAll();renderMaster();toast("Master ditambah 🏷️")}
-async function addMasterPH(){const j=String($("msJenis").value).trim().toUpperCase(),k=String($("msKadar").value).trim().toUpperCase();
- if(!j||!k){toast("Isi jenis & kadar");return}
- if(cloudOK){try{await cloud.collection("master").doc(masterIdPHJ(j)).set({t:"PHJ",jenis:j,at:new Date().toISOString()});
-  await cloud.collection("master").doc(masterIdPHK(k)).set({t:"PHK",kadar:k,at:new Date().toISOString()})}catch(e){toast("Gagal simpan master")}}
- addLog("MASTER","PH "+j+" "+k);save();paintAll();renderMaster();toast("Master ditambah 🏷️")}
+async function addMasterPH(){const j=String($("msJenis").value).trim().toUpperCase();if(!j){toast("Isi jenis perhiasan");return}
+ const k=String($("msKadar").value).trim().toUpperCase();const b=String($("msBrandPH").value).trim().toUpperCase();const g=num($("msGramPH").value);
+ if(cloudOK){try{await cloud.collection("master").doc(masterIdPHJ(j)).set({t:"PHJ",jenis:j,brand:b||"-",gram:g||0,at:new Date().toISOString()});if(k)await cloud.collection("master").doc(masterIdPHK(k)).set({t:"PHK",kadar:k,brand:b||"-",gram:g||0,at:new Date().toISOString()})}catch(e){toast("Gagal simpan master")}}
+ addLog("MASTER","PH "+j+(k?" "+k:"")+(b?" brand "+b:""));save();paintAll();renderMaster();toast("Master ditambah ✨")}
+async function editMasterLM(id){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
+ const m=DB.master.find(x=>x.id===id);if(!m)return;
+ const b=prompt("Edit Brand LM:",m.brand);if(b===null||!b.trim())return;
+ const g=prompt("Edit Gramasi (gr):",m.gram);const gn=num(g);if(!(gn>0)){toast("Gramasi tidak valid");return}
+ if(cloudOK){try{await cloud.collection("master").doc(id).set({...m,brand:b.trim(),gram:num(g)},{merge:true})}catch(e){toast("Gagal edit master")}}
+ m.brand=b.trim();m.gram=num(g);addLog("MASTER_EDIT","LM "+m.brand+" "+m.gram+"gr");save();paintAll();renderMaster();toast("Master LM diedit ✏️")}
+async function editMasterPHJ(id){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
+ const m=DB.master.find(x=>x.id===id);if(!m)return;
+ const j=prompt("Edit Jenis Perhiasan:",m.jenis);if(j===null||!j.trim())return;
+ if(cloudOK){try{await cloud.collection("master").doc(id).set({...m,jenis:j.trim()},{merge:true})}catch(e){toast("Gagal edit master")}}
+ m.jenis=j.trim();addLog("MASTER_EDIT","PHJ "+m.jenis);save();paintAll();renderMaster();toast("Master PHJ diedit ✏️")}
+async function editMasterPHK(id){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}
+ const m=DB.master.find(x=>x.id===id);if(!m)return;
+ const k=prompt("Edit Kadar:",m.kadar);if(k===null||!k.trim())return;
+ if(cloudOK){try{await cloud.collection("master").doc(id).set({...m,kadar:k.trim()},{merge:true})}catch(e){toast("Gagal edit master")}}
+ m.kadar=k.trim();addLog("MASTER_EDIT","PHK "+m.kadar);save();paintAll();renderMaster();toast("Master PHK diedit ✏️")}
 async function delMaster(id){if(!isAdmin()){toast("⛔ Hanya ADMIN");return}if(!(await confirmModal("Hapus master ini?","Ya, hapus")))return;
  if(cloudOK){try{await cloud.collection("master").doc(id).delete()}catch(e){toast("Gagal hapus master")}}
  DB.master=DB.master.filter(m=>m.id!==id);addLog("MASTER_HAPUS",id);save();paintAll();renderMaster();toast("Master dihapus")}
@@ -491,11 +514,11 @@ function renderMaster(){let h='<tr><th>Master</th><th>Aksi</th></tr>';
  const lm=DB.master.filter(m=>m.t==="LM");
  h+='<tr><td colspan="2" style="background:#FBE3C3"><b>Logam Mulia</b></td></tr>';
  if(!lm.length)h+='<tr><td colspan="2" class="muted">Belum ada — default bawaan tetap dipakai</td></tr>';
- lm.sort((a,b)=>String(a.brand).localeCompare(String(b.brand))||num(a.gram)-num(b.gram)).forEach(m=>{h+='<tr><td>'+bb(m.brand)+" "+esc(m.brand)+" "+m.gram+' gr</td><td><button class="chip" onclick="delMaster(\''+esc(m.id)+'\')">🗑️</button></td></tr>'});
+ lm.sort((a,b)=>String(a.brand).localeCompare(String(b.brand))||num(a.gram)-num(b.gram)).forEach(m=>{h+='<tr><td>'+bb(m.brand)+" "+esc(m.brand)+" "+m.gram+' gr</td><td><button class="chip" onclick="editMasterLM(\''+esc(m.id)+'\')">✏️ Edit</button> <button class="chip" onclick="delMaster(\''+esc(m.id)+'\')">🗑️ Hapus</button></td></tr>'});
  h+='<tr><td colspan="2" style="background:#FBE3C3"><b>Jenis Perhiasan</b></td></tr>';
- DB.master.filter(m=>m.t==="PHJ").forEach(m=>{h+='<tr><td>💍 '+esc(m.jenis)+'</td><td><button class="chip" onclick="delMaster(\''+esc(m.id)+'\')">🗑️</button></td></tr>'});
+ DB.master.filter(m=>m.t==="PHJ").forEach(m=>{h+='<tr><td>💍 '+esc(m.jenis)+'</td><td><button class="chip" onclick="editMasterPHJ(\''+esc(m.id)+'\')">✏️ Edit</button> <button class="chip" onclick="delMaster(\''+esc(m.id)+'\')">🗑️ Hapus</button></td></tr>'});
  h+='<tr><td colspan="2" style="background:#FBE3C3"><b>Kadar</b></td></tr>';
- DB.master.filter(m=>m.t==="PHK").forEach(m=>{h+='<tr><td>✨ '+esc(m.kadar)+'</td><td><button class="chip" onclick="delMaster(\''+esc(m.id)+'\')">🗑️</button></td></tr>'});
+ DB.master.filter(m=>m.t==="PHK").forEach(m=>{h+='<tr><td>✨ '+esc(m.kadar)+'</td><td><button class="chip" onclick="editMasterPHK(\''+esc(m.id)+'\')">✏️ Edit</button> <button class="chip" onclick="delMaster(\''+esc(m.id)+'\')">🗑️ Hapus</button></td></tr>'});
  const nLM=DB.master.filter(m=>m.t==="LM").length,nJ=DB.master.filter(m=>m.t==="PHJ").length,nK=DB.master.filter(m=>m.t==="PHK").length;
  if($("masterSum"))$("masterSum").innerHTML="Ringkasan: <b>"+nLM+"</b> gramasi LM • <b>"+nJ+"</b> jenis • <b>"+nK+"</b> kadar";
  $("tblMaster").innerHTML=h}
@@ -1090,6 +1113,13 @@ function paintAll(){if(!$("chipsJual"))return;
  fillSel("jBrand",brands());fillSel("mBrand",brands());fillSel("jJenisPH",phJenis());fillSel("mJenisPH",phJenis());fillSel("jKadar",kadars());fillSel("mKadar",kadars());
  fillSel("jGram",grams($("jBrand").value));fillSel("mGram",grams($("mBrand").value));
  const dl=$("dlBrand");if(dl)dl.innerHTML=brands().map(function(b){return '<option value="'+esc(b)+'">'}).join("");
+ // Master datalists
+ const dlBL=$("dlBrandLM");if(dlBL)dlBL.innerHTML=brands().map(function(b){return '<option value="'+esc(b)+'">'}).join("");
+ const dlGL=$("dlGramLM");if(dlGL)dlGL.innerHTML=[...new Set([...DEF_LM.ANTAM,...DEF_LM.UBS,...DEF_LM.G24,...DB.master.filter(m=>m.t==="LM").map(m=>num(m.gram))])].filter(g=>g>0).sort((a,b)=>a-b).map(function(g){return '<option value="'+g+'">'}).join("");
+ const dlJP=$("dlJenisPH");if(dlJP)dlJP.innerHTML=[...new Set([...DEF_PH,...DB.master.filter(m=>m.t==="PHJ").map(m=>m.jenis)])].map(function(j){return '<option value="'+esc(j)+'">'}).join("");
+ const dlKP=$("dlKadarPH");if(dlKP)dlKP.innerHTML=[...new Set([...DEF_KADAR,...DB.master.filter(m=>m.t==="PHK").map(m=>m.kadar)])].map(function(k){return '<option value="'+esc(k)+'">'}).join("");
+ const dlBP=$("dlBrandPH");if(dlBP)dlBP.innerHTML=brands().map(function(b){return '<option value="'+esc(b)+'">'}).join("");
+ const dlGP=$("dlGramPH");if(dlGP)dlGP.innerHTML=[...new Set([...DB.master.filter(m=>m.t==="PHJ"||m.t==="PHK").map(m=>num(m.gram))])].filter(g=>g>0).sort((a,b)=>a-b).map(function(g){return '<option value="'+g+'">'}).join("");
  if(!$("jKode").value)$("jKode").value="PH-"+Date.now().toString(36).toUpperCase();
  if(!$("mKodeIn").value)$("mKodeIn").value="PH-"+Date.now().toString(36).toUpperCase();
  refreshPick();autoMutA();autoMutB();autoMutC();autoJual();autoRetur();paintSetor()}
