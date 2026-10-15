@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Gudang Stok G24 Kedaton - Brankas, Etalase & Bazar realtime">
 <meta name="theme-color" content="#D4621A">
 <link rel="manifest" href="./manifest.json">
@@ -15,7 +15,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
-:root{--bg:#FEF3E2;--card:#FFFDF8;--ink:#2A1A0E;--muted:#A08A76;--amber:#F4AE52;--burnt:#D4621A;--line:#F0DFC8;--radius:18px}
+:root{--bg:#FEF3E2;--card:#FFFDF8;--ink:#2A1A0E;--muted:#7A6350;--amber:#F4AE52;--burnt:#D4621A;--line:#F0DFC8;--radius:18px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:0 0 30px 92px}
 header.top{position:sticky;top:0;z-index:20;background:rgba(254,243,226,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
@@ -38,7 +38,7 @@ nav.rail{position:fixed;left:8px;top:50%;transform:translateY(-50%);z-index:30;b
 .stat small{font-size:12px;color:var(--muted)}.stat b{font-size:24px;display:block;margin:3px 0}.stat em{font-style:normal;font-size:12px;color:var(--muted)}
 h2.sec{font-size:17px;margin:20px 2px 10px}
 label{font-size:12px;color:var(--muted);display:block;margin:10px 0 5px}
-input,select{width:100%;padding:11px 12px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font-size:14px;color:var(--ink);outline:none}
+input,select{width:100%;padding:11px 12px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font-size:16px;color:var(--ink);outline:none}
 input:focus,select:focus{border-color:var(--burnt)}
 .btn{border:0;border-radius:14px;padding:14px;font-weight:700;font-size:15px;cursor:pointer;width:100%}
 .btn-burnt{background:linear-gradient(135deg,#F4AE52,#D4621A);color:#fff}
@@ -51,13 +51,17 @@ input:focus,select:focus{border-color:var(--burnt)}
 .chip.on{background:var(--ink);color:#FEF3E2;border-color:var(--ink)}
 table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;overflow:hidden;border-radius:12px;border:1px solid var(--line)}
 .tbl th{background:#FBE3C3;color:#7A4A1E;text-align:left;padding:9px 8px;white-space:nowrap}
-.tbl td{padding:8px;border-top:1px solid var(--line);vertical-align:top}
+.tbl td{padding:10px 8px;border-top:1px solid var(--line);vertical-align:top}
 .tbl tr:nth-child(even) td{background:#FFFAF2}
 .page{display:none}.page.on{display:block;animation:fade .2s}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
 .toast{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);background:rgba(42,26,14,.7);color:#FEF3E2;padding:26px 30px;border-radius:22px;font-size:19px;font-weight:800;z-index:60;display:none;max-width:88vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);border:3px solid var(--amber);line-height:1.6}
 .card-hi{border:2.5px solid var(--burnt)!important;background:#FFF7EA}
 .tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:#FBE3C3;border:1px solid var(--burnt);margin-left:6px;white-space:nowrap}
+button:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible{outline:2.5px solid var(--burnt);outline-offset:2px}
+.flash{animation:flash 3s}
+@keyframes flash{0%,60%{background:#FFF0D6}100%{background:transparent}}
+.foot{text-align:center;font-size:11px;color:#7A6350;margin:26px 0 10px;letter-spacing:.2px}
 .scrollbox{overflow:auto;max-height:300px}
 .mutgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
 @media(max-width:900px){.mutgrid{grid-template-columns:1fr}}
@@ -105,11 +109,12 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 
 <div class="wrap">
 <div id="pg-login" class="page on"><div class="card login">
+<form onsubmit="doLogin();return false">
 <h2 style="margin:0">Masuk ✨</h2><p class="muted">Khusus user terdaftar</p>
-<label>Nama pengguna</label><input id="inUser" placeholder="cth: Kedaton / Kasir">
-<label>PIN / Kode</label><input id="inPin" type="password" placeholder="PIN">
-<div style="height:10px"></div><button class="btn btn-burnt" onclick="doLogin()">Masuk Aplikasi →</button>
-<p class="muted" id="loginInfo" style="margin-top:10px"></p></div></div>
+<label>Nama pengguna</label><input id="inUser" placeholder="cth: Kedaton / Kasir" autofocus autocomplete="username">
+<label>PIN / Kode</label><div class="btn-row"><input id="inPin" type="password" placeholder="PIN" inputmode="numeric" autocomplete="current-password" style="flex:1"><button type="button" class="btn btn-ghost" style="flex:0 0 54px" onclick="togglePin()" aria-label="Tampilkan atau sembunyikan PIN">👁️</button></div>
+<div style="height:10px"></div><button class="btn btn-burnt" type="submit">Masuk Aplikasi →</button>
+<p class="muted" id="loginInfo" style="margin-top:10px"></p></form></div></div>
 
 <div id="pg-dash" class="page">
 <h2 class="sec">📊 Dashboard <span class="badge" id="tglHari"></span></h2>
@@ -139,7 +144,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div class="card"><h3 style="margin:0">📤 Mutasi Brankas Ke Display</h3><p class="muted">Keluarkan dari Brankas ke Etalase/Bazar.</p>
 <div class="grid2"><div><label>Ke lokasi</label><select id="muToA"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
 <div><label>Qty (pcs)</label><input id="muQtyA" type="number" min="1" value="1"></div></div>
-<label>Barang (stok di Brankas)</label><select id="muPickA" onchange="autoMutA()"></select>
+<label>Barang (stok di Brankas)</label><input id="qA" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="muPickA" onchange="autoMutA()"></select>
 <div class="autostat" id="mAutoA">Status: —</div>
 <div class="grid2"><div><label>Keterangan</label><select id="muKetA"><option value="SALDO PAGI">SALDO PAGI</option><option value="SALDO SUSULAN">SALDO SUSULAN</option></select></div>
 <div><label>Catatan</label><input id="muNoteA" placeholder="cth: display pagi"></div></div>
@@ -147,18 +152,18 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div class="card"><h3 style="margin:0">🔁 Etalase ↔ Bazar</h3><p class="muted">Pindah antar display.</p>
 <div class="grid2"><div><label>Dari lokasi</label><select id="muFromC" onchange="refreshPick()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
 <div><label>Ke lokasi</label><select id="muToC"><option value="BAZAR">BAZAR</option><option value="ETALASE">ETALASE</option></select></div></div>
-<label>Barang</label><select id="muPickC" onchange="autoMutC()"></select>
+<label>Barang</label><input id="qC" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="muPickC" onchange="autoMutC()"></select>
 <div class="autostat" id="mAutoC">Status: —</div>
 <div class="grid2"><div><label>Qty (pcs)</label><input id="muQtyC" type="number" min="1" value="1"></div>
 <div><label>Catatan</label><input id="muNoteC"></div></div>
 <div style="height:10px"></div><button class="btn btn-burnt" onclick="simpanMutasiC()">💾 Simpan Mutasi</button></div>
 </div>
-<div class="card card-hi" style="margin-top:10px"><h3 style="margin:0">Mutasi Barang Ke Brangkas</h3>
+<div class="card card-hi" style="margin-top:10px"><h3 style="margin:0">Mutasi Barang Ke Brankas</h3>
 <p class="muted">Kembalikan sisa display ke Brankas. <b>Wajib kosongkan display sebelum Tutup Hari.</b></p>
 <p class="muted" id="setorHint">—</p>
 <div class="grid2"><div><label>Dari lokasi</label><select id="muFromB" onchange="refreshPick()"><option value="ETALASE">ETALASE</option><option value="BAZAR">BAZAR</option></select></div>
 <div><label>Qty (pcs)</label><input id="muQtyB" type="number" min="1" value="1"></div></div>
-<label>Barang (stok di lokasi asal)</label><select id="muPickB" onchange="autoMutB()"></select>
+<label>Barang (stok di lokasi asal)</label><input id="qB" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="muPickB" onchange="autoMutB()"></select>
 <div class="autostat" id="mAutoB">Status: —</div>
 <label>Catatan</label><input id="muNoteB" placeholder="cth: setor sisa sore">
 <div style="height:10px"></div><button class="btn btn-dark" onclick="simpanMutasiB()">📥 Setor ke Brankas</button></div>
@@ -171,7 +176,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div id="boxJualKeluar">
 <div class="grid2"><div><label>Lokasi barang</label><select id="jLok" onchange="refreshPick()"></select></div>
 <div><label>Qty (pcs)</label><input id="jQty" type="number" min="1" value="1"></div></div>
-<label>Barang</label><select id="jPick" onchange="autoJual()"></select>
+<label>Barang</label><input id="qJ" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="jPick" onchange="autoJual()"></select>
 <div class="autostat" id="jAuto">—</div>
 <div class="grid2"><div><label>Pembeli (opsional)</label><input id="jPembeli" placeholder="Nama pembeli"></div>
 <div><label>Catatan</label><input id="jNote"></div></div>
@@ -215,7 +220,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div id="pg-retur" class="page">
 <h2 class="sec">↩️ Retur — keluar dari gudang ke Pusat</h2>
 <div class="card"><p class="muted">Retur mengurangi stok gudang (barang keluar). Bukan reklas sumber.</p>
-<label>Barang (stok di Brankas)</label><select id="rPick" onchange="autoRetur()"></select>
+<label>Barang (stok di Brankas)</label><input id="qR" placeholder="🔍 Cari barang..." oninput="refreshPick()"><select id="rPick" onchange="autoRetur()"></select>
 <div class="autostat" id="rAuto">—</div>
 <div class="grid2"><div><label>Qty (pcs)</label><input id="rQty" type="number" min="1" value="1"></div>
 <div><label>Sumber (otomatis ikut barang)</label><input id="rAsal" disabled></div></div>
@@ -238,7 +243,7 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 <div class="grid2" id="boxRange" style="display:none;margin-top:8px"><div><label>Dari</label><input type="date" id="rDari" onchange="renderLaporan()"></div><div><label>Sampai</label><input type="date" id="rSampai" onchange="renderLaporan()"></div></div>
 <div id="boxBrandF" style="display:none;margin-top:8px"><label>Brand</label><select id="rBrand" onchange="renderLaporan()"><option value="ALL">Semua</option><option value="ANTAM">ANTAM</option><option value="UBS">UBS</option><option value="G24">G24</option><option value="PERHIASAN">Perhiasan</option></select></div>
 <div style="height:10px"></div>
-<div class="btn-row"><button class="btn btn-dark" onclick="eksporExcel()">📊 Excel</button><button class="btn btn-burnt" onclick="eksporPDF()">PDF</button><button class="btn btn-ghost" onclick="cetakA4()">🖨️ A4</button></div></div>
+<div class="btn-row"><button class="btn btn-dark" onclick="eksporExcel()">📊 Excel</button><button class="btn btn-burnt" onclick="eksporPDF()">📄 PDF</button><button class="btn btn-ghost" onclick="cetakA4()">🖨️ A4</button></div></div>
 <div class="card" style="margin-top:10px"><div id="lapOut"></div></div>
 </div>
 
@@ -257,8 +262,8 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 
 <div id="pg-user" class="page">
 <h2 class="sec">👥 Kelola Pengguna</h2>
-<div class="card"><p class="muted">🔐 Hanya ADMIN. Login awal: <b>ADMIN / ADMIN</b>.</p>
-<div class="grid2" style="margin-top:8px"><input id="newUser" placeholder="Nama user baru"><input id="newPin" placeholder="PIN baru"></div>
+<div class="card"><p class="muted">🔐 Hanya ADMIN yang boleh mendaftarkan user baru.</p>
+<div class="grid2" style="margin-top:8px"><input id="newUser" placeholder="Nama user baru"><input id="newPin" placeholder="PIN baru" inputmode="numeric"></div>
 <div style="height:8px"></div><button class="btn btn-dark" onclick="tambahUser()">+ Daftarkan User</button>
 <div style="overflow:auto;margin-top:8px"><table class="tbl" id="tblUser"></table></div></div>
 </div>
@@ -277,8 +282,9 @@ table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;ov
 </div>
 </div>
 
+<div class="foot">© 2026 GHANZ-STACK(@ghnwldn). SEMUA HAK CIPTA DILINDUNGI UNDANG-UNDANG</div>
 <datalist id="dlBrand"></datalist>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div id="printArea"></div>
 
 <script>
@@ -446,6 +452,7 @@ function doLogin(){const u=$("inUser").value.trim(),pw=$("inPin").value.trim();i
  curUser={nama:f.nama,at:new Date().toISOString()};localStorage.setItem("g24_user",JSON.stringify(curUser));
  addLog("LOGIN","Masuk sebagai "+f.nama);save();enter()}
 function keluar(){localStorage.removeItem("g24_user");location.reload()}
+function togglePin(){const e=$("inPin");if(e)e.type=e.type==="password"?"text":"password"}
 function addLog(aksi,detail){const l={id:uid("L"),by:curUser?curUser.nama:"-",aksi:aksi,detail:detail,at:new Date().toISOString()};
  DB.logs.unshift(l);DB.logs=DB.logs.slice(0,300);
  if(cloudOK)try{cloud.collection("logs").doc(l.id).set(l).catch(function(){})}catch(e){}
@@ -485,7 +492,7 @@ async function bukaHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.t
 async function tutupHari(){try{const t=todayStr();const s=DB.sessions.find(x=>x.tanggal===t);
  if(!s||s.status!=="BUKA"){toast("Buka hari dulu");return}
  const sisaD={ETALASE:0,BAZAR:0};Object.keys(DB.balances).forEach(function(k){const b=DB.balances[k];if(num(b.qty)>0&&(b.loc==="ETALASE"||b.loc==="BAZAR"))sisaD[b.loc]+=num(b.qty)});
- if(sisaD.ETALASE+sisaD.BAZAR>0){toast("⛔ TIDAK BISA TUTUP HARI — masih ada barang di display (Etalase "+sisaD.ETALASE+" pcs, Bazar "+sisaD.BAZAR+" pcs) yang belum dimutasikan ke Brankas. Setor dulu via Mutasi Barang Ke Brangkas.");go("mutasi");return}
+ if(sisaD.ETALASE+sisaD.BAZAR>0){toast("⛔ TIDAK BISA TUTUP HARI — masih ada barang di display (Etalase "+sisaD.ETALASE+" pcs, Bazar "+sisaD.BAZAR+" pcs) yang belum dimutasikan ke Brankas. Setor dulu via Mutasi Barang Ke Brankas.");go("mutasi");return}
  const sistem={},fisik={},selisih={};
  ["BRANKAS","ETALASE","BAZAR"].forEach(function(l){sistem[l]=totLoc(l)});
  for(let i=0;i<3;i++){const l=["BRANKAS","ETALASE","BAZAR"][i];
@@ -503,8 +510,8 @@ catch(e){console.log(e);toast("⚠️ Gagal tutup hari: "+((e&&e.message)||e))}}
 /* ---------- PICKERS ---------- */
 function fillSel(id,arr){const el=$(id);if(!el)return;const cur=el.value;el.innerHTML=arr.map(v=>'<option>'+esc(v)+'</option>').join("");if(arr.map(String).indexOf(String(cur))>=0)el.value=cur}
 function fillLoc(id,arr){const el=$(id);if(!el)return;const cur=el.value;el.innerHTML=arr.map(v=>'<option value="'+v+'">'+v+'</option>').join("");if(arr.indexOf(cur)>=0)el.value=cur}
-function pickOpts(loc){const e=balEntries(loc);if(!e.length)return '<option value="">(kosong)</option>';
- return e.map(b=>'<option value="'+esc(b._id)+'">'+skuLabel(b)+" • "+esc(b.sumber)+statusText(b)+" • sisa "+num(b.qty)+'</option>').join("")}
+function pickOpts(loc,q,disBB){const e=balEntries(loc).filter(b=>!q||(skuLabel(b)+" "+(b.sumber||"")+" "+(b.kode||"")+" "+(b.pemilik||"")).toUpperCase().indexOf(String(q).toUpperCase())>=0);if(!e.length)return '<option value="">(kosong — belum ada stok di sini)</option>';
+ return e.map(function(b){const dis=disBB&&isBuybackPH(b);return '<option value="'+esc(b._id)+'"'+(dis?' disabled':"")+">"+skuLabel(b)+" • "+esc(b.sumber)+statusText(b)+(dis?" (tetap di Brankas)":"")+" • sisa "+num(b.qty)+'</option>'}).join("")}
 function curPick(id){const el=$(id);if(!el)return null;const b=DB.balances[el.value];return b?Object.assign({_id:el.value},b):null}
 
 /* ---------- MUTASI (3 arah, card terpisah) ---------- */
@@ -640,7 +647,7 @@ function imporExcel(inp){const f=inp.files[0];if(!f)return;
    toast(ok+" baris diimpor ✨"+(bad.length?" • "+bad.length+" ditolak":""))};
   run()}catch(err){toast("Gagal impor: "+err.message)}})()};r.readAsArrayBuffer(f);inp.value=""}
 /* ---------- STOK ---------- */
-function renderStok(){$("chipsStok").innerHTML=LOCS.map(t=>'<button class="chip '+(CUR_STOK===t?"on":"")+'" onclick="CUR_STOK=\''+t+'\';renderStok()">'+t+'</button>').join("");
+function renderStok(){$("chipsStok").innerHTML=LOCS.map(t=>'<button class="chip '+(CUR_STOK===t?"on":"")+'" aria-pressed="'+(CUR_STOK===t)+'" onclick="CUR_STOK=\''+t+'\';renderStok()">'+t+'</button>').join("");
  let rows="";const e=balEntries(CUR_STOK);
  e.forEach(b=>{rows+='<tr><td>'+skuLabel(b)+statusTag(b)+'</td><td>'+esc(b.sumber)+(String(b.sumber).toUpperCase()==="KONSINYASI"&&b.pemilik?'<br><span class="muted">'+esc(b.pemilik)+'</span>':"")+'</td><td><b>'+num(b.qty)+'</b> pcs</td><td>'+num(b.berat).toFixed(2)+' gr</td></tr>'});
  const t=totLoc(CUR_STOK);
@@ -756,7 +763,7 @@ async function renderLaporan(){const j=$("rJenis").value;$("boxBrandF").style.di
  const trow=d.total?('<tr style="background:#FBE3C3">'+d.total.map(c=>'<td><b>'+esc(c)+'</b></td>').join("")+'</tr>'):"";
  $("lapOut").innerHTML='<p class="muted">'+esc(d.title)+' • '+d.r.dari+' → '+d.r.sampai+' • '+rows.length+' baris</p>'+
  '<div style="overflow:auto"><table class="tbl"><tr>'+d.cols.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr>'+
- (rows.slice(0,300).map(function(x){return '<tr>'+x.map(function(c){return '<td>'+esc(c)+'</td>'}).join("")+'</tr>'}).join("")||'<tr><td colspan="'+d.cols.length+'" class="muted">Tidak ada data periode ini</td></tr>')+trow+'</table></div>'}
+ (rows.slice(0,300).map(function(x){return '<tr>'+x.map(function(c){return '<td>'+esc(c)+'</td>'}).join("")+'</tr>'}).join("")||'<tr><td colspan="'+d.cols.length+'" class="muted">Tidak ada data periode ini — ubah periode atau catat transaksi dulu.</td></tr>')+trow+'</table></div>'}
 function fromTo(m){const f=m.from?m.from.loc:"-",t=m.to?m.to.loc:"-";const s=m.from?m.from.sumber:m.sumber;return f+" → "+t+" ("+s+")"}
 function dlBlob(buf,name){const b=new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click()}
 async function eksporExcel(){
@@ -923,15 +930,16 @@ function refresh(){$("tglHari").textContent=todayStr();$("stUser").textContent=c
  $("stOutbox").textContent=PENDN;
  $("lockWarn").style.display=hariBuka()?"none":"block";paintSetor()}
 function refreshPick(){if(!$("muPickA"))return;
- $("muPickA").innerHTML=pickOpts("BRANKAS");
- const fb=$("muFromB").value||"ETALASE";$("muPickB").innerHTML=pickOpts(fb);
- const fc=$("muFromC").value||"ETALASE";$("muPickC").innerHTML=pickOpts(fc);
- fillLoc("jLok",["ETALASE","BAZAR"]);const jl=$("jLok").value;$("jPick").innerHTML=pickOpts(jl);
- $("rPick").innerHTML=pickOpts("BRANKAS")}
+ const Q=function(id){const e=$(id);return e?e.value.trim():""};
+ $("muPickA").innerHTML=pickOpts("BRANKAS",Q("qA"),true);
+ const fb=$("muFromB").value||"ETALASE";$("muPickB").innerHTML=pickOpts(fb,Q("qB"),false);
+ const fc=$("muFromC").value||"ETALASE";$("muPickC").innerHTML=pickOpts(fc,Q("qC"),true);
+ fillLoc("jLok",["ETALASE","BAZAR"]);const jl=$("jLok").value;$("jPick").innerHTML=pickOpts(jl,Q("qJ"),true);
+ $("rPick").innerHTML=pickOpts("BRANKAS",Q("qR"),false)}
 function paintAll(){if(!$("chipsJual"))return;
- $("chipsJual").innerHTML=[["PENJUALAN","💸 Penjualan"],["BUYBACK_MASUK","♻️ Buyback"],["KONSINYASI_MASUK","🤝 Konsinyasi"]].map(t=>'<button class="chip '+(JUAL_T===t[0]?"on":"")+'" onclick="JUAL_T=\''+t[0]+'\';paintAll()">'+t[1]+'</button>').join("");
- $("chipsJenisJ").innerHTML=[["LM","LOGAM MULIA"],["PERHIASAN","💍 Perhiasan"]].map(t=>'<button class="chip '+(J_JENIS===t[0]?"on":"")+'" onclick="J_JENIS=\''+t[0]+'\';paintAll()">'+t[1]+'</button>').join("");
- $("chipsJenisM").innerHTML=[["LM","LOGAM MULIA"],["PERHIASAN","💍 Perhiasan"]].map(t=>'<button class="chip '+(M_JENIS===t[0]?"on":"")+'" onclick="M_JENIS=\''+t[0]+'\';paintAll()">'+t[1]+'</button>').join("");
+ $("chipsJual").innerHTML=[["PENJUALAN","💸 Penjualan"],["BUYBACK_MASUK","♻️ Buyback"],["KONSINYASI_MASUK","🤝 Konsinyasi"]].map(t=>'<button class="chip '+(JUAL_T===t[0]?"on":"")+'" aria-pressed="'+(JUAL_T===t[0])+'" onclick="JUAL_T=\''+t[0]+'\';paintAll()">'+t[1]+'</button>').join("");
+ $("chipsJenisJ").innerHTML=[["LM","LOGAM MULIA"],["PERHIASAN","💍 Perhiasan"]].map(t=>'<button class="chip '+(J_JENIS===t[0]?"on":"")+'" aria-pressed="'+(J_JENIS===t[0])+'" onclick="J_JENIS=\''+t[0]+'\';paintAll()">'+t[1]+'</button>').join("");
+ $("chipsJenisM").innerHTML=[["LM","LOGAM MULIA"],["PERHIASAN","💍 Perhiasan"]].map(t=>'<button class="chip '+(M_JENIS===t[0]?"on":"")+'" aria-pressed="'+(M_JENIS===t[0])+'" onclick="M_JENIS=\''+t[0]+'\';paintAll()">'+t[1]+'</button>').join("");
  const keluar=JUAL_T==="PENJUALAN";
  $("boxJualKeluar").style.display=keluar?"block":"none";
  $("boxJualMasuk").style.display=keluar?"none":"block";
@@ -951,8 +959,8 @@ function paintAll(){if(!$("chipsJual"))return;
 function pgMap(p){return{dash:"pg-dash",mutasi:"pg-mutasi",jual:"pg-jual",masuk:"pg-masuk",retur:"pg-retur",stok:"pg-stok",lap:"pg-lap",master:"pg-master",user:"pg-user",more:"pg-more",login:"pg-login"}[p]}
 function buildRail(){$("rail").innerHTML=NAV.map(n=>'<button data-pg="'+n[0]+'" onclick="go(\''+n[0]+'\')"><i>'+n[1]+'</i><span>'+n[2]+'</span></button>').join("")}
 function go(p){if(!curUser&&p!=="login")p="login";
- document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".rail button").forEach(x=>x.classList.remove("on"));
- $(pgMap(p)).classList.add("on");const b=document.querySelector('[data-pg="'+p+'"]');if(b)b.classList.add("on");
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".rail button").forEach(x=>{x.classList.remove("on");x.removeAttribute("aria-current")});
+ $(pgMap(p)).classList.add("on");const b=document.querySelector('[data-pg="'+p+'"]');if(b){b.classList.add("on");b.setAttribute("aria-current","page")}
  if(p==="lap"){if(!$("rHari").value)$("rHari").value=todayStr();paintPeriode()}
  if(p==="stok")renderStok();if(p==="more")renderMore();if(p==="master")renderMaster();if(p==="user")renderUsers();
  if(p==="mutasi"||p==="jual"||p==="retur"||p==="masuk")refreshPick();
@@ -962,6 +970,7 @@ function enter(){$("stUser").textContent=curUser.nama;buildRail();recomputeBalan
 load();seedAdminSafe();buildRail();
 if($("jBrand"))$("jBrand").addEventListener("change",paintAll);
 if($("mBrand"))$("mBrand").addEventListener("change",paintAll);
+try{document.querySelectorAll('input[type="number"]').forEach(function(e){try{e.setAttribute("inputmode",e.step&&String(e.step).indexOf(".")>=0?"decimal":"numeric")}catch(_){}})}catch(_){}
 window.addEventListener("error",function(e){try{toast("⚠️ Galat: "+(e.message||"unknown"))}catch(_){}});
 recomputeBalances();
 initCloud();
